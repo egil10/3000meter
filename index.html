@@ -201,15 +201,14 @@
                     <div class="track-card">
                         <h3>Track Visualization</h3>
                         <div class="track-container">
-                            <!-- Stadium Backdrop -->
-                            <div class="stadium-backdrop">
-                                <img src="stadium.svg" alt="Stadium" class="stadium-image">
-                                <div class="stadium-overlay"></div>
+                            <!-- Field SVG as Centerpiece -->
+                            <div class="field-backdrop">
+                                <img src="field.svg" alt="Track Field" class="field-image">
+                                <div class="field-overlay"></div>
                             </div>
                             
                             <!-- Track SVG with Runner -->
                             <svg id="trackSVG" class="track-svg" viewBox="0 0 800 600">
-                                <!-- Stadium backdrop will be positioned behind -->
                                 <defs>
                                     <filter id="glow">
                                         <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
@@ -222,9 +221,6 @@
                                         <feDropShadow dx="2" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.3)"/>
                                     </filter>
                                 </defs>
-                                
-                                <!-- Track will be drawn here -->
-                                <g id="trackGroup"></g>
                                 
                                 <!-- Runner Animation -->
                                 <g id="runnerGroup">

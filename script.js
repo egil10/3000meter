@@ -287,166 +287,63 @@ function updateProgressiveSection() {
     }
 }
 
-// Draw SVG track
+// Draw SVG track - Now using elliptical track based on field SVG
 function drawTrack() {
-    const trackGroup = elements.trackGroup;
-    trackGroup.innerHTML = '';
+    // Since we're using the field SVG as backdrop, we don't need to draw the track lanes
+    // The field SVG already contains the track visualization
+    // We just need to update the round indicators and other elements
     
     const width = 800;
     const height = 600;
     const centerX = width / 2;
     const centerY = height / 2;
     
-    // Draw 8 lanes
-    for (let lane = 1; lane <= 8; lane++) {
-        const radius = TRACK_CONSTANTS.CURVE_RADIUS_LANE1 + (lane - 1) * TRACK_CONSTANTS.LANE_WIDTH;
-        const laneGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        
-        // Lane color
-        const laneColor = lane === currentLane ? '#dc2626' : '#e5e5e5';
-        const laneWidth = lane === currentLane ? 3 : 1;
-        
-        // Straight sections
-        const straightY = centerY - TRACK_CONSTANTS.STRAIGHT_LENGTH / 2;
-        const straightLength = TRACK_CONSTANTS.STRAIGHT_LENGTH;
-        
-        // Top straight
-        const topStraight = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        topStraight.setAttribute('x1', centerX - straightLength / 2);
-        topStraight.setAttribute('y1', straightY - radius);
-        topStraight.setAttribute('x2', centerX + straightLength / 2);
-        topStraight.setAttribute('y2', straightY - radius);
-        topStraight.setAttribute('stroke', laneColor);
-        topStraight.setAttribute('stroke-width', laneWidth);
-        topStraight.setAttribute('fill', 'none');
-        laneGroup.appendChild(topStraight);
-        
-        // Bottom straight
-        const bottomStraight = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        bottomStraight.setAttribute('x1', centerX - straightLength / 2);
-        bottomStraight.setAttribute('y1', straightY + radius);
-        bottomStraight.setAttribute('x2', centerX + straightLength / 2);
-        bottomStraight.setAttribute('y2', straightY + radius);
-        bottomStraight.setAttribute('stroke', laneColor);
-        bottomStraight.setAttribute('stroke-width', laneWidth);
-        bottomStraight.setAttribute('fill', 'none');
-        laneGroup.appendChild(bottomStraight);
-        
-        // Curves
-        const leftCurve = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        leftCurve.setAttribute('d', `M ${centerX - straightLength / 2} ${straightY - radius} A ${radius} ${radius} 0 0 1 ${centerX - straightLength / 2} ${straightY + radius}`);
-        leftCurve.setAttribute('stroke', laneColor);
-        leftCurve.setAttribute('stroke-width', laneWidth);
-        leftCurve.setAttribute('fill', 'none');
-        laneGroup.appendChild(leftCurve);
-        
-        const rightCurve = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        rightCurve.setAttribute('d', `M ${centerX + straightLength / 2} ${straightY - radius} A ${radius} ${radius} 0 0 0 ${centerX + straightLength / 2} ${straightY + radius}`);
-        rightCurve.setAttribute('stroke', laneColor);
-        rightCurve.setAttribute('stroke-width', laneWidth);
-        rightCurve.setAttribute('fill', 'none');
-        laneGroup.appendChild(rightCurve);
-        
-        trackGroup.appendChild(laneGroup);
-    }
-    
-    // Add distance markers every 100m
-    addDistanceMarkers(trackGroup, centerX, centerY);
-    
-    // Add finish line
-    addFinishLine(trackGroup, centerX, centerY);
-    
-    // Add round indicators
+    // Add round indicators based on the elliptical track
     addRoundIndicators(centerX, centerY);
     
     // Update round list
     updateRoundList();
 }
 
-// Add distance markers
-function addDistanceMarkers(trackGroup, centerX, centerY) {
-    const laneDistance = LANE_DISTANCES[currentLane];
-    const totalLaps = TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance;
-    
-    for (let distance = 100; distance <= TRACK_CONSTANTS.TOTAL_DISTANCE; distance += 100) {
-        const lapProgress = (distance % laneDistance) / laneDistance;
-        const totalProgress = (distance / TRACK_CONSTANTS.TOTAL_DISTANCE) * totalLaps;
-        
-        // Calculate position on track
-        const position = calculateTrackPosition(centerX, centerY, lapProgress);
-        
-        // Create marker
-        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        marker.setAttribute('cx', position.x);
-        marker.setAttribute('cy', position.y);
-        marker.setAttribute('r', 2);
-        marker.setAttribute('fill', '#dc2626');
-        marker.setAttribute('opacity', 0.7);
-        
-        // Add distance label for key points
-        if (distance % 400 === 0 || distance === TRACK_CONSTANTS.TOTAL_DISTANCE) {
-            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            label.setAttribute('x', position.x + 10);
-            label.setAttribute('y', position.y);
-            label.setAttribute('font-size', '12');
-            label.setAttribute('fill', '#374151');
-            label.textContent = `${distance}m`;
-            trackGroup.appendChild(label);
-        }
-        
-        trackGroup.appendChild(marker);
-    }
-}
+// Distance markers are now handled by the field SVG visualization
 
-// Add finish line
-function addFinishLine(trackGroup, centerX, centerY) {
-    const finishPosition = calculateTrackPosition(centerX, centerY, 0.5); // Middle of back straight
-    
-    const finishLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    finishLine.setAttribute('x1', finishPosition.x - 20);
-    finishLine.setAttribute('y1', finishPosition.y);
-    finishLine.setAttribute('x2', finishPosition.x + 20);
-    finishLine.setAttribute('y2', finishPosition.y);
-    finishLine.setAttribute('stroke', '#dc2626');
-    finishLine.setAttribute('stroke-width', 4);
-    finishLine.setAttribute('stroke-dasharray', '5,5');
-    
-    trackGroup.appendChild(finishLine);
-}
+// Finish line is now handled by the field SVG visualization
 
-// Calculate position on track
-function calculateTrackPosition(centerX, centerY, lapProgress) {
-    const radius = TRACK_CONSTANTS.CURVE_RADIUS_LANE1 + (currentLane - 1) * TRACK_CONSTANTS.LANE_WIDTH;
-    const straightLength = TRACK_CONSTANTS.STRAIGHT_LENGTH;
+// Calculate position on elliptical track based on field SVG coordinates
+function calculateTrackPosition(centerX, centerY, lapProgress, scale = 1) {
+    // Field SVG elliptical track coordinates:
+    // Width: 560, Height: 336
+    // Left: 110, Top: 82
+    // Center: (110 + 560/2, 82 + 336/2) = (390, 250)
     
-    // Convert lap progress to angle (0 = start, 1 = finish)
+    // Convert to our SVG coordinate system (800x600)
+    const fieldCenterX = 390;
+    const fieldCenterY = 250;
+    const fieldWidth = 560;
+    const fieldHeight = 336;
+    
+    // Scale to fit our SVG
+    const scaleX = 800 / 682; // Field SVG width is 682
+    const scaleY = 600 / 442; // Field SVG height is 442
+    
+    const scaledCenterX = fieldCenterX * scaleX;
+    const scaledCenterY = fieldCenterY * scaleY;
+    const scaledWidth = fieldWidth * scaleX;
+    const scaledHeight = fieldHeight * scaleY;
+    
+    // Calculate lane offset based on current lane
+    const laneOffset = (currentLane - 1) * 8; // Approximate lane spacing in pixels
+    
+    // Adjust ellipse dimensions for current lane
+    const laneWidth = scaledWidth + laneOffset * 2;
+    const laneHeight = scaledHeight + laneOffset * 2;
+    
+    // Convert lap progress to angle (0 = top, 0.25 = right, 0.5 = bottom, 0.75 = left)
     const angle = lapProgress * 2 * Math.PI;
     
-    let x, y;
-    
-    if (lapProgress < 0.25) {
-        // First straight
-        const straightProgress = lapProgress / 0.25;
-        x = centerX - straightLength / 2 + straightProgress * straightLength;
-        y = centerY - radius;
-    } else if (lapProgress < 0.5) {
-        // First curve
-        const curveProgress = (lapProgress - 0.25) / 0.25;
-        const curveAngle = curveProgress * Math.PI;
-        x = centerX - straightLength / 2 + radius * Math.cos(curveAngle);
-        y = centerY - radius + radius * Math.sin(curveAngle);
-    } else if (lapProgress < 0.75) {
-        // Second straight
-        const straightProgress = (lapProgress - 0.5) / 0.25;
-        x = centerX + straightLength / 2 - straightProgress * straightLength;
-        y = centerY + radius;
-    } else {
-        // Second curve
-        const curveProgress = (lapProgress - 0.75) / 0.25;
-        const curveAngle = Math.PI + curveProgress * Math.PI;
-        x = centerX + straightLength / 2 + radius * Math.cos(curveAngle);
-        y = centerY + radius + radius * Math.sin(curveAngle);
-    }
+    // Calculate position on ellipse
+    const x = scaledCenterX + (laneWidth / 2) * Math.cos(angle);
+    const y = scaledCenterY + (laneHeight / 2) * Math.sin(angle);
     
     return { x, y };
 }
@@ -1146,7 +1043,7 @@ window.addEventListener('online', updateOfflineStatus);
 window.addEventListener('offline', updateOfflineStatus);
 updateOfflineStatus();
 
-// Add round indicators
+// Add round indicators for elliptical track
 function addRoundIndicators(centerX, centerY) {
     const roundIndicators = elements.roundIndicators;
     roundIndicators.innerHTML = '';
@@ -1155,7 +1052,7 @@ function addRoundIndicators(centerX, centerY) {
     const totalLaps = TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance;
     
     for (let lap = 1; lap <= Math.ceil(totalLaps); lap++) {
-        const lapProgress = 0.5; // Middle of back straight for lap completion
+        const lapProgress = 0.5; // Bottom of ellipse for lap completion
         const position = calculateTrackPosition(centerX, centerY, lapProgress);
         
         // Create round indicator
@@ -1305,7 +1202,7 @@ function animationLoop() {
     }
 }
 
-// Update runner position
+// Update runner position on elliptical track
 function updateRunnerPosition(lapProgress, distance) {
     const centerX = 400;
     const centerY = 300;
