@@ -1,0 +1,27 @@
+{
+    "name": "3K Pace Calculator",
+    "short_name": "3K Pace",
+    "description": "Professional 3K running pace calculator with lane-aware splits and advanced pacing strategies",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#fafafa",
+    "theme_color": "#dc2626",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiNkYzI2MjYiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Ik0xMy40OSA1LjQ5YzEuMzggLTEuMzggMy42MiAtMS4zOCA1IDBsMS4wNiAxLjA2YzEuMzggMS4zOCAxLjM4IDMuNjIgMCA1bC0xLjA2IDEuMDZjLTEuMzggMS4zOCAtMy42MiAxLjM4IC01IDBsLTEuMDYgLTEuMDZjLTEuMzggLTEuMzggLTEuMzggLTMuNjIgMCAtNXoiLz4KPHBhdGggZD0iTTEwLjUgMTQuNWwzIC0zIi8+CjxwYXRoIGQ9Ik0xNC41IDEwLjVsMyAtMyIvPgo8L3N2Zz4KPC9zdmc+",
+            "sizes": "192x192",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9IiNkYzI2MjYiLz4KPHN2ZyB4PSIxMjgiIHk9IjEyOCIgd2lkdGg9IjI1NiIgaGVpZ2h0PSIyNTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPgo8cGF0aCBkPSJNMTMuNDkgNS40OWMxLjM4IC0xLjM4IDMuNjIgLTEuMzggNSAwbDEuMDYgMS4wNmMxLjM4IDEuMzggMS4zOCAzLjYyIDAgNWwtMS4wNiAxLjA2Yy0xLjM4IDEuMzggLTMuNjIgMS4zOCAtNSAwbC0xLjA2IC0xLjA2Yy0xLjM4IC0xLjM4IC0xLjM4IC0zLjYyIDAgLTV6Ii8+CjxwYXRoIGQ9Ik0xMC41IDE0LjVsMyAtMyIvPgo8cGF0aCBkPSJNMTQuNSAxMC41bDMgLTMiLz4KPC9zdmc+Cjwvc3ZnPg==",
+            "sizes": "512x512",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["sports", "utilities", "productivity"],
+    "lang": "no",
+    "dir": "ltr"
+}
