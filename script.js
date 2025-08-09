@@ -9,38 +9,67 @@ let isProMode = false;
 let isNorwegian = true;
 let debounceTimer = null;
 
+// Animation state variables
+let animationState = {
+    isPlaying: false,
+    currentTime: 0,
+    totalTime: 0,
+    speed: 1, // 1x, 2x, 4x, 8x
+    currentDistance: 0,
+    currentLap: 0,
+    lapProgress: 0,
+    animationId: null,
+    startTime: 0,
+    lastUpdateTime: 0
+};
+
+// Animation speeds
+const ANIMATION_SPEEDS = [1, 2, 4, 8];
+const SPEED_LABELS = ['1x', '2x', '4x', '8x'];
+
 // DOM elements
 const elements = {
     goalTime: document.getElementById('goalTime'),
     laneSelect: document.getElementById('laneSelect'),
+    strategyButtons: document.querySelectorAll('.strategy-btn'),
+    progressiveSection: document.getElementById('progressiveSection'),
     startPace: document.getElementById('startPace'),
     endPace: document.getElementById('endPace'),
     curveType: document.getElementById('curveType'),
+    addSurgeBtn: document.getElementById('addSurgeBtn'),
+    surgeList: document.getElementById('surgeList'),
     calculateBtn: document.getElementById('calculateBtn'),
     printBtn: document.getElementById('printBtn'),
     shareBtn: document.getElementById('shareBtn'),
     languageToggle: document.getElementById('languageToggle'),
     proModeToggle: document.getElementById('proModeToggle'),
-    progressiveSection: document.getElementById('progressiveSection'),
-    addSurgeBtn: document.getElementById('addSurgeBtn'),
-    surgeList: document.getElementById('surgeList'),
-    surgeModal: document.getElementById('surgeModal'),
-    coachNotes: document.getElementById('coachNotes'),
-    trackSVG: document.getElementById('trackSVG'),
-    currentLap: document.getElementById('currentLap'),
-    currentDistance: document.getElementById('currentDistance'),
-    currentTime: document.getElementById('currentTime'),
-    targetTimeDisplay: document.getElementById('targetTimeDisplay'),
-    overallPace: document.getElementById('overallPace'),
-    avgSpeed: document.getElementById('avgSpeed'),
-    lapCount: document.getElementById('lapCount'),
-    splitsTable: document.getElementById('splitsTable'),
     toggleCharts: document.getElementById('toggleCharts'),
     chartsContainer: document.getElementById('chartsContainer'),
     paceChart: document.getElementById('paceChart'),
     deltaChart: document.getElementById('deltaChart'),
-    offlineToggle: document.getElementById('offlineToggle'),
-    offlineStatus: document.getElementById('offlineStatus'),
+    splitsTable: document.getElementById('splitsTable'),
+    tabButtons: document.querySelectorAll('.tab-btn'),
+    targetTimeDisplay: document.getElementById('targetTimeDisplay'),
+    overallPace: document.getElementById('overallPace'),
+    avgSpeed: document.getElementById('avgSpeed'),
+    lapCount: document.getElementById('lapCount'),
+    trackSVG: document.getElementById('trackSVG'),
+    trackGroup: document.getElementById('trackGroup'),
+    runnerGroup: document.getElementById('runnerGroup'),
+    runner: document.getElementById('runner'),
+    runnerTrail: document.getElementById('runnerTrail'),
+    roundIndicators: document.getElementById('roundIndicators'),
+    lapProgressBar: document.getElementById('lapProgressBar'),
+    lapProgressFill: document.getElementById('lapProgressFill'),
+    currentLap: document.getElementById('currentLap'),
+    currentDistance: document.getElementById('currentDistance'),
+    currentTime: document.getElementById('currentTime'),
+    progressPercent: document.getElementById('progressPercent'),
+    roundList: document.getElementById('roundList'),
+    playPauseBtn: document.getElementById('playPauseBtn'),
+    resetBtn: document.getElementById('resetBtn'),
+    speedBtn: document.getElementById('speedBtn'),
+    speedDisplay: document.getElementById('speedDisplay'),
     restoreSession: document.getElementById('restoreSession')
 };
 
@@ -80,6 +109,11 @@ function initializeApp() {
     setupServiceWorker();
     updateLanguageUI();
     updateProModeUI();
+    
+    // Initialize animation controls
+    elements.speedBtn.innerHTML = `<i class="fas fa-tachometer-alt"></i> ${SPEED_LABELS[0]}`;
+    elements.speedDisplay.textContent = `${SPEED_LABELS[0]}x Speed`;
+    resetAnimation();
 }
 
 // Setup event listeners
@@ -131,6 +165,11 @@ function setupEventListeners() {
         });
     });
 
+    // Animation controls
+    elements.playPauseBtn.addEventListener('click', toggleAnimation);
+    elements.resetBtn.addEventListener('click', resetAnimation);
+    elements.speedBtn.addEventListener('click', changeAnimationSpeed);
+
     // Action buttons
     elements.calculateBtn.addEventListener('click', calculatePace);
     elements.printBtn.addEventListener('click', printPaceBand);
@@ -145,6 +184,19 @@ function setupEventListeners() {
 
     // URL state management
     window.addEventListener('popstate', loadFromURL);
+}
+
+// Validate inputs
+function validateInputs() {
+    const timeStr = elements.goalTime.value;
+    const totalMs = parseTimeToMs(timeStr);
+    
+    if (!totalMs) {
+        alert(isNorwegian ? 'Vennligst skriv inn en gyldig tid i mm:ss format' : 'Please enter a valid time in mm:ss format');
+        return false;
+    }
+    
+    return true;
 }
 
 // Debounced calculation
@@ -237,16 +289,13 @@ function updateProgressiveSection() {
 
 // Draw SVG track
 function drawTrack() {
-    const svg = elements.trackSVG;
-    svg.innerHTML = '';
+    const trackGroup = elements.trackGroup;
+    trackGroup.innerHTML = '';
     
     const width = 800;
     const height = 600;
     const centerX = width / 2;
     const centerY = height / 2;
-    
-    // Track background
-    const trackGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     
     // Draw 8 lanes
     for (let lane = 1; lane <= 8; lane++) {
@@ -307,7 +356,11 @@ function drawTrack() {
     // Add finish line
     addFinishLine(trackGroup, centerX, centerY);
     
-    svg.appendChild(trackGroup);
+    // Add round indicators
+    addRoundIndicators(centerX, centerY);
+    
+    // Update round list
+    updateRoundList();
 }
 
 // Add distance markers
@@ -400,13 +453,12 @@ function calculateTrackPosition(centerX, centerY, lapProgress) {
 
 // Calculate pace based on strategy
 function calculatePace() {
-    const timeStr = elements.goalTime.value;
-    const totalMs = parseTimeToMs(timeStr);
-    
-    if (!totalMs) {
-        alert(isNorwegian ? 'Vennligst skriv inn en gyldig tid i mm:ss format' : 'Please enter a valid time in mm:ss format');
+    if (!validateInputs()) {
         return;
     }
+    
+    const timeStr = elements.goalTime.value;
+    const totalMs = parseTimeToMs(timeStr);
     
     const laneDistance = LANE_DISTANCES[currentLane];
     const totalLaps = TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance;
@@ -415,13 +467,17 @@ function calculatePace() {
     const basePacePerKm = totalMs / (TRACK_CONSTANTS.TOTAL_DISTANCE / 1000);
     
     // Generate pace data based on strategy
-    currentPaceData = generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm);
+    const paceData = generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm);
+    
+    // Reset animation state for new calculation
+    resetAnimation();
+    animationState.totalTime = totalMs;
     
     // Update UI
-    updateResults(currentPaceData);
-    updateSplitsTable(100);
-    updateCharts(currentPaceData);
-    updateTrackVisualization(currentPaceData);
+    updateResults(paceData);
+    updateSplitsTable(paceData);
+    updateCharts(paceData);
+    updateTrackVisualization(paceData);
     
     // Save to localStorage
     saveToLocalStorage();
@@ -565,16 +621,16 @@ function updateResults(data) {
 }
 
 // Update splits table
-function updateSplitsTable(distance) {
-    if (!currentPaceData) return;
+function updateSplitsTable(data) {
+    if (!data) return;
     
     const splits = [];
-    const totalDistance = currentPaceData.totalDistance;
-    const laneDistance = currentPaceData.laneDistance;
+    const totalDistance = data.totalDistance;
+    const laneDistance = data.laneDistance;
     
     // Generate splits for the specified distance
-    for (let d = distance; d <= totalDistance; d += distance) {
-        const segment = currentPaceData.segments.find(s => s.distance >= d);
+    for (let d = 100; d <= totalDistance; d += 100) {
+        const segment = data.segments.find(s => s.distance >= d);
         if (segment) {
             const lap = Math.ceil(d / laneDistance);
             const lapDistance = d % laneDistance;
@@ -628,11 +684,18 @@ function updateSplitsTable(distance) {
 
 // Update track visualization
 function updateTrackVisualization(data) {
-    // Update current position info
-    const currentSegment = data.segments[data.segments.length - 1];
-    elements.currentLap.textContent = currentSegment.lap.toFixed(1);
-    elements.currentDistance.textContent = `${currentSegment.distance}m`;
-    elements.currentTime.textContent = formatTimeFromMs(currentSegment.time);
+    if (!data) return;
+    
+    // Update lane distance display
+    const laneDistance = LANE_DISTANCES[currentLane];
+    elements.lapCount.textContent = (TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance).toFixed(1);
+    
+    // Redraw track with new lane selection
+    drawTrack();
+    
+    // Reset animation state
+    resetAnimation();
+    animationState.totalTime = data.totalTime;
 }
 
 // Update charts
@@ -1082,3 +1145,221 @@ function updateOfflineStatus() {
 window.addEventListener('online', updateOfflineStatus);
 window.addEventListener('offline', updateOfflineStatus);
 updateOfflineStatus();
+
+// Add round indicators
+function addRoundIndicators(centerX, centerY) {
+    const roundIndicators = elements.roundIndicators;
+    roundIndicators.innerHTML = '';
+    
+    const laneDistance = LANE_DISTANCES[currentLane];
+    const totalLaps = TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance;
+    
+    for (let lap = 1; lap <= Math.ceil(totalLaps); lap++) {
+        const lapProgress = 0.5; // Middle of back straight for lap completion
+        const position = calculateTrackPosition(centerX, centerY, lapProgress);
+        
+        // Create round indicator
+        const indicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        indicator.setAttribute('cx', position.x);
+        indicator.setAttribute('cy', position.y);
+        indicator.setAttribute('r', 6);
+        indicator.setAttribute('class', 'round-indicator');
+        indicator.setAttribute('data-lap', lap);
+        indicator.setAttribute('data-distance', lap * laneDistance);
+        
+        // Add lap number label
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', position.x + 15);
+        label.setAttribute('y', position.y + 5);
+        label.setAttribute('font-size', '12');
+        label.setAttribute('font-weight', '600');
+        label.setAttribute('fill', '#374151');
+        label.textContent = lap;
+        
+        roundIndicators.appendChild(indicator);
+        roundIndicators.appendChild(label);
+    }
+}
+
+// Update round list
+function updateRoundList() {
+    const roundList = elements.roundList;
+    roundList.innerHTML = '';
+    
+    const laneDistance = LANE_DISTANCES[currentLane];
+    const totalLaps = TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance;
+    
+    for (let lap = 1; lap <= Math.ceil(totalLaps); lap++) {
+        const roundItem = document.createElement('div');
+        roundItem.className = 'round-item pending';
+        roundItem.setAttribute('data-lap', lap);
+        
+        const distance = Math.min(lap * laneDistance, TRACK_CONSTANTS.TOTAL_DISTANCE);
+        const expectedTime = calculateExpectedTime(distance);
+        
+        roundItem.innerHTML = `
+            <span class="round-number">${lap}</span>
+            <span class="round-distance">${distance}m</span>
+            <span class="round-time">${formatTimeFromMs(expectedTime)}</span>
+        `;
+        
+        roundList.appendChild(roundItem);
+    }
+}
+
+// Calculate expected time for a given distance
+function calculateExpectedTime(distance) {
+    const timeStr = elements.goalTime.value;
+    const totalMs = parseTimeToMs(timeStr);
+    if (!totalMs) return 0;
+    
+    return (distance / TRACK_CONSTANTS.TOTAL_DISTANCE) * totalMs;
+}
+
+// Animation control functions
+function toggleAnimation() {
+    if (animationState.isPlaying) {
+        pauseAnimation();
+    } else {
+        startAnimation();
+    }
+}
+
+function startAnimation() {
+    if (!animationState.totalTime) {
+        const timeStr = elements.goalTime.value;
+        const totalMs = parseTimeToMs(timeStr);
+        if (!totalMs) return;
+        
+        animationState.totalTime = totalMs;
+        animationState.startTime = Date.now() - (animationState.currentTime * animationState.speed);
+    }
+    
+    animationState.isPlaying = true;
+    elements.playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+    elements.playPauseBtn.classList.add('active');
+    
+    animationLoop();
+}
+
+function pauseAnimation() {
+    animationState.isPlaying = false;
+    elements.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+    elements.playPauseBtn.classList.remove('active');
+    
+    if (animationState.animationId) {
+        cancelAnimationFrame(animationState.animationId);
+        animationState.animationId = null;
+    }
+}
+
+function resetAnimation() {
+    pauseAnimation();
+    animationState.currentTime = 0;
+    animationState.currentDistance = 0;
+    animationState.currentLap = 0;
+    animationState.lapProgress = 0;
+    
+    updateRunnerPosition(0, 0);
+    updateAnimationUI();
+    updateRoundIndicators();
+}
+
+function changeAnimationSpeed() {
+    const currentIndex = ANIMATION_SPEEDS.indexOf(animationState.speed);
+    const nextIndex = (currentIndex + 1) % ANIMATION_SPEEDS.length;
+    animationState.speed = ANIMATION_SPEEDS[nextIndex];
+    
+    elements.speedBtn.innerHTML = `<i class="fas fa-tachometer-alt"></i> ${SPEED_LABELS[nextIndex]}`;
+    elements.speedDisplay.textContent = `${SPEED_LABELS[nextIndex]}x Speed`;
+    
+    // Update start time to maintain current position
+    if (animationState.isPlaying) {
+        animationState.startTime = Date.now() - (animationState.currentTime * animationState.speed);
+    }
+}
+
+// Animation loop
+function animationLoop() {
+    if (!animationState.isPlaying) return;
+    
+    const now = Date.now();
+    const elapsed = (now - animationState.startTime) / 1000; // Convert to seconds
+    animationState.currentTime = Math.min(elapsed, animationState.totalTime / 1000);
+    
+    const progress = animationState.currentTime / (animationState.totalTime / 1000);
+    const distance = progress * TRACK_CONSTANTS.TOTAL_DISTANCE;
+    
+    animationState.currentDistance = distance;
+    animationState.currentLap = Math.floor(distance / LANE_DISTANCES[currentLane]) + 1;
+    animationState.lapProgress = (distance % LANE_DISTANCES[currentLane]) / LANE_DISTANCES[currentLane];
+    
+    updateRunnerPosition(animationState.lapProgress, distance);
+    updateAnimationUI();
+    updateRoundIndicators();
+    
+    if (progress < 1) {
+        animationState.animationId = requestAnimationFrame(animationLoop);
+    } else {
+        pauseAnimation();
+    }
+}
+
+// Update runner position
+function updateRunnerPosition(lapProgress, distance) {
+    const centerX = 400;
+    const centerY = 300;
+    const position = calculateTrackPosition(centerX, centerY, lapProgress);
+    
+    elements.runner.setAttribute('cx', position.x);
+    elements.runner.setAttribute('cy', position.y);
+    elements.runnerTrail.setAttribute('cx', position.x);
+    elements.runnerTrail.setAttribute('cy', position.y);
+    
+    // Update lap progress bar
+    const progressWidth = (distance / TRACK_CONSTANTS.TOTAL_DISTANCE) * 700;
+    elements.lapProgressFill.setAttribute('width', Math.max(0, progressWidth));
+}
+
+// Update animation UI
+function updateAnimationUI() {
+    elements.currentLap.textContent = animationState.currentLap;
+    elements.currentDistance.textContent = `${Math.round(animationState.currentDistance)}m`;
+    elements.currentTime.textContent = formatTimeFromMs(animationState.currentTime * 1000);
+    
+    const progressPercent = Math.round((animationState.currentDistance / TRACK_CONSTANTS.TOTAL_DISTANCE) * 100);
+    elements.progressPercent.textContent = `${progressPercent}%`;
+}
+
+// Update round indicators
+function updateRoundIndicators() {
+    const laneDistance = LANE_DISTANCES[currentLane];
+    const currentLap = animationState.currentLap;
+    const distance = animationState.currentDistance;
+    
+    // Update round list items
+    document.querySelectorAll('.round-item').forEach(item => {
+        const lap = parseInt(item.getAttribute('data-lap'));
+        item.classList.remove('current', 'completed', 'pending');
+        
+        if (lap < currentLap) {
+            item.classList.add('completed');
+        } else if (lap === currentLap) {
+            item.classList.add('current');
+        } else {
+            item.classList.add('pending');
+        }
+    });
+    
+    // Update round indicators on track
+    document.querySelectorAll('.round-indicator').forEach(indicator => {
+        const lap = parseInt(indicator.getAttribute('data-lap'));
+        indicator.classList.remove('active', 'completed');
+        
+        if (lap < currentLap) {
+            indicator.classList.add('completed');
+        } else if (lap === currentLap) {
+            indicator.classList.add('active');
+        }
+    });
+}

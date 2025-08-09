@@ -468,21 +468,93 @@ body {
     color: white;
 }
 
-/* Track Section */
+/* Track Visualization */
 .track-container {
     position: relative;
     background: var(--track-red-light);
     border-radius: 0.5rem;
     overflow: hidden;
     border: 2px solid var(--track-red);
+    min-height: 600px;
+}
+
+/* Stadium Backdrop */
+.stadium-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.stadium-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%) brightness(0.8);
+}
+
+.stadium-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(123, 182, 97, 0.1) 100%);
 }
 
 .track-svg {
     width: 100%;
-    height: 400px;
+    height: 600px;
     display: block;
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.9);
 }
 
+/* Runner Animation Styles */
+#runnerGroup {
+    pointer-events: none;
+}
+
+#runner {
+    transition: all 0.3s ease;
+}
+
+#runnerTrail {
+    transition: all 0.3s ease;
+}
+
+/* Round Indicators */
+.round-indicator {
+    fill: var(--primary-red);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.round-indicator.active {
+    opacity: 1;
+    filter: url(#glow);
+}
+
+.round-indicator.completed {
+    fill: var(--success-green);
+    opacity: 0.6;
+}
+
+/* Lap Progress Bar */
+#lapProgressBar {
+    transition: all 0.3s ease;
+}
+
+#lapProgressFill {
+    transition: width 0.5s ease;
+}
+
+/* Enhanced Track Overlay */
 .track-overlay {
     position: absolute;
     top: 1rem;
@@ -491,6 +563,10 @@ body {
     padding: 1rem;
     border-radius: 0.5rem;
     box-shadow: var(--shadow-md);
+    z-index: 10;
+    display: flex;
+    gap: 1.5rem;
+    max-width: 300px;
 }
 
 .track-info {
@@ -502,18 +578,143 @@ body {
 .info-item {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
-    font-size: 0.875rem;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .info-label {
-    color: var(--neutral-600);
+    font-size: 0.75rem;
+    color: var(--neutral-500);
     font-weight: 500;
 }
 
 .info-value {
-    color: var(--neutral-900);
+    font-size: 0.875rem;
     font-weight: 600;
+    color: var(--neutral-900);
+}
+
+/* Round Display */
+.round-display {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.round-title {
+    font-size: 0.75rem;
+    color: var(--neutral-500);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.round-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.round-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.round-item.current {
+    background: var(--primary-red);
+    color: white;
+    font-weight: 600;
+}
+
+.round-item.completed {
+    background: var(--success-green);
+    color: white;
+    opacity: 0.8;
+}
+
+.round-item.pending {
+    background: var(--neutral-100);
+    color: var(--neutral-600);
+}
+
+.round-number {
+    font-weight: 600;
+    min-width: 1.5rem;
+}
+
+.round-distance {
+    flex: 1;
+}
+
+.round-time {
+    font-family: monospace;
+    font-weight: 500;
+}
+
+/* Animation Controls */
+.animation-controls {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    z-index: 10;
+}
+
+.anim-btn {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--primary-red);
+    border-radius: 50%;
+    background: white;
+    color: var(--primary-red);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.anim-btn:hover {
+    background: var(--primary-red);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: var(--shadow-md);
+}
+
+.anim-btn.active {
+    background: var(--primary-red);
+    color: white;
+}
+
+.anim-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Animation Speed Indicator */
+.speed-indicator {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--neutral-700);
+    box-shadow: var(--shadow-sm);
+    z-index: 10;
 }
 
 /* Charts Section */
@@ -832,5 +1033,30 @@ textarea:focus {
         --primary-red: #000;
         --neutral-200: #000;
         --neutral-600: #000;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .track-overlay {
+        flex-direction: column;
+        gap: 1rem;
+        max-width: 250px;
+    }
+    
+    .animation-controls {
+        bottom: 0.5rem;
+    }
+    
+    .anim-btn {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .speed-indicator {
+        bottom: 0.5rem;
+        right: 0.5rem;
+        font-size: 0.7rem;
+        padding: 0.4rem 0.6rem;
     }
 }

@@ -201,9 +201,50 @@
                     <div class="track-card">
                         <h3>Track Visualization</h3>
                         <div class="track-container">
+                            <!-- Stadium Backdrop -->
+                            <div class="stadium-backdrop">
+                                <img src="stadium.svg" alt="Stadium" class="stadium-image">
+                                <div class="stadium-overlay"></div>
+                            </div>
+                            
+                            <!-- Track SVG with Runner -->
                             <svg id="trackSVG" class="track-svg" viewBox="0 0 800 600">
+                                <!-- Stadium backdrop will be positioned behind -->
+                                <defs>
+                                    <filter id="glow">
+                                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                        <feMerge> 
+                                            <feMergeNode in="coloredBlur"/>
+                                            <feMergeNode in="SourceGraphic"/>
+                                        </feMerge>
+                                    </filter>
+                                    <filter id="shadow">
+                                        <feDropShadow dx="2" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.3)"/>
+                                    </filter>
+                                </defs>
+                                
                                 <!-- Track will be drawn here -->
+                                <g id="trackGroup"></g>
+                                
+                                <!-- Runner Animation -->
+                                <g id="runnerGroup">
+                                    <circle id="runner" cx="400" cy="300" r="8" fill="#dc2626" filter="url(#glow)">
+                                        <animate id="runnerAnimation" attributeName="opacity" values="1;0.7;1" dur="1s" repeatCount="indefinite"/>
+                                    </circle>
+                                    <circle id="runnerTrail" cx="400" cy="300" r="4" fill="#fecaca" opacity="0.6">
+                                        <animate attributeName="opacity" values="0.6;0.2;0.6" dur="0.8s" repeatCount="indefinite"/>
+                                    </circle>
+                                </g>
+                                
+                                <!-- Round Indicators -->
+                                <g id="roundIndicators"></g>
+                                
+                                <!-- Lap Progress Bar -->
+                                <rect id="lapProgressBar" x="50" y="550" width="700" height="8" rx="4" fill="#e5e5e5" opacity="0.3"/>
+                                <rect id="lapProgressFill" x="50" y="550" width="0" height="8" rx="4" fill="#dc2626"/>
                             </svg>
+                            
+                            <!-- Enhanced Track Overlay -->
                             <div class="track-overlay">
                                 <div class="track-info">
                                     <div class="info-item">
@@ -218,7 +259,37 @@
                                         <span class="info-label">Time:</span>
                                         <span id="currentTime" class="info-value">--:--</span>
                                     </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Progress:</span>
+                                        <span id="progressPercent" class="info-value">0%</span>
+                                    </div>
                                 </div>
+                                
+                                <!-- Round Display -->
+                                <div class="round-display">
+                                    <div class="round-title">Rounds</div>
+                                    <div id="roundList" class="round-list">
+                                        <!-- Rounds will be generated here -->
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Animation Controls -->
+                            <div class="animation-controls">
+                                <button id="playPauseBtn" class="anim-btn" title="Play/Pause Animation">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button id="resetBtn" class="anim-btn" title="Reset Animation">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button id="speedBtn" class="anim-btn" title="Change Speed">
+                                    <i class="fas fa-tachometer-alt"></i> 1x
+                                </button>
+                            </div>
+                            
+                            <!-- Speed Indicator -->
+                            <div class="speed-indicator">
+                                <span id="speedDisplay">1x Speed</span>
                             </div>
                         </div>
                     </div>
