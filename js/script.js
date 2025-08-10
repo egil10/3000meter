@@ -160,8 +160,8 @@ const elements = {
     paceChart: document.getElementById('paceChart'),
     deltaChart: document.getElementById('deltaChart'),
     splitsTable: document.getElementById('splitsTable'),
-    tabButtons: document.querySelectorAll('.tab-btn'),
     targetTimeDisplay: document.getElementById('targetTimeDisplay'),
+    largeTargetTimeDisplay: document.getElementById('largeTargetTimeDisplay'),
     overallPace: document.getElementById('overallPace'),
     avgSpeed: document.getElementById('avgSpeed'),
     lapCount: document.getElementById('lapCount'),
@@ -169,10 +169,15 @@ const elements = {
     roundIndicators: document.getElementById('round-indicators'),
     lapProgressFill: document.getElementById('lapProgressFill'),
     currentLap: document.getElementById('currentLap'),
+    currentLapDisplay: document.getElementById('currentLapDisplay'),
     currentDistance: document.getElementById('currentDistance'),
+    currentDistanceDisplay: document.getElementById('currentDistanceDisplay'),
     currentTime: document.getElementById('currentTime'),
+    currentTimeDisplay: document.getElementById('currentTimeDisplay'),
     progressPercent: document.getElementById('progressPercent'),
+    progressPercentDisplay: document.getElementById('progressPercentDisplay'),
     roundList: document.getElementById('roundList'),
+    clockSplitsText: document.getElementById('clockSplitsText'),
     playPauseBtn: document.getElementById('playPauseBtn'),
     resetBtn: document.getElementById('resetBtn'),
     speedSlider: document.getElementById('speedSlider'),
@@ -260,14 +265,7 @@ function setupEventListeners() {
     elements.languageToggle.addEventListener('click', toggleLanguage);
     elements.toggleCharts.addEventListener('click', toggleCharts);
     
-    // Tab buttons
-    elements.tabButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            elements.tabButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            updateSplitsTable(currentPaceData);
-        });
-    });
+    // Tab buttons (removed - now showing all splits in one table)
     
     // Animation controls
     elements.playPauseBtn.addEventListener('click', toggleAnimation);
@@ -589,6 +587,7 @@ function calculateExpectedTime(distance) {
 // Update functions
 function updateResults(data) {
     elements.targetTimeDisplay.textContent = formatTimeFromMs(data.totalTime);
+    elements.largeTargetTimeDisplay.textContent = formatTimeFromMs(data.totalTime);
     elements.overallPace.textContent = formatTime(data.basePacePerKm);
     elements.avgSpeed.textContent = `${(3.6 / data.basePacePerKm).toFixed(1)} km/h`;
     elements.lapCount.textContent = data.totalLaps.toFixed(1);
@@ -598,38 +597,52 @@ function updateResults(data) {
 }
 
 function updateSplitsTable(data) {
-    const activeTab = document.querySelector('.tab-btn.active');
-    const splitDistance = parseInt(activeTab.dataset.distance);
-    const splitData = data.splits.find(s => s.distance === splitDistance);
-    
-    if (!splitData) return;
-    
+    // Create a compact table with columns for Lap, 100m, 200m, 400m, 1000m
     let html = `
         <table>
             <thead>
                 <tr>
-                    <th>Distance</th>
-                    <th>Time</th>
-                    <th>Pace</th>
-                    <th>Zone</th>
+                    <th>Lap</th>
+                    <th>100m</th>
+                    <th>200m</th>
+                    <th>400m</th>
+                    <th>1000m</th>
                 </tr>
             </thead>
             <tbody>
     `;
     
-    splitData.splits.forEach(split => {
-        const paceZone = calculatePaceZone(split.pace, data.basePacePerKm);
-        const isCurrent = Math.abs(split.distance - animationState.currentDistance) < splitDistance / 2;
+    // Get all split data
+    const split100 = data.splits.find(s => s.distance === 100);
+    const split200 = data.splits.find(s => s.distance === 200);
+    const split400 = data.splits.find(s => s.distance === 400);
+    const split1000 = data.splits.find(s => s.distance === 1000);
+    
+    // Create rows for each lap (up to 9 laps)
+    for (let lap = 1; lap <= 9; lap++) {
+        const lapDistance = lap * data.laneDistance;
+        const currentDistance = animationState.currentDistance;
+        
+        // Determine if this row is current
+        const isCurrent = Math.abs(lapDistance - currentDistance) < data.laneDistance / 2;
         const rowClass = isCurrent ? 'current' : '';
+        
+        // Get times for each split at this lap distance
+        const time100 = split100?.splits.find(s => s.distance === lapDistance)?.expectedTime;
+        const time200 = split200?.splits.find(s => s.distance === lapDistance)?.expectedTime;
+        const time400 = split400?.splits.find(s => s.distance === lapDistance)?.expectedTime;
+        const time1000 = split1000?.splits.find(s => s.distance === lapDistance)?.expectedTime;
+        
         html += `
             <tr class="${rowClass}">
-                <td>${split.distance}m</td>
-                <td>${formatTimeFromMs(split.expectedTime)}</td>
-                <td>${formatTime(split.pace)}</td>
-                <td><span class="pace-zone ${paceZone}">${paceZone}</span></td>
+                <td>${lap}</td>
+                <td>${time100 ? formatTimeFromMs(time100) : '-'}</td>
+                <td>${time200 ? formatTimeFromMs(time200) : '-'}</td>
+                <td>${time400 ? formatTimeFromMs(time400) : '-'}</td>
+                <td>${time1000 ? formatTimeFromMs(time1000) : '-'}</td>
             </tr>
         `;
-    });
+    }
     
     html += '</tbody></table>';
     elements.splitsTable.innerHTML = html;
@@ -840,6 +853,11 @@ function debouncedCalculate() {
     debounceTimer = setTimeout(() => {
         calculatePace();
         updateURL();
+        // Reset animation when analysis changes
+        if (animationState.isPlaying) {
+            pauseAnimation();
+        }
+        resetAnimation();
     }, 300);
 }
 
@@ -939,29 +957,20 @@ function updateRunnerPosition(lapProgress, distance) {
 
 function updateAnimationUI() {
     elements.currentLap.textContent = animationState.currentLap;
+    elements.currentLapDisplay.textContent = animationState.currentLap;
     elements.currentDistance.textContent = `${Math.round(animationState.currentDistance)}m`;
+    elements.currentDistanceDisplay.textContent = `${Math.round(animationState.currentDistance)}m`;
     elements.currentTime.textContent = formatTimeFromMs(animationState.currentTime * 1000);
+    elements.currentTimeDisplay.textContent = formatTimeFromMs(animationState.currentTime * 1000);
     
     const progressPercent = Math.round((animationState.currentDistance / TRACK_CONSTANTS.TOTAL_DISTANCE) * 100);
     elements.progressPercent.textContent = `${progressPercent}%`;
+    elements.progressPercentDisplay.textContent = `${progressPercent}%`;
 }
 
 function updateRoundIndicators() {
     const currentLap = animationState.currentLap;
-    
-    // Update round list items
-    document.querySelectorAll('.round-item').forEach(item => {
-        const lap = parseInt(item.getAttribute('data-lap'));
-        item.classList.remove('current', 'completed', 'pending');
-        
-        if (lap < currentLap) {
-            item.classList.add('completed');
-        } else if (lap === currentLap) {
-            item.classList.add('current');
-        } else {
-            item.classList.add('pending');
-        }
-    });
+    const currentDistance = animationState.currentDistance;
     
     // Update round indicators on track
     document.querySelectorAll('.round-indicator').forEach(indicator => {
@@ -974,27 +983,58 @@ function updateRoundIndicators() {
             indicator.classList.add('active');
         }
     });
+    
+    // Update clock splits text
+    updateClockSplitsText();
 }
 
 function updateRoundList() {
+    updateClockSplitsText();
+}
+
+function updateClockSplitsText() {
     const laneDistance = LANE_DISTANCES[currentLane];
-    const totalLaps = Math.ceil(TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance);
+    const currentDistance = animationState.currentDistance;
     
-    let html = '';
-    for(let lap = 1; lap <= totalLaps; lap++) {
+    // Create text-formatted table with only 200m, 400m, and 1000m cumulative times
+    let text = 'Lap    200m    400m   1000m\n';
+    text += '─────────────────────────────\n';
+    
+    // Create rows for each lap (1, 2, 3, 4, 5, 6, 7, 7.5)
+    const lapNumbers = [1, 2, 3, 4, 5, 6, 7, 7.5];
+    
+    lapNumbers.forEach(lap => {
         const distance = lap * laneDistance;
-        const expectedTime = calculateExpectedTime(distance);
         
-        html += `
-            <div class="round-item" data-lap="${lap}">
-                <span class="round-number">${lap}</span>
-                <span class="round-distance">${distance}m</span>
-                <span class="round-time">${formatTimeFromMs(expectedTime)}</span>
-            </div>
-        `;
-    }
+        // Determine if this row is current
+        const isCurrent = Math.abs(distance - currentDistance) < laneDistance / 2;
+        let rowClass = '';
+        if (isCurrent) {
+            rowClass = 'current-row';
+        } else if (distance <= currentDistance) {
+            rowClass = 'completed-row';
+        } else {
+            rowClass = 'pending-row';
+        }
+        
+        // Calculate cumulative times for each split
+        const time200 = calculateExpectedTime(200);
+        const time400 = calculateExpectedTime(400);
+        const time1000 = calculateExpectedTime(1000);
+        
+        // For laps beyond the split distances, show the lap time instead
+        const lapTime = calculateExpectedTime(distance);
+        
+        // Format the row with proper spacing
+        const lapStr = lap.toString().padStart(3);
+        const time200Str = distance >= 200 ? formatTimeFromMs(time200) : '   -   ';
+        const time400Str = distance >= 400 ? formatTimeFromMs(time400) : '   -   ';
+        const time1000Str = distance >= 1000 ? formatTimeFromMs(time1000) : formatTimeFromMs(lapTime);
+        
+        text += `<span class="${rowClass}">${lapStr}   ${time200Str}   ${time400Str}   ${time1000Str}</span>\n`;
+    });
     
-    elements.roundList.innerHTML = html;
+    elements.clockSplitsText.innerHTML = text;
 }
 
 function calculatePaceZone(segmentPace, basePace) {
@@ -1130,17 +1170,27 @@ function generateCSV() {
         return null;
     }
     
-    const activeTab = document.querySelector('.tab-btn.active');
-    const splitDistance = parseInt(activeTab.dataset.distance);
-    const splitData = currentPaceData.splits.find(s => s.distance === splitDistance);
+    // Generate CSV for the new compact table format
+    let csv = 'Lap,100m,200m,400m,1000m\n';
     
-    if (!splitData) return null;
+    // Get all split data
+    const split100 = currentPaceData.splits.find(s => s.distance === 100);
+    const split200 = currentPaceData.splits.find(s => s.distance === 200);
+    const split400 = currentPaceData.splits.find(s => s.distance === 400);
+    const split1000 = currentPaceData.splits.find(s => s.distance === 1000);
     
-    let csv = 'Distance,Time,Pace,Zone\n';
-    splitData.splits.forEach(split => {
-        const paceZone = calculatePaceZone(split.pace, currentPaceData.basePacePerKm);
-        csv += `${split.distance}m,${formatTimeFromMs(split.expectedTime)},${formatTime(split.pace)},${paceZone}\n`;
-    });
+    // Create rows for each lap (up to 9 laps)
+    for (let lap = 1; lap <= 9; lap++) {
+        const lapDistance = lap * currentPaceData.laneDistance;
+        
+        // Get times for each split at this lap distance
+        const time100 = split100?.splits.find(s => s.distance === lapDistance)?.expectedTime;
+        const time200 = split200?.splits.find(s => s.distance === lapDistance)?.expectedTime;
+        const time400 = split400?.splits.find(s => s.distance === lapDistance)?.expectedTime;
+        const time1000 = split1000?.splits.find(s => s.distance === lapDistance)?.expectedTime;
+        
+        csv += `${lap},${time100 ? formatTimeFromMs(time100) : ''},${time200 ? formatTimeFromMs(time200) : ''},${time400 ? formatTimeFromMs(time400) : ''},${time1000 ? formatTimeFromMs(time1000) : ''}\n`;
+    }
     
     return csv;
 }
