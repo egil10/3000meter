@@ -11,7 +11,7 @@ let debounceTimer = null;
 // Translations
 const translations = {
     en: {
-        title: "3000m Track Runner",
+        title: "3k Run Tracker",
         race_setup: "Race Setup",
         target_time: "Target Time (mm:ss)",
         lane: "Lane",
@@ -51,11 +51,11 @@ const translations = {
         surge_pace: "Pace Adjustment (s/km)",
         cancel: "Cancel",
         save: "Save",
-        footer_text: "3000m Track Runner - Professional pace calculator for track athletes",
+        footer_text: "3k Run Tracker - Professional pace calculator for track athletes",
     
     },
     no: {
-        title: "3000m Bane Løper",
+        title: "3k Løp Sporer",
         race_setup: "Løps Oppsett",
         target_time: "Måltid (mm:ss)",
         lane: "Bane",
@@ -95,7 +95,7 @@ const translations = {
         surge_pace: "Tempo Justering (s/km)",
         cancel: "Avbryt",
         save: "Lagre",
-        footer_text: "3000m Bane Løper - Profesjonell tempo kalkulator for baneløpere"
+        footer_text: "3k Løp Sporer - Profesjonell tempo kalkulator for baneløpere"
     }
 };
 
@@ -167,13 +167,9 @@ const elements = {
     runnerDot: document.getElementById('runner-dot'),
     roundIndicators: document.getElementById('round-indicators'),
     lapProgressFill: document.getElementById('lapProgressFill'),
-    currentLap: document.getElementById('currentLap'),
     currentLapDisplay: document.getElementById('currentLapDisplay'),
-    currentDistance: document.getElementById('currentDistance'),
     currentDistanceDisplay: document.getElementById('currentDistanceDisplay'),
-    currentTime: document.getElementById('currentTime'),
     currentTimeDisplay: document.getElementById('currentTimeDisplay'),
-    progressPercent: document.getElementById('progressPercent'),
     progressPercentDisplay: document.getElementById('progressPercentDisplay'),
     roundList: document.getElementById('roundList'),
     clockSplitsText: document.getElementById('clockSplitsText'),
@@ -531,6 +527,15 @@ function generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm) {
 }
 
 function calculateExpectedTime(distance) {
+    if (!currentPaceData) {
+        // If no pace data is available, calculate from goal time
+        const goalTimeMs = parseTimeToMs(elements.goalTime.value);
+        const laneDistance = LANE_DISTANCES[currentLane];
+        const totalLaps = TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance;
+        const basePacePerKm = (goalTimeMs / 1000) / (TRACK_CONSTANTS.TOTAL_DISTANCE / 1000);
+        return (distance / 1000) * basePacePerKm * 1000;
+    }
+    
     // Apply pacing strategy
     let paceMultiplier = 1.0;
     
@@ -573,7 +578,7 @@ function calculateExpectedTime(distance) {
             break;
     }
     
-    const basePacePerKm = currentPaceData ? currentPaceData.basePacePerKm : 180; // 3:00/km default
+    const basePacePerKm = currentPaceData.basePacePerKm;
     return (distance / 1000) * basePacePerKm * paceMultiplier * 1000;
 }
 
@@ -588,7 +593,7 @@ function updateResults(data) {
     elements.lapCount.textContent = data.totalLaps.toFixed(1);
     
     // Update page title
-    document.title = `3000m – ${elements.goalTime.value}`;
+    document.title = `3k Run Tracker – ${elements.goalTime.value}`;
 }
 
 
@@ -901,15 +906,11 @@ function updateRunnerPosition(lapProgress, distance) {
 }
 
 function updateAnimationUI() {
-    elements.currentLap.textContent = animationState.currentLap;
     elements.currentLapDisplay.textContent = animationState.currentLap;
-    elements.currentDistance.textContent = `${Math.round(animationState.currentDistance)}m`;
     elements.currentDistanceDisplay.textContent = `${Math.round(animationState.currentDistance)}m`;
-    elements.currentTime.textContent = formatTimeFromMs(animationState.currentTime * 1000);
     elements.currentTimeDisplay.textContent = formatTimeFromMs(animationState.currentTime * 1000);
     
     const progressPercent = Math.round((animationState.currentDistance / TRACK_CONSTANTS.TOTAL_DISTANCE) * 100);
-    elements.progressPercent.textContent = `${progressPercent}%`;
     elements.progressPercentDisplay.textContent = `${progressPercent}%`;
 }
 
@@ -963,18 +964,20 @@ function updateClockSplitsText() {
         }
         
         // Calculate cumulative times for each split
-        const time200 = calculateExpectedTime(200);
-        const time400 = calculateExpectedTime(400);
-        const time1000 = calculateExpectedTime(1000);
+        // For 200m split: show time at 200m if we've reached it, otherwise show lap time
+        const time200 = distance >= 200 ? calculateExpectedTime(200) : calculateExpectedTime(distance);
         
-        // For laps beyond the split distances, show the lap time instead
-        const lapTime = calculateExpectedTime(distance);
+        // For 400m split: show time at 400m if we've reached it, otherwise show lap time
+        const time400 = distance >= 400 ? calculateExpectedTime(400) : calculateExpectedTime(distance);
+        
+        // For 1000m split: show time at 1000m if we've reached it, otherwise show lap time
+        const time1000 = distance >= 1000 ? calculateExpectedTime(1000) : calculateExpectedTime(distance);
         
         // Format the row with proper spacing
         const lapStr = lap.toString().padStart(3);
-        const time200Str = distance >= 200 ? formatTimeFromMs(time200) : '   -   ';
-        const time400Str = distance >= 400 ? formatTimeFromMs(time400) : '   -   ';
-        const time1000Str = distance >= 1000 ? formatTimeFromMs(time1000) : formatTimeFromMs(lapTime);
+        const time200Str = formatTimeFromMs(time200);
+        const time400Str = formatTimeFromMs(time400);
+        const time1000Str = formatTimeFromMs(time1000);
         
         text += `<span class="${rowClass}">${lapStr}   ${time200Str}   ${time400Str}   ${time1000Str}</span>\n`;
     });

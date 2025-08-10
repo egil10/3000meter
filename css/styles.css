@@ -176,7 +176,7 @@ body {
 .main-content {
     flex: 1;
     display: grid;
-    grid-template-columns: 0.4fr 1.6fr;
+    grid-template-columns: 0.3fr 1.7fr;
     gap: 2rem;
     max-width: none;
     margin: 0 auto;
