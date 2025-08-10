@@ -53,8 +53,7 @@ const elements = {
     overallPace: document.getElementById('overallPace'),
     avgSpeed: document.getElementById('avgSpeed'),
     lapCount: document.getElementById('lapCount'),
-    trackSVG: document.getElementById('trackSVG'),
-    trackGroup: document.getElementById('trackGroup'),
+    overlaySVG: document.getElementById('overlaySVG'),
     runnerGroup: document.getElementById('runnerGroup'),
     runner: document.getElementById('runner'),
     runnerTrail: document.getElementById('runnerTrail'),
@@ -300,54 +299,32 @@ function drawTrack() {
 // Finish line is now handled by the field SVG visualization
 
 // Calculate position on elliptical track based on field SVG coordinates
-function calculateTrackPosition(centerX, centerY, lapProgress, scale = 1) {
-    // Field SVG dimensions: 682x442
-    // Container dimensions: 800x600
-    // Target ellipse: width 560, height 336, left 110, top 82
-    // Position runner between lanes (e.g., between lane 1 and lane 2)
-
+function calculateTrackPosition(centerX, centerY, lapProgress) {
     const fieldWidth = 682;
     const fieldHeight = 442;
     const containerWidth = 800;
     const containerHeight = 600;
-
-    // Calculate scaling to fit the field SVG in the container
-    const scaleX = containerWidth / fieldWidth; // ~1.173
-    const scaleY = containerHeight / fieldHeight; // ~1.357
-    const scaleFactor = Math.min(scaleX, scaleY); // ~1.173
-
-    // Calculate the actual displayed size of the field SVG
+    const scaleX = containerWidth / fieldWidth;
+    const scaleY = containerHeight / fieldHeight;
+    const scaleFactor = Math.min(scaleX, scaleY);
     const displayedWidth = fieldWidth * scaleFactor;
     const displayedHeight = fieldHeight * scaleFactor;
-
-    // Calculate centering offsets
-    const offsetX = (containerWidth - displayedWidth) / 2; // ~59
-    const offsetY = (containerHeight - displayedHeight) / 2; // ~79
-
-    // Target ellipse coordinates in field SVG
+    const offsetX = (containerWidth - displayedWidth) / 2;
+    const offsetY = (containerHeight - displayedHeight) / 2;
     const ellipseLeft = 110;
     const ellipseTop = 82;
     const ellipseWidth = 560;
     const ellipseHeight = 336;
-
-    // Scale ellipse coordinates to match the displayed field
     const scaledCenterX = (ellipseLeft + ellipseWidth / 2) * scaleFactor + offsetX;
     const scaledCenterY = (ellipseTop + ellipseHeight / 2) * scaleFactor + offsetY;
     let scaledWidth = ellipseWidth * scaleFactor;
     let scaledHeight = ellipseHeight * scaleFactor;
-
-    // Adjust for lane position (position runner between lanes)
-    const laneOffset = (currentLane - 0.5) * 4 * scaleFactor; // Position between lanes
+    const laneOffset = (currentLane - 0.5) * 4 * scaleFactor; // Between lanes
     scaledWidth += laneOffset * 2;
     scaledHeight += laneOffset * 2;
-
-    // Calculate angle for runner position (start at top, move clockwise)
-    const angle = (lapProgress * 2 * Math.PI) - (Math.PI / 2);
-
-    // Calculate position on ellipse
+    const angle = (lapProgress * 2 * Math.PI) - (Math.PI / 2); // Start at top, clockwise
     const x = scaledCenterX + (scaledWidth / 2) * Math.cos(angle);
     const y = scaledCenterY + (scaledHeight / 2) * Math.sin(angle);
-
     return { x, y };
 }
 
