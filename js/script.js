@@ -199,6 +199,9 @@ document.addEventListener('DOMContentLoaded', function() {
         timeHelper: document.getElementById('timeHelper'),
         paceHelper: document.getElementById('paceHelper'),
         cumulativeTimesList: document.getElementById('cumulativeTimesList'),
+        cumulativeTimes200m: document.getElementById('cumulativeTimes200m'),
+        cumulativeTimes400m: document.getElementById('cumulativeTimes400m'),
+        cumulativeTimes1000m: document.getElementById('cumulativeTimes1000m'),
         toast: document.getElementById('toast')
     };
     
@@ -705,8 +708,6 @@ function updateTrackVisualization(data) {
 }
 
 function updateCharts(data) {
-    if (elements.chartsContainer.style.display === 'none') return;
-    
     updatePaceChart(data);
     updateDeltaChart(data);
 }
@@ -1182,16 +1183,17 @@ function updateRoundList() {
 }
 
 function updateCumulativeTimes(data) {
-    if (!elements.cumulativeTimesList || !data) return;
+    if (!data) return;
     
-    const container = elements.cumulativeTimesList;
-    container.innerHTML = '';
-    
-    // Get cumulative times for 200m, 400m, and 1000m intervals
-    const intervals = [200, 400, 1000];
     const currentDistance = animationState.currentDistance;
     
-    intervals.forEach(interval => {
+    // Function to populate a specific interval table
+    function populateIntervalTable(containerId, interval) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
         for (let distance = interval; distance <= TRACK_CONSTANTS.TOTAL_DISTANCE; distance += interval) {
             const expectedTime = calculateExpectedTime(distance, data.basePacePerKm);
             const timeFormatted = formatTimeFromMsSimple(expectedTime);
@@ -1213,7 +1215,12 @@ function updateCumulativeTimes(data) {
             
             container.appendChild(row);
         }
-    });
+    }
+    
+    // Populate all three tables
+    populateIntervalTable('cumulativeTimes200m', 200);
+    populateIntervalTable('cumulativeTimes400m', 400);
+    populateIntervalTable('cumulativeTimes1000m', 1000);
 }
 
 
