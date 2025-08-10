@@ -158,20 +158,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize DOM elements
     elements = {
         goalTime: document.getElementById('goalTime'),
-        laneSelect: document.getElementById('laneSelect'),
         strategyButtons: document.querySelectorAll('.strategy-btn'),
         calculateBtn: document.getElementById('calculateBtn'),
         largeTargetTimeDisplay: document.getElementById('largeTargetTimeDisplay'),
-        overallPace: document.getElementById('overallPace'),
-        avgSpeed: document.getElementById('avgSpeed'),
-        lapCount: document.getElementById('lapCount'),
         toggleCharts: document.getElementById('toggleCharts'),
         chartsContainer: document.getElementById('chartsContainer'),
         paceChart: document.getElementById('paceChart'),
         deltaChart: document.getElementById('deltaChart'),
         runnerDot: document.getElementById('runner-dot'),
         roundIndicators: document.getElementById('round-indicators'),
-        roundList: document.getElementById('roundList'),
         playPauseBtn: document.getElementById('playPauseBtn'),
         resetBtn: document.getElementById('resetBtn'),
         speedSlider: document.getElementById('speedSlider'),
@@ -228,7 +223,6 @@ function initializeApp() {
     drawTrack();
     drawMarkers();
     addRoundIndicators();
-    updateRoundList();
     // Ensure animation state is initialized
     console.log('Calling calculatePace from initializeApp');
     calculatePace();
@@ -239,7 +233,6 @@ function setupEventListeners() {
     // Input event listeners
     elements.goalTime.addEventListener('input', validateTimeInput);
     elements.goalTime.addEventListener('blur', debouncedCalculate);
-    elements.laneSelect.addEventListener('change', debouncedCalculate);
     
     // Strategy buttons
     elements.strategyButtons.forEach(btn => {
@@ -476,6 +469,8 @@ function addRoundIndicators() {
         indicator.setAttribute('class', 'round-indicator');
         indicator.setAttribute('data-lap', lap);
         indicator.setAttribute('data-distance', distance);
+        indicator.setAttribute('fill', 'transparent');
+        indicator.setAttribute('stroke', 'transparent');
         roundIndicatorsG.appendChild(indicator);
     }
 }
@@ -622,9 +617,7 @@ function calculateExpectedTime(distance) {
 // Update functions
 function updateResults(data) {
     elements.largeTargetTimeDisplay.textContent = `00:00.00 / ${formatTimeFromMs(data.totalTime)}`;
-    if (elements.overallPace) elements.overallPace.textContent = formatTime(data.basePacePerKm);
-    if (elements.avgSpeed) elements.avgSpeed.textContent = `${(3.6 / data.basePacePerKm).toFixed(1)} km/h`;
-    if (elements.lapCount) elements.lapCount.textContent = data.totalLaps.toFixed(1);
+    // Removed references to non-existent elements
     
     // Update page title
     document.title = `3k Run Tracker – ${elements.goalTime.value}`;
@@ -790,8 +783,8 @@ function updateSpeedFromSlider() {
 }
 
 function updateSpeedFromInput() {
-    const newSpeed = parseFloat(elements.speedInput.value);
-    if (newSpeed >= 0 && newSpeed <= 10) {
+    const newSpeed = parseInt(elements.speedInput.value);
+    if (newSpeed >= 1 && newSpeed <= 10) {
         updateAnimationSpeed(newSpeed);
         elements.speedSlider.value = newSpeed;
     }
@@ -988,8 +981,8 @@ function calculateCurrentPace() {
 }
 
 function adjustSpeed(delta) {
-    const currentSpeed = parseFloat(elements.speedInput.value);
-    const newSpeed = Math.max(0, Math.min(10, currentSpeed + delta * 0.5));
+    const currentSpeed = parseInt(elements.speedInput.value);
+    const newSpeed = Math.max(1, Math.min(10, currentSpeed + delta));
     updateAnimationSpeed(newSpeed);
 }
 
@@ -1156,7 +1149,6 @@ function loadFromURL() {
     if (time) elements.goalTime.value = time;
     if (lane) {
         currentLane = parseInt(lane);
-        elements.laneSelect.value = lane;
     }
     if (strategy) {
         currentStrategy = strategy;
