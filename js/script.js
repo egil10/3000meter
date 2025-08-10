@@ -1,10 +1,7 @@
 // Global variables and state management
 let currentPaceData = null;
-let paceChart = null;
-let deltaChart = null;
 let currentLane = 1;
 let currentStrategy = 'even';
-let surges = [];
 let isNorwegian = false;
 let debounceTimer = null;
 
@@ -39,20 +36,11 @@ const translations = {
         avg_speed: "Avg Speed",
         laps: "Laps",
         splits: "Splits",
-        analytics: "ANALYTICS",
-        show_charts: "Show Charts",
-        copy_csv: "Copy CSV",
-        download_csv: "Download CSV",
         lap: "Lap",
         distance: "Distance",
         time: "Time",
         progress: "Progress",
         rounds: "Rounds",
-        surge_start: "Start Distance (m)",
-        surge_end: "End Distance (m)",
-        surge_pace: "Pace Adjustment (s/km)",
-        cancel: "Cancel",
-        save: "Save",
         footer_text: "3k Run Tracker - Professional pace calculator for track athletes",
     
     },
@@ -85,19 +73,11 @@ const translations = {
         avg_speed: "Gjennomsnitt Fart",
         laps: "Runder",
         splits: "Deltider",
-        analytics: "ANALYSE",
-        show_charts: "Vis Grafer",
-        copy_csv: "Kopier CSV",
-        download_csv: "Last ned CSV",
         lap: "Runde",
         distance: "Distanse",
         time: "Tid",
         progress: "Framgang",
         rounds: "Runder",
-        surge_start: "Start Distanse (m)",
-        surge_end: "Slutt Distanse (m)",
-        surge_pace: "Tempo Justering (s/km)",
-        cancel: "Avbryt",
         save: "Lagre",
         footer_text: "3k Løp Sporer - Profesjonell tempo kalkulator for baneløpere"
     }
@@ -166,10 +146,6 @@ document.addEventListener('DOMContentLoaded', function() {
         strategyButtons: document.querySelectorAll('.strategy-btn'),
         calculateBtn: document.getElementById('calculateBtn'),
         largeTargetTimeDisplay: document.getElementById('largeTargetTimeDisplay'),
-        toggleCharts: document.getElementById('toggleCharts'),
-        chartsContainer: document.getElementById('chartsContainer'),
-        paceChart: document.getElementById('paceChart'),
-        deltaChart: document.getElementById('deltaChart'),
         runnerDot: document.getElementById('runner-dot'),
         roundIndicators: document.getElementById('round-indicators'),
         playPauseBtn: document.getElementById('playPauseBtn'),
@@ -184,21 +160,8 @@ document.addEventListener('DOMContentLoaded', function() {
         progressPercentDisplay: document.getElementById('progressPercentDisplay'),
         lapProgressFill: document.getElementById('lapProgressFill'),
         languageToggle: document.getElementById('languageToggle'),
-        addSurgeBtn: document.getElementById('addSurgeBtn'),
-        surgeList: document.getElementById('surgeList'),
-        surgeModal: document.getElementById('surgeModal'),
-        surgeStart: document.getElementById('surgeStart'),
-        surgeEnd: document.getElementById('surgeEnd'),
-        surgePace: document.getElementById('surgePace'),
-        saveSurge: document.getElementById('saveSurge'),
-        cancelSurge: document.getElementById('cancelSurge'),
-        progressiveSection: document.getElementById('progressiveSection'),
-        startPace: document.getElementById('startPace'),
-        endPace: document.getElementById('endPace'),
-        curveType: document.getElementById('curveType'),
         timeHelper: document.getElementById('timeHelper'),
         paceHelper: document.getElementById('paceHelper'),
-        cumulativeTimesList: document.getElementById('cumulativeTimesList'),
         cumulativeTimes200m: document.getElementById('cumulativeTimes200m'),
         cumulativeTimes400m: document.getElementById('cumulativeTimes400m'),
         cumulativeTimes1000m: document.getElementById('cumulativeTimes1000m'),
@@ -260,35 +223,15 @@ function setupEventListeners() {
             elements.strategyButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentStrategy = btn.dataset.strategy;
-            updateProgressiveSection();
             debouncedCalculate();
         });
     });
     
-    // Progressive inputs
-    elements.startPace.addEventListener('input', debouncedCalculate);
-    elements.endPace.addEventListener('input', debouncedCalculate);
-    elements.curveType.addEventListener('change', debouncedCalculate);
+
     
-    // Time adjustment buttons
-    document.querySelectorAll('.time-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const adjust = parseInt(btn.dataset.adjust);
-            // Check if the button is in the target pace section
-            const isPaceButton = btn.closest('.input-group') && 
-                                btn.closest('.input-group').querySelector('#targetPace');
-            if (isPaceButton) {
-                adjustPace(adjust);
-            } else {
-                adjustTime(adjust);
-            }
-        });
-    });
+
     
-    // Surge management
-    elements.addSurgeBtn.addEventListener('click', showSurgeModal);
-    document.getElementById('saveSurge').addEventListener('click', saveSurge);
-    document.getElementById('cancelSurge').addEventListener('click', hideSurgeModal);
+
     
     // Action buttons
     elements.calculateBtn.addEventListener('click', handleCalculateButtonClick);
@@ -530,7 +473,6 @@ function calculatePace() {
     
     updateResults(data);
     updateTrackVisualization(data);
-    updateCharts(data);
     updateAnimationState(data);
     
     console.log('Animation state after update:', animationState);
@@ -643,11 +585,13 @@ function calculateExpectedTime(distance, basePacePerKmParam = null) {
         case 'neg5p':
             // Negative split: start 5% slower, end 5% faster
             const progress4 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            // Linear interpolation from 1.05 (start) to 0.95 (end)
             paceMultiplier = 1.05 - (progress4 * 0.10);
             break;
         case 'pos5p':
             // Positive split: start 5% faster, end 5% slower
             const progress5 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            // Linear interpolation from 0.95 (start) to 1.05 (end)
             paceMultiplier = 0.95 + (progress5 * 0.10);
             break;
         case 'kick600':
@@ -668,6 +612,38 @@ function calculateExpectedTime(distance, basePacePerKmParam = null) {
                 paceMultiplier = startPace + (endPace - startPace) * progress6;
             }
             break;
+    }
+    
+    // For percentage-based strategies, we need to adjust the base pace to ensure the total time equals the target time
+    if (currentStrategy === 'neg5p' || currentStrategy === 'pos5p') {
+        const goalTimeMs = parseTimeToMs(elements.goalTime.value);
+        const targetTime = goalTimeMs / 1000; // Convert to seconds
+        
+        // Calculate what the total time would be with the current base pace and varying multipliers
+        let totalTimeWithVaryingPace = 0;
+        const stepDistance = 100; // Calculate in 100m increments for accuracy
+        const totalSteps = Math.ceil(TRACK_CONSTANTS.TOTAL_DISTANCE / stepDistance);
+        
+        for (let i = 0; i < totalSteps; i++) {
+            const stepDist = Math.min((i + 1) * stepDistance, TRACK_CONSTANTS.TOTAL_DISTANCE);
+            const stepProgress = stepDist / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            
+            let stepPaceMultiplier;
+            if (currentStrategy === 'neg5p') {
+                // Linear interpolation from 1.05 (start) to 0.95 (end)
+                stepPaceMultiplier = 1.05 - (stepProgress * 0.10);
+            } else { // pos5p
+                // Linear interpolation from 0.95 (start) to 1.05 (end)
+                stepPaceMultiplier = 0.95 + (stepProgress * 0.10);
+            }
+            
+            const stepTime = (stepDistance / 1000) * basePacePerKm * stepPaceMultiplier;
+            totalTimeWithVaryingPace += stepTime;
+        }
+        
+        // Adjust the base pace to make the total time equal the target time
+        const adjustmentFactor = targetTime / totalTimeWithVaryingPace;
+        basePacePerKm *= adjustmentFactor;
     }
     
     // For even pacing, ensure exact calculation to avoid precision issues
@@ -707,126 +683,7 @@ function updateTrackVisualization(data) {
     updateRoundIndicators();
 }
 
-function updateCharts(data) {
-    updatePaceChart(data);
-    updateDeltaChart(data);
-}
 
-function updatePaceChart(data) {
-    if (paceChart) {
-        paceChart.destroy();
-    }
-    
-    const ctx = elements.paceChart.getContext('2d');
-    const labels = data.segments.map(s => `Lap ${s.lap}`);
-    const paces = data.segments.map(s => s.pace);
-    
-    // Convert pace values to mm:ss format for display
-    const formatPace = (pace) => {
-        const minutes = Math.floor(pace / 60);
-        const seconds = Math.floor(pace % 60);
-        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    };
-    
-    paceChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Pace (mm:ss/km)',
-                data: paces,
-                borderColor: '#dc2626',
-                backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    reverse: true,
-                    ticks: {
-                        callback: function(value) {
-                            return formatPace(value);
-                        },
-                        stepSize: 60 // 60 seconds = 1 minute, ensures no duplicate ticks
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `Pace: ${formatPace(context.parsed.y)}/km`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-function updateDeltaChart(data) {
-    if (deltaChart) {
-        deltaChart.destroy();
-    }
-    
-    const ctx = elements.deltaChart.getContext('2d');
-    const labels = data.segments.map(s => `Lap ${s.lap}`);
-    const deltas = data.segments.map(s => {
-        const expected = s.segmentTime;
-        // For even pacing, each lap should take the same time
-        const target = data.totalTime / data.totalLaps;
-        const delta = ((expected - target) / 1000);
-        // Round to 1 decimal place to avoid floating point precision issues
-        return Math.round(delta * 10) / 10;
-    });
-    
-    // Calculate dynamic Y-axis range based on data
-    const maxDelta = Math.max(...deltas.map(Math.abs));
-    const yMin = Math.max(-10, -Math.ceil(maxDelta * 1.2)); // At least -10, but can go lower if needed
-    const yMax = Math.max(10, Math.ceil(maxDelta * 1.2));   // At least 10, but can go higher if needed
-    
-    deltaChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Time Delta (s) - Shows how much faster/slower each lap is compared to the target even pace',
-                data: deltas,
-                backgroundColor: deltas.map(d => d > 0 ? '#ef4444' : '#10b981'),
-                borderColor: deltas.map(d => d > 0 ? '#dc2626' : '#059669'),
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    min: yMin,
-                    max: yMax,
-                    ticks: {
-                        stepSize: Math.max(1, Math.ceil((yMax - yMin) / 10)) // Dynamic step size
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const value = context.parsed.y;
-                            const sign = value > 0 ? '+' : '';
-                            return `Delta: ${sign}${value}s (${value > 0 ? 'slower' : 'faster'} than target)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
 
 function updateAnimationState(data) {
     console.log('updateAnimationState called with data:', data);
@@ -1096,13 +953,7 @@ function formatTimeSimple(seconds) {
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-function updateProgressiveSection() {
-    if (currentStrategy === 'custom') {
-        elements.progressiveSection.style.display = 'block';
-    } else {
-        elements.progressiveSection.style.display = 'none';
-    }
-}
+
 
 function updateRunnerPosition(lapProgress, distance) {
     const position = calculateTrackPosition(lapProgress);
@@ -1235,95 +1086,7 @@ function calculatePaceZone(segmentPace, basePace) {
 // UI functions
 
 
-function showSurgeModal() {
-    document.getElementById('surgeModal').style.display = 'flex';
-}
 
-function hideSurgeModal() {
-    document.getElementById('surgeModal').style.display = 'none';
-    // Clear form
-    document.getElementById('surgeStart').value = '';
-    document.getElementById('surgeEnd').value = '';
-    document.getElementById('surgePace').value = '';
-}
-
-function saveSurge() {
-    const start = parseInt(document.getElementById('surgeStart').value);
-    const end = parseInt(document.getElementById('surgeEnd').value);
-    const paceAdjustment = parseFloat(document.getElementById('surgePace').value);
-    
-    if (isNaN(start) || isNaN(end) || isNaN(paceAdjustment)) {
-        showToast(isNorwegian ? 'Vennligst fyll ut alle felter med gyldige tall' : 'Please fill in all fields with valid numbers');
-        return;
-    }
-    
-    if (start >= end) {
-        showToast(isNorwegian ? 'Slutt distanse må være større enn start distanse' : 'End distance must be greater than start distance');
-        return;
-    }
-    
-    // Check for overlaps
-    for (let surge of surges) {
-        if ((start >= surge.start && start < surge.end) || (end > surge.start && end <= surge.end)) {
-            showToast(isNorwegian ? 'Sprint overlapper med eksisterende sprint' : 'Surge overlaps with existing surge');
-            return;
-        }
-    }
-    
-    const editingIndex = document.getElementById('surgeModal').getAttribute('data-editing');
-    
-    if (editingIndex !== null) {
-        // Update existing surge
-        surges[parseInt(editingIndex)] = { start, end, paceAdjustment };
-        document.getElementById('surgeModal').removeAttribute('data-editing');
-        showToast(isNorwegian ? 'Sprint oppdatert' : 'Surge updated');
-    } else {
-        // Add new surge
-        surges.push({ start, end, paceAdjustment });
-        showToast(isNorwegian ? 'Sprint lagt til' : 'Surge added');
-    }
-    
-    updateSurgeList();
-    hideSurgeModal();
-    debouncedCalculate();
-}
-
-function updateSurgeList() {
-    let html = '';
-    surges.forEach((surge, index) => {
-        html += `
-            <div class="surge-item" onclick="editSurge(${index})">
-                <div class="surge-info">
-                    <div>${surge.start}m - ${surge.end}m</div>
-                    <div>${surge.paceAdjustment > 0 ? '+' : ''}${surge.paceAdjustment}s/km</div>
-                </div>
-                <div class="surge-actions">
-                    <button class="delete-surge" onclick="event.stopPropagation(); deleteSurge(${index})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-    elements.surgeList.innerHTML = html;
-}
-
-function editSurge(index) {
-    const surge = surges[index];
-    document.getElementById('surgeStart').value = surge.start;
-    document.getElementById('surgeEnd').value = surge.end;
-    document.getElementById('surgePace').value = surge.paceAdjustment;
-    
-    // Store the index being edited
-    document.getElementById('surgeModal').setAttribute('data-editing', index);
-    showSurgeModal();
-}
-
-function deleteSurge(index) {
-    surges.splice(index, 1);
-    updateSurgeList();
-    debouncedCalculate();
-}
 
 
 
@@ -1359,7 +1122,6 @@ function loadFromURL() {
         elements.strategyButtons.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.strategy === strategy);
         });
-        updateProgressiveSection();
     }
     
     calculatePace();
@@ -1436,7 +1198,6 @@ function saveToLocalStorage() {
         goalTime: elements.goalTime.value,
         lane: currentLane,
         strategy: currentStrategy,
-        surges: surges,
         isNorwegian: isNorwegian
     };
     localStorage.setItem('3000mRunner', JSON.stringify(data));
@@ -1459,5 +1220,4 @@ function setupServiceWorker() {
 
 
 // Global functions
-window.deleteSurge = deleteSurge;
-window.editSurge = editSurge;
+

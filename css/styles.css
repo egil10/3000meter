@@ -166,10 +166,10 @@ body {
     padding: 1rem 2rem 3rem 2rem;
 }
 
-/* Bottom Section - Contains Race Setup, Analytics, and Cumulative Times */
+/* Bottom Section - Contains Race Setup and Cumulative Times */
 .bottom-section {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
     margin-top: 1rem;
     margin-bottom: 8rem;
@@ -178,19 +178,13 @@ body {
 
 /* Race Setup Section */
 .race-setup-section {
-    background: var(--neutral-50);
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--neutral-200);
-}
-
-/* Analytics Panel */
-.analytics-panel {
+    background: white;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    height: fit-content;
-    min-height: 400px;
-    width: 100%;
 }
 
 /* Cumulative Times Panel */
@@ -198,8 +192,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    height: fit-content;
-    min-height: 400px;
+    height: 100%;
     width: 100%;
 }
 
@@ -209,6 +202,9 @@ body {
     border-radius: 0.75rem;
     padding: 1rem;
     box-shadow: var(--shadow-sm);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .cumulative-times-card h3 {
@@ -223,11 +219,21 @@ body {
 }
 
 .cumulative-times-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    flex: 1;
+}
+
+.cumulative-times-left {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    height: auto;
-    max-height: none;
+}
+
+.cumulative-times-right {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .cumulative-times-table {
@@ -242,12 +248,12 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
-    padding: 0.375rem 0.5rem;
+    padding: 0.25rem 0.5rem;
     background: var(--neutral-200);
     border-bottom: 1px solid var(--neutral-300);
     font-weight: 600;
     color: var(--neutral-700);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -255,18 +261,18 @@ body {
 .table-body {
     display: flex;
     flex-direction: column;
-    max-height: 80px;
-    overflow-y: auto;
+    max-height: none;
+    overflow-y: visible;
 }
 
 .cumulative-time-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
-    padding: 0.25rem 0.5rem;
+    padding: 0.125rem 0.5rem;
     border-bottom: 1px solid var(--neutral-100);
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     transition: background-color 0.2s ease;
 }
 
@@ -308,23 +314,9 @@ body {
     padding: 1rem;
 }
 
-/* Race Setup Section */
-.race-setup-section {
-    background: var(--neutral-50);
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--neutral-200);
-}
 
-.race-setup-container {
-    max-width: none;
-    margin: 0 auto;
-    padding: 0 2rem;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid var(--neutral-200);
-    border-radius: 0.75rem;
-    padding: 0.75rem;
-    box-shadow: var(--shadow-sm);
-}
+
+
 
 .race-setup-section h3 {
     font-size: 1.25rem;
@@ -364,10 +356,7 @@ body {
     gap: 0.75rem;
 }
 
-.race-setup-section .surge-list {
-    max-height: 150px;
-    overflow-y: auto;
-}
+
 
 .race-setup-section .action-buttons {
     margin-top: 0.5rem;
@@ -537,7 +526,7 @@ body {
 }
 
 /* Cards */
-.input-card, .results-card, .charts-card {
+.input-card, .results-card {
     background: white;
     border-radius: 1rem;
     padding: 1.5rem;
@@ -545,7 +534,7 @@ body {
     border: 1px solid var(--neutral-200);
 }
 
-.input-card h2, .results-card h3, .charts-card h3 {
+.input-card h2, .results-card h3 {
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--neutral-800);
@@ -604,39 +593,38 @@ body {
     color: var(--success-green);
 }
 
-/* Time Input with Controls */
-.time-input-wrapper {
-    position: relative;
-    display: flex;
-    gap: 0.5rem;
-}
-
-.time-input-wrapper input {
-    flex: 1;
-}
-
-.time-controls {
+.adjustment-buttons {
     display: flex;
     gap: 0.25rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
 }
 
-.time-btn {
-    padding: 0.5rem 0.75rem;
+.adjust-btn {
+    background: var(--neutral-100);
     border: 1px solid var(--neutral-300);
     border-radius: 0.25rem;
-    background: white;
-    color: var(--neutral-600);
-    cursor: pointer;
+    padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
+    color: var(--neutral-700);
+    cursor: pointer;
     transition: all 0.2s ease;
+    font-family: var(--font-mono);
 }
 
-.time-btn:hover {
-    background: var(--primary-red);
-    color: white;
-    border-color: var(--primary-red);
+.adjust-btn:hover {
+    background: var(--neutral-200);
+    border-color: var(--neutral-400);
+    color: var(--neutral-800);
 }
+
+.adjust-btn:active {
+    background: var(--neutral-300);
+    transform: translateY(1px);
+}
+
+
 
 /* Strategy Buttons */
 .strategy-buttons {
@@ -671,97 +659,16 @@ body {
     border-color: var(--primary-red);
 }
 
-/* Progressive Inputs */
-.progressive-inputs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
 
-.curve-select {
-    grid-column: 1 / -1;
-}
 
-/* Surge Controls */
-.surge-controls {
-    margin-top: 1rem;
-}
 
-.surge-btn {
-    width: 100%;
-    padding: 0.75rem;
-    border: 2px dashed var(--neutral-300);
-    border-radius: 0.5rem;
-    background: var(--neutral-50);
-    color: var(--neutral-600);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.875rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
 
-.surge-btn:hover {
-    border-color: var(--primary-red);
-    color: var(--primary-red);
-    background: var(--primary-red-light);
-}
 
-/* Surge List */
-.surge-list {
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.surge-item {
-    padding: 0.75rem;
-    border: 1px solid var(--neutral-200);
-    border-radius: 0.5rem;
-    background: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: all 0.2s ease;
-}
-
-.surge-item:hover {
-    border-color: var(--primary-red);
-    box-shadow: var(--shadow-sm);
-}
-
-.surge-item .surge-info {
-    font-size: 0.875rem;
-    color: var(--neutral-700);
-}
-
-.surge-item .surge-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.surge-item .delete-surge {
-    padding: 0.25rem 0.5rem;
-    border: 1px solid var(--error-red);
-    border-radius: 0.25rem;
-    background: white;
-    color: var(--error-red);
-    cursor: pointer;
-    font-size: 0.75rem;
-    transition: all 0.2s ease;
-}
-
-.surge-item .delete-surge:hover {
-    background: var(--error-red);
-    color: white;
-}
 
 /* Action Buttons */
 .action-buttons {
-    margin-top: 2rem;
+    margin-top: auto;
+    padding-top: 2rem;
     display: flex;
     gap: 1rem;
 }
@@ -834,43 +741,7 @@ body {
     font-family: var(--font-mono);
 }
 
-/* Charts Section */
-.chart-controls {
-    margin-bottom: 1rem;
-}
 
-.chart-btn {
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--neutral-200);
-    border-radius: 0.5rem;
-    background: white;
-    color: var(--neutral-600);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.875rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.chart-btn:hover {
-    background: var(--neutral-50);
-    border-color: var(--neutral-300);
-}
-
-.charts-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.chart-wrapper {
-    background: white;
-    border: 1px solid var(--neutral-200);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    height: 200px;
-}
 
 /* Speed Controls with +/- buttons */
 .speed-controls {
@@ -1021,95 +892,7 @@ body {
     pointer-events: auto;
 }
 
-/* Modal */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
 
-.modal-content {
-    background: white;
-    border-radius: 1rem;
-    padding: 2rem;
-    max-width: 500px;
-    width: 90%;
-    box-shadow: var(--shadow-xl);
-}
-
-.modal-content h3 {
-    margin-bottom: 1.5rem;
-    color: var(--neutral-800);
-}
-
-.surge-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.form-group label {
-    font-weight: 500;
-    color: var(--neutral-700);
-    font-size: 0.875rem;
-}
-
-.form-group input {
-    padding: 0.75rem;
-    border: 2px solid var(--neutral-200);
-    border-radius: 0.5rem;
-    font-size: 1rem;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-}
-
-.btn-primary, .btn-secondary {
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-primary {
-    background: var(--primary-red);
-    color: white;
-    border: none;
-}
-
-.btn-primary:hover {
-    background: var(--primary-red-dark);
-}
-
-.btn-secondary {
-    background: white;
-    color: var(--neutral-600);
-    border: 1px solid var(--neutral-300);
-}
-
-.btn-secondary:hover {
-    background: var(--neutral-50);
-    border-color: var(--neutral-400);
-}
 
 /* Footer */
 .footer {
@@ -1233,6 +1016,15 @@ body {
     .cumulative-times-panel {
         grid-column: 1 / -1;
     }
+    
+    .cumulative-times-container {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .cumulative-times-right {
+        gap: 0.5rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1272,9 +1064,7 @@ body {
         padding: 0.5rem 0;
     }
     
-    .race-setup-container {
-        padding: 0.75rem;
-    }
+
     
     .race-setup-section .strategy-buttons {
         grid-template-columns: repeat(2, 1fr);
@@ -1283,6 +1073,15 @@ body {
     .race-setup-section .strategy-btn {
         font-size: 0.6rem;
         padding: 0.25rem 0.15rem;
+    }
+
+    .adjustment-buttons {
+        gap: 0.125rem;
+    }
+
+    .adjust-btn {
+        padding: 0.125rem 0.25rem;
+        font-size: 0.625rem;
     }
     
     .animation-controls {
@@ -1327,7 +1126,7 @@ body {
         font-size: 1.25rem;
     }
     
-    .input-card, .results-card, .charts-card {
+    .input-card, .results-card {
         padding: 1rem;
     }
     
@@ -1342,7 +1141,7 @@ body {
 
 /* Print Styles */
 @media print {
-    .header, .footer, .action-buttons, .chart-controls, .animation-controls, .speed-controls, .setup-btn, .lap-progress-container {
+    .header, .footer, .action-buttons, .animation-controls, .speed-controls, .setup-btn, .lap-progress-container {
         display: none;
     }
     
@@ -1356,7 +1155,7 @@ body {
         page-break-after: always;
     }
     
-    .input-card, .results-card, .charts-card {
+    .input-card, .results-card {
         box-shadow: none;
         border: 1px solid var(--neutral-300);
     }

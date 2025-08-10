@@ -151,121 +151,58 @@
       </div>
     </section>
 
-    <!-- Bottom Section - Contains Race Setup and Analytics -->
+    <!-- Bottom Section - Contains Race Setup and Cumulative Times -->
     <section class="bottom-section">
       <!-- Race Setup Section -->
       <div class="race-setup-section">
-        <div class="race-setup-container">
-          <h3 data-i18n="race_setup">Race Setup</h3>
+        <h3 data-i18n="race_setup">Race Setup</h3>
 
-          <div class="input-group">
-            <label for="goalTime" data-i18n="target_time">Target Time (mm:ss)</label>
-            <div class="time-input-wrapper">
-              <input type="text" id="goalTime" value="15:00" placeholder="15:00" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
-              <div class="time-controls">
-                <button class="time-btn" data-adjust="-10" title="-10s" aria-label="Subtract 10 seconds">-10</button>
-                <button class="time-btn" data-adjust="-5" title="-5s" aria-label="Subtract 5 seconds">-5</button>
-                <button class="time-btn" data-adjust="5" title="+5s" aria-label="Add 5 seconds">+5</button>
-                <button class="time-btn" data-adjust="10" title="+10s" aria-label="Add 10 seconds">+10</button>
-              </div>
-            </div>
-            <div class="input-helper" id="timeHelper"></div>
+        <div class="input-group">
+          <label for="goalTime" data-i18n="target_time">Target Time (mm:ss)</label>
+          <input type="text" id="goalTime" value="15:00" placeholder="15:00" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
+          <div class="input-helper" id="timeHelper"></div>
+          <div class="adjustment-buttons">
+            <button type="button" class="adjust-btn" onclick="adjustTime(-10)">-10s</button>
+            <button type="button" class="adjust-btn" onclick="adjustTime(-5)">-5s</button>
+            <button type="button" class="adjust-btn" onclick="adjustTime(5)">+5s</button>
+            <button type="button" class="adjust-btn" onclick="adjustTime(10)">+10s</button>
           </div>
+        </div>
 
-          <div class="input-group">
-            <label for="targetPace" data-i18n="target_pace">Target Pace (mm:ss/km)</label>
-            <div class="time-input-wrapper">
-              <input type="text" id="targetPace" value="05:00" placeholder="05:00" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
-              <div class="time-controls">
-                <button class="time-btn" data-adjust="-5" title="-5s" aria-label="Subtract 5 seconds">-5</button>
-                <button class="time-btn" data-adjust="-1" title="-1s" aria-label="Subtract 1 second">-1</button>
-                <button class="time-btn" data-adjust="1" title="+1s" aria-label="Add 1 second">+1</button>
-                <button class="time-btn" data-adjust="5" title="+5s" aria-label="Add 5 seconds">+5</button>
-              </div>
-            </div>
-            <div class="input-helper" id="paceHelper"></div>
+        <div class="input-group">
+          <label for="targetPace" data-i18n="target_pace">Target Pace (mm:ss/km)</label>
+          <input type="text" id="targetPace" value="05:00" placeholder="05:00" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
+          <div class="input-helper" id="paceHelper"></div>
+          <div class="adjustment-buttons">
+            <button type="button" class="adjust-btn" onclick="adjustPace(-5)">-5s</button>
+            <button type="button" class="adjust-btn" onclick="adjustPace(-1)">-1s</button>
+            <button type="button" class="adjust-btn" onclick="adjustPace(1)">+1s</button>
+            <button type="button" class="adjust-btn" onclick="adjustPace(5)">+5s</button>
           </div>
+        </div>
 
-          <div class="input-group">
-            <label data-i18n="pacing_strategy">Pacing Strategy</label>
-            <div class="strategy-buttons">
-              <button class="strategy-btn active" data-strategy="even">
-                <i class="fas fa-equals"></i> <span data-i18n="even">Even</span>
-              </button>
-              <button class="strategy-btn" data-strategy="neg2">
-                <i class="fas fa-arrow-down"></i> <span data-i18n="neg2">-2s/400m</span>
-              </button>
-              <button class="strategy-btn" data-strategy="neg1">
-                <i class="fas fa-arrow-down"></i> <span data-i18n="neg1">-1s/400m</span>
-              </button>
-              <button class="strategy-btn" data-strategy="pos1">
-                <i class="fas fa-arrow-up"></i> <span data-i18n="pos1">+1s/400m</span>
-              </button>
-              <button class="strategy-btn" data-strategy="neg5p">
-                <i class="fas fa-arrow-down"></i> <span data-i18n="neg5p">-5%</span>
-              </button>
-              <button class="strategy-btn" data-strategy="pos5p">
-                <i class="fas fa-arrow-up"></i> <span data-i18n="pos5p">+5%</span>
-              </button>
-              <button class="strategy-btn" data-strategy="kick600">
-                <i class="fas fa-bolt"></i> <span data-i18n="kick600">Kick 600m</span>
-              </button>
-              <button class="strategy-btn" data-strategy="custom">
-                <i class="fas fa-sliders-h"></i> <span data-i18n="custom">Custom</span>
-              </button>
-            </div>
-          </div>
-
-          <div id="progressiveSection" class="input-group" style="display: none;">
-            <div class="progressive-inputs">
-              <div>
-                <label for="startPace" data-i18n="start_pace">Start Pace (mm:ss/km)</label>
-                <input type="text" id="startPace" value="03:10" placeholder="03:10">
-              </div>
-              <div>
-                <label for="endPace" data-i18n="end_pace">End Pace (mm:ss/km)</label>
-                <input type="text" id="endPace" value="03:00" placeholder="03:00">
-              </div>
-              <div class="curve-select">
-                <label for="curveType" data-i18n="progression_type">Progression Type</label>
-                <select id="curveType">
-                  <option value="linear" data-i18n="linear">Linear</option>
-                  <option value="exponential" data-i18n="exponential">Exponential</option>
-                  <option value="sigmoidal" data-i18n="sigmoidal">Sigmoidal</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="input-group">
-            <label data-i18n="surge_designer">Surge Designer</label>
-            <button id="addSurgeBtn" class="surge-btn">
-              <i class="fas fa-plus"></i> <span data-i18n="add_surge">Add Surge</span>
+        <div class="input-group">
+          <label data-i18n="pacing_strategy">Pacing Strategy</label>
+          <div class="strategy-buttons">
+            <button class="strategy-btn active" data-strategy="even">
+              <i class="fas fa-equals"></i> <span data-i18n="even">Even</span>
             </button>
-            <div id="surgeList" class="surge-list"></div>
-          </div>
-
-          <div class="action-buttons">
-            <button id="calculateBtn" class="calculate-btn">
-              <i class="fas fa-calculator"></i> <span data-i18n="calculate">Calculate</span>
+            <button class="strategy-btn" data-strategy="neg5p">
+              <i class="fas fa-arrow-down"></i> <span data-i18n="neg5p">-5%</span>
+            </button>
+            <button class="strategy-btn" data-strategy="pos5p">
+              <i class="fas fa-arrow-up"></i> <span data-i18n="pos5p">+5%</span>
+            </button>
+            <button class="strategy-btn" data-strategy="kick600">
+              <i class="fas fa-bolt"></i> <span data-i18n="kick600">Kick 600m</span>
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- Analytics Panel -->
-      <div class="analytics-panel">
-        <!-- Charts Card -->
-        <div class="charts-card">
-          <h3 data-i18n="analytics">Analytics</h3>
-          <div id="chartsContainer" class="charts-container">
-            <div class="chart-wrapper">
-              <canvas id="paceChart"></canvas>
-            </div>
-            <div class="chart-wrapper">
-              <canvas id="deltaChart"></canvas>
-            </div>
-          </div>
+        <div class="action-buttons">
+          <button id="calculateBtn" class="calculate-btn">
+            <i class="fas fa-calculator"></i> <span data-i18n="calculate">Calculate</span>
+          </button>
         </div>
       </div>
 
@@ -274,36 +211,41 @@
         <div class="cumulative-times-card">
           <h3>Cumulative Times</h3>
           <div id="cumulativeTimesContainer" class="cumulative-times-container">
-            <!-- 200m intervals table -->
-            <div class="cumulative-times-table">
-              <div class="table-header">
-                <span>200m Intervals</span>
-                <span>Time</span>
-              </div>
-              <div id="cumulativeTimes200m" class="table-body">
-                <!-- 200m cumulative times will be populated here -->
-              </div>
-            </div>
-            
-            <!-- 400m intervals table -->
-            <div class="cumulative-times-table">
-              <div class="table-header">
-                <span>400m Intervals</span>
-                <span>Time</span>
-              </div>
-              <div id="cumulativeTimes400m" class="table-body">
-                <!-- 400m cumulative times will be populated here -->
+            <!-- Left side: 200m intervals table -->
+            <div class="cumulative-times-left">
+              <div class="cumulative-times-table">
+                <div class="table-header">
+                  <span>200m Intervals</span>
+                  <span>Time</span>
+                </div>
+                <div id="cumulativeTimes200m" class="table-body">
+                  <!-- 200m cumulative times will be populated here -->
+                </div>
               </div>
             </div>
             
-            <!-- 1000m intervals table -->
-            <div class="cumulative-times-table">
-              <div class="table-header">
-                <span>1000m Intervals</span>
-                <span>Time</span>
+            <!-- Right side: 400m and 1000m tables stacked -->
+            <div class="cumulative-times-right">
+              <!-- 400m intervals table -->
+              <div class="cumulative-times-table">
+                <div class="table-header">
+                  <span>400m Intervals</span>
+                  <span>Time</span>
+                </div>
+                <div id="cumulativeTimes400m" class="table-body">
+                  <!-- 400m cumulative times will be populated here -->
+                </div>
               </div>
-              <div id="cumulativeTimes1000m" class="table-body">
-                <!-- 1000m cumulative times will be populated here -->
+              
+              <!-- 1000m intervals table -->
+              <div class="cumulative-times-table">
+                <div class="table-header">
+                  <span>1000m Intervals</span>
+                  <span>Time</span>
+                </div>
+                <div id="cumulativeTimes1000m" class="table-body">
+                  <!-- 1000m cumulative times will be populated here -->
+                </div>
               </div>
             </div>
           </div>
@@ -349,36 +291,12 @@
     </footer>
   </div>
 
-  <!-- Surge Modal -->
-  <div id="surgeModal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <h3 data-i18n="add_surge">Add Surge</h3>
-      <form class="surge-form">
-        <div class="form-group">
-          <label for="surgeStart" data-i18n="surge_start">Start Distance (m)</label>
-          <input type="number" id="surgeStart" min="0" max="3000" step="50">
-        </div>
-        <div class="form-group">
-          <label for="surgeEnd" data-i18n="surge_end">End Distance (m)</label>
-          <input type="number" id="surgeEnd" min="0" max="3000" step="50">
-        </div>
-        <div class="form-group">
-          <label for="surgePace" data-i18n="surge_pace">Pace Adjustment (s/km)</label>
-          <input type="number" id="surgePace" step="0.1" placeholder="e.g., -5 for faster">
-        </div>
-      </form>
-      <div class="modal-actions">
-        <button id="cancelSurge" class="btn-secondary" data-i18n="cancel">Cancel</button>
-        <button id="saveSurge" class="btn-primary" data-i18n="save">Save</button>
-      </div>
-    </div>
-  </div>
+
 
   <!-- Toast container -->
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <!-- Scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js" defer></script>
   <script src="js/script.js" defer></script>
 </body>
