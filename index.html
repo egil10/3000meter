@@ -161,10 +161,10 @@
           <div class="time-input-wrapper">
             <input type="text" id="goalTime" value="09:30" placeholder="09:30" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
             <div class="time-controls">
-              <button class="time-btn" data-adjust="1" title="+1s" aria-label="Add 1 second">+1</button>
-              <button class="time-btn" data-adjust="5" title="+5s" aria-label="Add 5 seconds">+5</button>
-              <button class="time-btn" data-adjust="-1" title="-1s" aria-label="Subtract 1 second">-1</button>
+              <button class="time-btn" data-adjust="-10" title="-10s" aria-label="Subtract 10 seconds">-10</button>
               <button class="time-btn" data-adjust="-5" title="-5s" aria-label="Subtract 5 seconds">-5</button>
+              <button class="time-btn" data-adjust="5" title="+5s" aria-label="Add 5 seconds">+5</button>
+              <button class="time-btn" data-adjust="10" title="+10s" aria-label="Add 10 seconds">+10</button>
             </div>
           </div>
           <div class="input-helper" id="timeHelper"></div>
@@ -175,10 +175,10 @@
           <div class="time-input-wrapper">
             <input type="text" id="targetPace" value="03:10" placeholder="03:10" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
             <div class="time-controls">
+              <button class="time-btn" data-adjust="-5" title="-5s" aria-label="Subtract 5 seconds">-5</button>
+              <button class="time-btn" data-adjust="-1" title="-1s" aria-label="Subtract 1 second">-1</button>
               <button class="time-btn" data-adjust="1" title="+1s" aria-label="Add 1 second">+1</button>
               <button class="time-btn" data-adjust="5" title="+5s" aria-label="Add 5 seconds">+5</button>
-              <button class="time-btn" data-adjust="-1" title="-1s" aria-label="Subtract 1 second">-1</button>
-              <button class="time-btn" data-adjust="-5" title="-5s" aria-label="Subtract 5 seconds">-5</button>
             </div>
           </div>
           <div class="input-helper" id="paceHelper"></div>
@@ -274,7 +274,20 @@
 
     <!-- Footer -->
     <footer class="footer">
-      <p data-i18n="footer_text">3000m Track Runner - Professional pace calculator for track athletes</p>
+      <div class="footer-content">
+        <div class="footer-description">
+          <h3>3k Run Tracker</h3>
+          <p>Professional pace calculator for track athletes. Plan your perfect 3000m race with lane-aware splits, pacing strategies, and live track animation.</p>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/egil10/3000meter" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-github"></i> GitHub
+          </a>
+        </div>
+        <div class="footer-copyright">
+          <p>&copy; 2024 3k Run Tracker. All rights reserved.</p>
+        </div>
+      </div>
     </footer>
   </div>
 

@@ -158,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize DOM elements
     elements = {
         goalTime: document.getElementById('goalTime'),
+        targetPace: document.getElementById('targetPace'),
         strategyButtons: document.querySelectorAll('.strategy-btn'),
         calculateBtn: document.getElementById('calculateBtn'),
         largeTargetTimeDisplay: document.getElementById('largeTargetTimeDisplay'),
@@ -192,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
         endPace: document.getElementById('endPace'),
         curveType: document.getElementById('curveType'),
         timeHelper: document.getElementById('timeHelper'),
+        paceHelper: document.getElementById('paceHelper'),
         toast: document.getElementById('toast')
     };
     
@@ -234,6 +236,13 @@ function setupEventListeners() {
     elements.goalTime.addEventListener('input', validateTimeInput);
     elements.goalTime.addEventListener('blur', debouncedCalculate);
     
+    // Target pace input listeners
+    elements.targetPace.addEventListener('input', validateTimeInput);
+    elements.targetPace.addEventListener('blur', () => {
+        updateTimeFromPace();
+        debouncedCalculate();
+    });
+    
     // Strategy buttons
     elements.strategyButtons.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -254,7 +263,14 @@ function setupEventListeners() {
     document.querySelectorAll('.time-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const adjust = parseInt(btn.dataset.adjust);
-            adjustTime(adjust);
+            // Check if the button is in the target pace section
+            const isPaceButton = btn.closest('.input-group') && 
+                                btn.closest('.input-group').querySelector('#targetPace');
+            if (isPaceButton) {
+                adjustPace(adjust);
+            } else {
+                adjustTime(adjust);
+            }
         });
     });
     
@@ -887,11 +903,49 @@ function validateTimeInput(e) {
     }
 }
 
+function updateTimeFromPace() {
+    const paceValue = elements.targetPace.value;
+    if (!paceValue || paceValue === '') return;
+    
+    const paceMs = parseTimeToMs(paceValue);
+    if (paceMs === 0) return;
+    
+    // Calculate target time from pace (3000m = 3km)
+    const targetTimeMs = paceMs * 3;
+    const targetTimeStr = formatTimeFromMs(targetTimeMs);
+    
+    elements.goalTime.value = targetTimeStr;
+}
+
+function updatePaceFromTime() {
+    const timeValue = elements.goalTime.value;
+    if (!timeValue || timeValue === '') return;
+    
+    const timeMs = parseTimeToMs(timeValue);
+    if (timeMs === 0) return;
+    
+    // Calculate pace from target time (3000m = 3km)
+    const paceMs = timeMs / 3;
+    const paceStr = formatTimeFromMs(paceMs);
+    
+    elements.targetPace.value = paceStr;
+}
+
 function adjustTime(seconds) {
     const currentValue = elements.goalTime.value;
     const currentMs = parseTimeToMs(currentValue) || 0;
     const newMs = currentMs + (seconds * 1000);
     elements.goalTime.value = formatTimeFromMs(newMs);
+    updatePaceFromTime();
+    debouncedCalculate();
+}
+
+function adjustPace(seconds) {
+    const currentValue = elements.targetPace.value;
+    const currentMs = parseTimeToMs(currentValue) || 0;
+    const newMs = currentMs + (seconds * 1000);
+    elements.targetPace.value = formatTimeFromMs(newMs);
+    updateTimeFromPace();
     debouncedCalculate();
 }
 

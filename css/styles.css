@@ -152,13 +152,30 @@ body {
 /* Main Content */
 .main-content {
     flex: 1;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
     gap: 1rem;
     max-width: none;
     margin: 0 auto;
     padding: 1rem 2rem;
     align-items: stretch;
+}
+
+/* Grid layout for 2x2 design */
+.track-section {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+}
+
+.race-setup-section {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+}
+
+.analytics-panel {
+    grid-column: 2 / 3;
+    grid-row: 1 / 3;
 }
 
 /* Analytics Panel */
@@ -953,15 +970,61 @@ body {
 
 /* Footer */
 .footer {
-    background: var(--neutral-50);
-    border-top: 1px solid var(--neutral-200);
+    background: var(--primary-red);
+    border-top: 1px solid var(--primary-red-dark);
     padding: 2rem 0;
     text-align: center;
+    color: white;
 }
 
-.footer p {
-    color: var(--neutral-600);
+.footer-content {
+    max-width: none;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.footer-description h3 {
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.footer-description p {
+    color: rgba(255, 255, 255, 0.9);
     font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.footer-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: opacity 0.2s ease;
+}
+
+.footer-links a:hover {
+    opacity: 0.8;
+}
+
+.footer-copyright p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.75rem;
+    margin: 0;
 }
 
 /* Mobile Sheet */
@@ -1021,7 +1084,24 @@ body {
     }
     
     .main-content {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
         padding: 1rem;
+    }
+    
+    .track-section {
+        grid-column: 1 / 2;
+        grid-row: 1 / 2;
+    }
+    
+    .race-setup-section {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+    }
+    
+    .analytics-panel {
+        grid-column: 1 / 2;
+        grid-row: 3 / 4;
     }
     
     .track-container {
@@ -1074,6 +1154,12 @@ body {
     
     .lap-progress-container {
         margin-top: 1rem;
+    }
+    
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        text-align: center;
     }
 }
 
