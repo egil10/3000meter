@@ -39,7 +39,7 @@ const translations = {
         avg_speed: "Avg Speed",
         laps: "Laps",
         splits: "Splits",
-        analytics: "Analytics",
+        analytics: "ANALYTICS",
         show_charts: "Show Charts",
         copy_csv: "Copy CSV",
         download_csv: "Download CSV",
@@ -85,7 +85,7 @@ const translations = {
         avg_speed: "Gjennomsnitt Fart",
         laps: "Runder",
         splits: "Deltider",
-        analytics: "Analyse",
+        analytics: "ANALYSE",
         show_charts: "Vis Grafer",
         copy_csv: "Kopier CSV",
         download_csv: "Last ned CSV",
@@ -652,6 +652,12 @@ function calculateExpectedTime(distance) {
     }
     
     const basePacePerKm = currentPaceData.basePacePerKm;
+    
+    // For even pacing, ensure exact calculation to avoid precision issues
+    if (currentStrategy === 'even') {
+        return (distance / 1000) * basePacePerKm * 1000;
+    }
+    
     return (distance / 1000) * basePacePerKm * paceMultiplier * 1000;
 }
 
@@ -659,7 +665,7 @@ function calculateExpectedTime(distance) {
 
 // Update functions
 function updateResults(data) {
-    elements.largeTargetTimeDisplay.textContent = `00:00.00 / ${formatTimeFromMs(data.totalTime)}`;
+    elements.largeTargetTimeDisplay.textContent = `00:00 / ${formatTimeFromMsSimple(data.totalTime)}`;
     // Removed references to non-existent elements
     
     // Update page title
@@ -697,11 +703,11 @@ function updatePaceChart(data) {
     const labels = data.segments.map(s => `Lap ${s.lap}`);
     const paces = data.segments.map(s => s.pace);
     
-    // Convert pace values to mm:ss.SS format for display
+    // Convert pace values to mm:ss format for display
     const formatPace = (pace) => {
         const minutes = Math.floor(pace / 60);
-        const seconds = pace % 60;
-        return `${minutes.toString().padStart(2, '0')}:${seconds.toFixed(2).padStart(5, '0')}`;
+        const seconds = Math.floor(pace % 60);
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     };
     
     paceChart = new Chart(ctx, {
@@ -709,7 +715,7 @@ function updatePaceChart(data) {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Pace (mm:ss.SS/km)',
+                label: 'Pace (mm:ss/km)',
                 data: paces,
                 borderColor: '#dc2626',
                 backgroundColor: 'rgba(220, 38, 38, 0.1)',
@@ -975,7 +981,7 @@ function updateTimeFromPace() {
     
     // Calculate target time from pace (3000m = 3km)
     const targetTimeMs = paceMs * 3;
-    const targetTimeStr = formatTimeFromMs(targetTimeMs);
+    const targetTimeStr = formatTimeFromMsSimple(targetTimeMs);
     
     elements.goalTime.value = targetTimeStr;
 }
@@ -989,7 +995,7 @@ function updatePaceFromTime() {
     
     // Calculate pace from target time (3000m = 3km)
     const paceMs = timeMs / 3;
-    const paceStr = formatTimeFromMs(paceMs);
+    const paceStr = formatTimeFromMsSimple(paceMs);
     
     elements.targetPace.value = paceStr;
 }
@@ -998,7 +1004,7 @@ function adjustTime(seconds) {
     const currentValue = elements.goalTime.value;
     const currentMs = parseTimeToMs(currentValue) || 0;
     const newMs = currentMs + (seconds * 1000);
-    elements.goalTime.value = formatTimeFromMs(newMs);
+    elements.goalTime.value = formatTimeFromMsSimple(newMs);
     updatePaceFromTime();
     debouncedCalculate();
 }
@@ -1007,7 +1013,7 @@ function adjustPace(seconds) {
     const currentValue = elements.targetPace.value;
     const currentMs = parseTimeToMs(currentValue) || 0;
     const newMs = currentMs + (seconds * 1000);
-    elements.targetPace.value = formatTimeFromMs(newMs);
+    elements.targetPace.value = formatTimeFromMsSimple(newMs);
     updateTimeFromPace();
     debouncedCalculate();
 }
@@ -1045,6 +1051,24 @@ function formatTime(seconds) {
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.00`;
 }
 
+function formatTimeFromMsSimple(ms) {
+    if (!ms || ms < 0) return '00:00';
+    
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function formatTimeSimple(seconds) {
+    if (!seconds || seconds < 0) return '00:00';
+    
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
 function updateProgressiveSection() {
     if (currentStrategy === 'custom') {
         elements.progressiveSection.style.display = 'block';
@@ -1076,9 +1100,9 @@ function updateAnimationUI() {
     elements.progressPercentDisplay.textContent = `${progressPercent}%`;
     
     // Update the large target time display with current time / target time format
-    const currentTimeFormatted = formatTimeFromMs(animationState.currentTime * 1000);
+    const currentTimeFormatted = formatTimeFromMsSimple(animationState.currentTime * 1000);
     const goalTimeMs = parseTimeToMs(elements.goalTime.value);
-    const targetTimeFormatted = formatTimeFromMs(goalTimeMs);
+    const targetTimeFormatted = formatTimeFromMsSimple(goalTimeMs);
     elements.largeTargetTimeDisplay.textContent = `${currentTimeFormatted} / ${targetTimeFormatted}`;
     
 
@@ -1094,7 +1118,7 @@ function calculateCurrentPace() {
     // Round to nearest second to reduce jittering
     const roundedPaceMs = Math.round(pacePerKm / 1000) * 1000;
     
-    return formatTimeFromMs(roundedPaceMs);
+    return formatTimeFromMsSimple(roundedPaceMs);
 }
 
 function adjustSpeed(delta) {
