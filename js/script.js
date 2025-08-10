@@ -196,7 +196,8 @@ function initializeApp() {
     drawMarkers();
     addRoundIndicators();
     // Ensure animation state is initialized
-    console.log('Removed automatic calculation from initializeApp');
+    console.log('Calling calculatePace from initializeApp for initial display');
+    calculatePace();
     console.log('initializeApp completed');
 }
 
