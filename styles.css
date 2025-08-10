@@ -28,6 +28,18 @@
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    
+    /* Track-specific variables */
+    --bg: #0f172a;
+    --track: #d66a5e;
+    --field: #bfe7a7;
+    --apron: #e5e7eb;
+    --lane-w: 18;
+    --inner-x: 300;
+    --inner-y: 150;
+    --inner-w: 600;
+    --inner-h: 400;
+    --inner-r: 120;
 }
 
 body {
@@ -521,6 +533,21 @@ body {
     overflow: hidden;
     border: 2px solid var(--track-red);
     min-height: 600px;
+}
+
+.track-wrap {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: #fff;
+}
+
+.track-wrap svg {
+    width: 100%;
+    height: 100%;
+    display: block;
 }
 
 /* Field Backdrop */

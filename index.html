@@ -1,297 +1,331 @@
 <!DOCTYPE html>
-<html lang="no">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3K Pace Calculator - Professional Running Tool</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <meta name="description" content="Professional 3K pace calculator with lane-aware splits and advanced pacing strategies">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#dc2626">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>3000m Track Runner - Pace Calculator</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="stadium.svg">
+  <meta name="theme-color" content="#dc2626">
+  <meta name="description" content="3000m track running pace calculator with animated runner visualization">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <h1><i class="fas fa-running"></i> 3K Pace Calculator</h1>
-                <div class="header-controls">
-                    <button id="languageToggle" class="lang-btn" title="Switch to English">
-                        <i class="fas fa-globe"></i> NO
-                    </button>
-                    <button id="proModeToggle" class="pro-btn" title="Pro Athlete Mode">
-                        <i class="fas fa-user-shield"></i>
-                    </button>
-                    <button id="shareBtn" class="share-btn" title="Copy Share Link">
-                        <i class="fas fa-share-alt"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Layout -->
-        <main class="main-layout">
-            <!-- Left Panel: Controls & Splits -->
-            <div class="left-panel">
-                <!-- Input Section -->
-                <section class="input-section">
-                    <div class="input-card">
-                        <h2>Target Settings</h2>
-                        
-                        <!-- Goal Time Input -->
-                        <div class="input-group">
-                            <label for="goalTime">Goal Time (mm:ss or mm:ss.s)</label>
-                            <div class="time-input-wrapper">
-                                <input type="text" id="goalTime" placeholder="09:30" value="09:30">
-                                <div class="time-controls">
-                                    <button class="time-btn" data-adjust="-5" title="Shift+Click: -5s">
-                                        <i class="fas fa-minus"></i>
-                                    </button>
-                                    <button class="time-btn" data-adjust="-1" title="Shift+Click: -5s">
-                                        <i class="fas fa-chevron-down"></i>
-                                    </button>
-                                    <button class="time-btn" data-adjust="1" title="Shift+Click: +5s">
-                                        <i class="fas fa-chevron-up"></i>
-                                    </button>
-                                    <button class="time-btn" data-adjust="5" title="Shift+Click: +5s">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Lane Selection -->
-                        <div class="input-group">
-                            <label for="laneSelect">Track Lane</label>
-                            <select id="laneSelect">
-                                <option value="1">Lane 1 (400m)</option>
-                                <option value="2">Lane 2 (407.04m)</option>
-                                <option value="3">Lane 3 (414.08m)</option>
-                                <option value="4">Lane 4 (421.12m)</option>
-                                <option value="5">Lane 5 (428.16m)</option>
-                                <option value="6">Lane 6 (435.20m)</option>
-                                <option value="7">Lane 7 (442.24m)</option>
-                                <option value="8">Lane 8 (449.28m)</option>
-                            </select>
-                        </div>
-
-                        <!-- Pace Strategy Presets -->
-                        <div class="input-group">
-                            <label>Pace Strategy</label>
-                            <div class="strategy-buttons">
-                                <button class="strategy-btn active" data-strategy="even">
-                                    <i class="fas fa-equals"></i> Even
-                                </button>
-                                <button class="strategy-btn" data-strategy="neg1">
-                                    <i class="fas fa-arrow-down"></i> -1%
-                                </button>
-                                <button class="strategy-btn" data-strategy="neg2">
-                                    <i class="fas fa-arrow-down"></i> -2.5%
-                                </button>
-                                <button class="strategy-btn" data-strategy="custom">
-                                    <i class="fas fa-sliders-h"></i> Custom
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Progressive Pace Tool -->
-                        <div id="progressiveSection" class="input-group" style="display: none;">
-                            <label>Progressive Pace</label>
-                            <div class="progressive-inputs">
-                                <div class="pace-input">
-                                    <label for="startPace">Start Pace (min/km)</label>
-                                    <input type="text" id="startPace" placeholder="3:30">
-                                </div>
-                                <div class="pace-input">
-                                    <label for="endPace">End Pace (min/km)</label>
-                                    <input type="text" id="endPace" placeholder="3:20">
-                                </div>
-                                <div class="curve-select">
-                                    <label for="curveType">Curve Type</label>
-                                    <select id="curveType">
-                                        <option value="linear">Linear</option>
-                                        <option value="exponential">Exponential</option>
-                                        <option value="sigmoidal">Sigmoidal</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Surge Designer -->
-                        <div class="input-group">
-                            <label>Surge Designer</label>
-                            <div class="surge-controls">
-                                <button id="addSurgeBtn" class="surge-btn">
-                                    <i class="fas fa-plus"></i> Add Surge
-                                </button>
-                                <div id="surgeList" class="surge-list">
-                                    <!-- Surges will be added here -->
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Coach Notes -->
-                        <div class="input-group">
-                            <label for="coachNotes">Coach Notes</label>
-                            <textarea id="coachNotes" placeholder="Add notes for your pace band..." rows="2"></textarea>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="action-buttons">
-                            <button id="calculateBtn" class="calculate-btn">
-                                <i class="fas fa-calculator"></i> Calculate
-                            </button>
-                            <button id="printBtn" class="print-btn">
-                                <i class="fas fa-print"></i> Print Pace Band
-                            </button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Results Section -->
-                <section class="results-section">
-                    <div class="results-card">
-                        <h3>Overall Metrics</h3>
-                        <div class="metrics-grid">
-                            <div class="metric">
-                                <span class="metric-label">Target Time</span>
-                                <span id="targetTimeDisplay" class="metric-value">--:--</span>
-                            </div>
-                            <div class="metric">
-                                <span class="metric-label">Pace/km</span>
-                                <span id="overallPace" class="metric-value">--:--</span>
-                            </div>
-                            <div class="metric">
-                                <span class="metric-label">Speed</span>
-                                <span id="avgSpeed" class="metric-value">-- km/h</span>
-                            </div>
-                            <div class="metric">
-                                <span class="metric-label">Laps</span>
-                                <span id="lapCount" class="metric-value">7.5</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Split Times -->
-                <section class="splits-section">
-                    <div class="splits-card">
-                        <h3>Split Times</h3>
-                        <div class="splits-tabs">
-                            <button class="tab-btn active" data-distance="100">100m</button>
-                            <button class="tab-btn" data-distance="200">200m</button>
-                            <button class="tab-btn" data-distance="400">400m</button>
-                            <button class="tab-btn" data-distance="1000">1000m</button>
-                        </div>
-                        <div class="splits-content">
-                            <div id="splitsTable" class="splits-table">
-                                <!-- Split times will be generated by JavaScript -->
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Right Panel: Track & Charts -->
-            <div class="right-panel">
-                <!-- Track Visualization -->
-                <section class="track-section">
-                    <div class="track-card">
-                        <h3>Track Visualization</h3>
-                        <div id="trackContainer">
-                            <img id="trackImage" src="field.svg" style="width: 100%; height: 100%; object-fit: contain;">
-                            <svg id="overlaySVG" width="800" height="600" style="position: absolute; top: 0; left: 0; pointer-events: none;">
-                                <g id="runnerGroup">
-                                    <circle id="runnerTrail" cx="0" cy="0" r="8" class="runner-trail"/>
-                                    <circle id="runner" cx="0" cy="0" r="5" class="runner"/>
-                                </g>
-                                <g id="roundIndicators"></g>
-                            </svg>
-                            <div id="lapProgressBar">
-                                <div id="lapProgressFill"></div>
-                            </div>
-                            <div id="animationControls">
-                                <button id="playPauseBtn"><i class="fas fa-play"></i></button>
-                                <button id="resetBtn"><i class="fas fa-redo"></i></button>
-                                <button id="speedBtn"><i class="fas fa-tachometer-alt"></i> 1x</button>
-                                <span id="speedDisplay">1x Speed</span>
-                            </div>
-                            <div id="animationInfo">
-                                <p>Lap: <span id="currentLap">0</span></p>
-                                <p>Distance: <span id="currentDistance">0m</span></p>
-                                <p>Time: <span id="currentTime">--:--</span></p>
-                                <p>Progress: <span id="progressPercent">0%</span></p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Charts Section -->
-                <section class="charts-section">
-                    <div class="charts-card">
-                        <h3>Pace Analysis</h3>
-                        <div class="chart-controls">
-                            <button id="toggleCharts" class="chart-btn">
-                                <i class="fas fa-chart-line"></i> Show Charts
-                            </button>
-                        </div>
-                        <div id="chartsContainer" class="charts-container" style="display: none;">
-                            <div class="chart-wrapper">
-                                <canvas id="paceChart"></canvas>
-                            </div>
-                            <div class="chart-wrapper">
-                                <canvas id="deltaChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-        </main>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <p>&copy; 2024 3K Pace Calculator. Built for runners, by runners.</p>
-            <div class="footer-links">
-                <button id="offlineToggle" class="footer-btn">
-                    <i class="fas fa-wifi"></i> <span id="offlineStatus">Online</span>
-                </button>
-                <button id="restoreSession" class="footer-btn">
-                    <i class="fas fa-history"></i> Restore Session
-                </button>
-            </div>
-        </footer>
-    </div>
-
-    <!-- Surge Modal -->
-    <div id="surgeModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <h3>Add Surge</h3>
-            <div class="surge-form">
-                <div class="form-group">
-                    <label for="surgeStart">Start Distance (m)</label>
-                    <input type="number" id="surgeStart" min="0" max="3000" step="100">
-                </div>
-                <div class="form-group">
-                    <label for="surgeEnd">End Distance (m)</label>
-                    <input type="number" id="surgeEnd" min="0" max="3000" step="100">
-                </div>
-                <div class="form-group">
-                    <label for="surgePace">Pace Adjustment (s/km)</label>
-                    <input type="number" id="surgePace" step="0.1" placeholder="-5.0">
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button id="saveSurge" class="btn-primary">Save Surge</button>
-                <button id="cancelSurge" class="btn-secondary">Cancel</button>
-            </div>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <h1>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 2v20M2 12h20"/>
+          </svg>
+          3000m Track Runner
+        </h1>
+        <div class="header-controls">
+          <button id="languageToggle" class="lang-btn" title="Switch language">
+            <i class="fas fa-globe"></i> EN
+          </button>
+          <button id="proModeToggle" class="pro-btn" title="Toggle Pro Mode">
+            <i class="fas fa-crown"></i> Pro
+          </button>
+          <button id="shareBtn" class="share-btn" title="Share">
+            <i class="fas fa-share"></i>
+          </button>
         </div>
-    </div>
+      </div>
+    </header>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-    <script src="script.js"></script>
+    <!-- Main Layout -->
+    <main class="main-layout">
+      <!-- Left Panel -->
+      <div class="left-panel">
+        <!-- Input Card -->
+        <div class="input-card">
+          <h2>Race Setup</h2>
+          
+          <div class="input-group">
+            <label for="goalTime">Target Time (mm:ss)</label>
+            <div class="time-input-wrapper">
+              <input type="text" id="goalTime" value="09:30" placeholder="09:30" maxlength="7">
+              <div class="time-controls">
+                <button class="time-btn" data-adjust="1" title="+1s">+1</button>
+                <button class="time-btn" data-adjust="5" title="+5s">+5</button>
+                <button class="time-btn" data-adjust="-1" title="-1s">-1</button>
+                <button class="time-btn" data-adjust="-5" title="-5s">-5</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="laneSelect">Lane</label>
+            <select id="laneSelect">
+              <option value="1">Lane 1 (400m)</option>
+              <option value="2">Lane 2 (407m)</option>
+              <option value="3">Lane 3 (414m)</option>
+              <option value="4">Lane 4 (421m)</option>
+              <option value="5">Lane 5 (428m)</option>
+              <option value="6">Lane 6 (435m)</option>
+              <option value="7">Lane 7 (442m)</option>
+              <option value="8">Lane 8 (449m)</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Pacing Strategy</label>
+            <div class="strategy-buttons">
+              <button class="strategy-btn active" data-strategy="even">
+                <i class="fas fa-equals"></i> Even
+              </button>
+              <button class="strategy-btn" data-strategy="neg1">
+                <i class="fas fa-arrow-down"></i> Neg 1%
+              </button>
+              <button class="strategy-btn" data-strategy="neg2">
+                <i class="fas fa-arrow-down"></i> Neg 2.5%
+              </button>
+              <button class="strategy-btn" data-strategy="custom">
+                <i class="fas fa-sliders-h"></i> Custom
+              </button>
+            </div>
+          </div>
+
+          <div id="progressiveSection" class="input-group" style="display: none;">
+            <div class="progressive-inputs">
+              <div>
+                <label for="startPace">Start Pace (mm:ss/km)</label>
+                <input type="text" id="startPace" value="03:10" placeholder="03:10">
+              </div>
+              <div>
+                <label for="endPace">End Pace (mm:ss/km)</label>
+                <input type="text" id="endPace" value="03:00" placeholder="03:00">
+              </div>
+              <div class="curve-select">
+                <label for="curveType">Progression Type</label>
+                <select id="curveType">
+                  <option value="linear">Linear</option>
+                  <option value="exponential">Exponential</option>
+                  <option value="sigmoidal">Sigmoidal</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Surge Designer</label>
+            <button id="addSurgeBtn" class="surge-btn">
+              <i class="fas fa-plus"></i> Add Surge
+            </button>
+            <div id="surgeList" class="surge-list"></div>
+          </div>
+
+          <div class="action-buttons">
+            <button id="calculateBtn" class="calculate-btn">
+              <i class="fas fa-calculator"></i> Calculate
+            </button>
+            <button id="printBtn" class="print-btn">
+              <i class="fas fa-print"></i> Print
+            </button>
+          </div>
+        </div>
+
+        <!-- Results Card -->
+        <div class="results-card">
+          <h3>Results</h3>
+          <div class="metrics-grid">
+            <div class="metric">
+              <span class="metric-label">Target Time</span>
+              <span class="metric-value" id="targetTimeDisplay">09:30</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Overall Pace</span>
+              <span class="metric-value" id="overallPace">03:10</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Avg Speed</span>
+              <span class="metric-value" id="avgSpeed">18.9 km/h</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Laps</span>
+              <span class="metric-value" id="lapCount">7.5</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel -->
+      <div class="right-panel">
+        <!-- Track Visualization Card -->
+        <div class="track-card">
+          <h3>Track Visualization</h3>
+          <div class="track-container">
+            <div class="track-wrap">
+              <svg viewBox="0 0 1200 800" role="img" aria-label="3000m oval track with eight lanes and animated runner">
+                <defs>
+                  <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="8" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                  <filter id="runner-glow" x="-100%" y="-100%" width="300%" height="300%">
+                    <feGaussianBlur stdDeviation="4" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                </defs>
+
+                <!-- Background -->
+                <rect x="0" y="0" width="1200" height="800" fill="#f8fafc"/>
+
+                <!-- Stadium apron (grey ring around the track) -->
+                <g id="stadium"></g>
+
+                <!-- Infield (inside inner boundary) -->
+                <g id="infield"></g>
+
+                <!-- Track base: red lanes as a continuous band -->
+                <g id="track-base" stroke-linecap="round" stroke-linejoin="round"></g>
+
+                <!-- White lane boundary lines (including inner & outer edges) -->
+                <g id="lane-boundaries" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></g>
+
+                <!-- Distance & start lines across all lanes -->
+                <g id="markers"></g>
+
+                <!-- Lane numbers at start line -->
+                <g id="lane-numbers"></g>
+
+                <!-- Runner -->
+                <g id="runner" class="runner-shadow">
+                  <circle id="runner-dot" r="12" fill="#007AFF" stroke="#ffffff" stroke-width="4" filter="url(#runner-glow)"/>
+                </g>
+
+                <!-- Round indicators -->
+                <g id="round-indicators"></g>
+
+                <!-- Lap progress bar -->
+                <g id="lap-progress">
+                  <rect x="50" y="750" width="700" height="8" fill="#e5e7eb" rx="4"/>
+                  <rect id="lap-progress-fill" x="50" y="750" width="0" height="8" fill="#007AFF" rx="4"/>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Track overlay with info -->
+            <div class="track-overlay">
+              <div class="track-info">
+                <div class="info-item">
+                  <span class="info-label">Lap</span>
+                  <span class="info-value" id="currentLap">1</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Distance</span>
+                  <span class="info-value" id="currentDistance">0m</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Time</span>
+                  <span class="info-value" id="currentTime">00:00</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Progress</span>
+                  <span class="info-value" id="progressPercent">0%</span>
+                </div>
+              </div>
+              <div class="round-display">
+                <div class="round-title">Rounds</div>
+                <div id="roundList" class="round-list"></div>
+              </div>
+            </div>
+
+            <!-- Animation controls -->
+            <div class="animation-controls">
+              <button id="playPauseBtn" class="anim-btn" title="Play/Pause">
+                <i class="fas fa-play"></i>
+              </button>
+              <button id="resetBtn" class="anim-btn" title="Reset">
+                <i class="fas fa-undo"></i>
+              </button>
+              <button id="speedBtn" class="anim-btn" title="Change Speed">
+                <i class="fas fa-tachometer-alt"></i>
+              </button>
+            </div>
+
+            <!-- Speed indicator -->
+            <div class="speed-indicator" id="speedDisplay">1x Speed</div>
+          </div>
+        </div>
+
+        <!-- Splits Card -->
+        <div class="splits-card">
+          <h3>Splits</h3>
+          <div class="splits-tabs">
+            <button class="tab-btn active" data-distance="100">100m</button>
+            <button class="tab-btn" data-distance="200">200m</button>
+            <button class="tab-btn" data-distance="400">400m</button>
+            <button class="tab-btn" data-distance="1000">1000m</button>
+          </div>
+          <div id="splitsTable" class="splits-table"></div>
+        </div>
+
+        <!-- Charts Card -->
+        <div class="charts-card">
+          <h3>Analytics</h3>
+          <div class="chart-controls">
+            <button id="toggleCharts" class="chart-btn">
+              <i class="fas fa-chart-line"></i> Show Charts
+            </button>
+          </div>
+          <div id="chartsContainer" class="charts-container" style="display: none;">
+            <div class="chart-wrapper">
+              <canvas id="paceChart"></canvas>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="deltaChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>3000m Track Runner - Professional pace calculator for track athletes</p>
+      <div class="footer-links">
+        <button class="footer-btn" onclick="restoreSession()">
+          <i class="fas fa-history"></i> Restore Session
+        </button>
+        <button class="footer-btn" onclick="window.print()">
+          <i class="fas fa-print"></i> Print
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Surge Modal -->
+  <div id="surgeModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3>Add Surge</h3>
+      <form class="surge-form">
+        <div class="form-group">
+          <label for="surgeStart">Start Distance (m)</label>
+          <input type="number" id="surgeStart" min="0" max="3000" step="100">
+        </div>
+        <div class="form-group">
+          <label for="surgeEnd">End Distance (m)</label>
+          <input type="number" id="surgeEnd" min="0" max="3000" step="100">
+        </div>
+        <div class="form-group">
+          <label for="surgePace">Pace Adjustment (s/km)</label>
+          <input type="number" id="surgePace" step="0.1" placeholder="e.g., -5 for faster">
+        </div>
+      </form>
+      <div class="modal-actions">
+        <button id="cancelSurge" class="btn-secondary">Cancel</button>
+        <button id="saveSurge" class="btn-primary">Save Surge</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
