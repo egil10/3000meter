@@ -514,7 +514,7 @@ function calculatePace() {
     calculateBtn.classList.add('success');
     setTimeout(() => {
         calculateBtn.classList.remove('success');
-    }, 2000);
+    }, 1500);
     
     const timeStr = elements.goalTime.value;
     const totalMs = parseTimeToMs(timeStr);
@@ -697,12 +697,19 @@ function updatePaceChart(data) {
     const labels = data.segments.map(s => `Lap ${s.lap}`);
     const paces = data.segments.map(s => s.pace);
     
+    // Convert pace values to mm:ss.SS format for display
+    const formatPace = (pace) => {
+        const minutes = Math.floor(pace / 60);
+        const seconds = pace % 60;
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toFixed(2).padStart(5, '0')}`;
+    };
+    
     paceChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Pace (min/km)',
+                label: 'Pace (mm:ss.SS/km)',
                 data: paces,
                 borderColor: '#dc2626',
                 backgroundColor: 'rgba(220, 38, 38, 0.1)',
@@ -715,7 +722,21 @@ function updatePaceChart(data) {
             scales: {
                 y: {
                     beginAtZero: false,
-                    reverse: true
+                    reverse: true,
+                    ticks: {
+                        callback: function(value) {
+                            return formatPace(value);
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Pace: ${formatPace(context.parsed.y)}/km`;
+                        }
+                    }
                 }
             }
         }
@@ -740,7 +761,7 @@ function updateDeltaChart(data) {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Time Delta (s)',
+                label: 'Time Delta (s) - Shows how much faster/slower each lap is compared to the target even pace',
                 data: deltas,
                 backgroundColor: deltas.map(d => d > 0 ? '#ef4444' : '#10b981'),
                 borderColor: deltas.map(d => d > 0 ? '#dc2626' : '#059669'),
@@ -752,7 +773,22 @@ function updateDeltaChart(data) {
             maintainAspectRatio: false,
             scales: {
                 y: {
-                    beginAtZero: true
+                    min: -10,
+                    max: 10,
+                    ticks: {
+                        stepSize: 2
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed.y;
+                            const sign = value > 0 ? '+' : '';
+                            return `Delta: ${sign}${value}s (${value > 0 ? 'slower' : 'faster'} than target)`;
+                        }
+                    }
                 }
             }
         }
