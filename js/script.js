@@ -202,19 +202,19 @@ function initializeApp() {
 }
 
 function setupEventListeners() {
-    // Input event listeners
+    // Input event listeners - only update pace/time conversion, don't trigger calculations
     elements.goalTime.addEventListener('input', (e) => {
         validateTimeInput(e);
         updatePaceFromTime();
     });
     
-    // Target pace input listeners
+    // Target pace input listeners - only update time/pace conversion, don't trigger calculations
     elements.targetPace.addEventListener('input', (e) => {
         validateTimeInput(e);
         updateTimeFromPace();
     });
     
-    // Strategy buttons
+    // Strategy buttons - only update strategy, don't trigger calculations
     elements.strategyButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             elements.strategyButtons.forEach(b => b.classList.remove('active'));
@@ -223,21 +223,11 @@ function setupEventListeners() {
         });
     });
     
-
-    
-
-    
-
-    
     // Action buttons
     elements.calculateBtn.addEventListener('click', handleCalculateButtonClick);
     
-
-    
     // UI toggles
     elements.languageToggle.addEventListener('click', toggleLanguage);
-    
-    // Tab buttons (removed - now showing all splits in one table)
     
     // Animation controls
     elements.playPauseBtn.addEventListener('click', toggleAnimation);
@@ -482,6 +472,10 @@ function handleCalculateButtonClick() {
         calculateBtn.classList.remove('success');
     }, 1500);
     
+    // Reset animation state before calculating new pace
+    resetAnimation();
+    
+    // Calculate new pace data
     calculatePace();
 }
 
@@ -491,6 +485,7 @@ function generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm) {
         laneDistance: laneDistance,
         totalLaps: totalLaps,
         basePacePerKm: basePacePerKm,
+        strategy: currentStrategy, // Store the strategy used for this calculation
         splits: [],
         segments: []
     };
@@ -531,7 +526,7 @@ function generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm) {
     return data;
 }
 
-function calculateExpectedTime(distance, basePacePerKmParam = null) {
+function calculateExpectedTime(distance, basePacePerKmParam = null, strategyParam = null) {
     // Use provided basePacePerKm or fall back to currentPaceData
     let basePacePerKm;
     
@@ -547,10 +542,13 @@ function calculateExpectedTime(distance, basePacePerKmParam = null) {
         basePacePerKm = (goalTimeMs / 1000) / (TRACK_CONSTANTS.TOTAL_DISTANCE / 1000);
     }
     
+    // Use provided strategy, stored strategy from pace data, or fall back to current strategy
+    const strategy = strategyParam || (currentPaceData ? currentPaceData.strategy : currentStrategy);
+    
     // Apply pacing strategy
     let paceMultiplier = 1.0;
     
-    switch(currentStrategy) {
+    switch(strategy) {
         case 'even':
             paceMultiplier = 1.0;
             break;
@@ -617,7 +615,7 @@ function calculateExpectedTime(distance, basePacePerKmParam = null) {
 
     
     // For even pacing, ensure exact calculation to avoid precision issues
-    if (currentStrategy === 'even') {
+    if (strategy === 'even') {
         return (distance / 1000) * basePacePerKm * 1000;
     }
     
@@ -936,8 +934,8 @@ function updateAnimationUI() {
     
     // Update the large target time display with current time / target time format
     const currentTimeFormatted = formatTimeFromMs(animationState.currentTime * 1000);
-    const goalTimeMs = parseTimeToMs(elements.goalTime.value);
-    const targetTimeFormatted = formatTimeFromMs(goalTimeMs);
+    // Use stored pace data instead of reading from input field to prevent real-time changes
+    const targetTimeFormatted = currentPaceData ? formatTimeFromMs(currentPaceData.totalTime) : formatTimeFromMs(parseTimeToMs(elements.goalTime.value) || 0);
     elements.largeTargetTimeDisplay.textContent = `${currentTimeFormatted} / ${targetTimeFormatted}`;
     
     // Update cumulative times during animation
@@ -1003,7 +1001,7 @@ function updateCumulativeTimes(data) {
         container.innerHTML = '';
         
         for (let distance = interval; distance <= TRACK_CONSTANTS.TOTAL_DISTANCE; distance += interval) {
-            const expectedTime = calculateExpectedTime(distance, data.basePacePerKm);
+            const expectedTime = calculateExpectedTime(distance, data.basePacePerKm, data.strategy);
             const timeFormatted = formatTimeFromMsSimple(expectedTime);
             
             const row = document.createElement('div');
