@@ -107,68 +107,67 @@ body {
     border-color: var(--neutral-300);
 }
 
-/* Track Section - Main Centerpiece */
+/* Track Section */
 .track-section {
-    width: 100%;
-    background: var(--primary-red-light);
+    background: var(--neutral-50);
     padding: 2rem 0;
     border-bottom: 1px solid var(--neutral-200);
 }
 
 .track-container {
-    position: relative;
     max-width: none;
     margin: 0 auto;
     padding: 0 2rem;
+    position: relative;
 }
 
 .track-layout {
     display: flex;
     gap: 2rem;
-    align-items: stretch;
+    align-items: flex-start;
 }
 
 .track-wrap {
-    position: relative;
     flex: 0 0 50%;
-    height: fit-content;
-    min-height: 600px;
-    border-radius: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 600px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 0.5rem;
+    box-shadow: var(--shadow-md);
     overflow: hidden;
-    background: white;
-    box-shadow: var(--shadow-lg);
-    border: 2px solid var(--primary-red);
 }
 
 .track-wrap svg {
     width: 100%;
     height: 100%;
-    display: block;
+    max-width: 800px;
+    max-height: 500px;
 }
 
-/* Mobile setup button */
 .setup-btn {
     position: absolute;
     top: 1rem;
-    left: 1rem;
-    width: 44px;
-    height: 44px;
-    border: 2px solid var(--primary-red);
+    right: 1rem;
+    width: 48px;
+    height: 48px;
+    border: none;
     border-radius: 50%;
-    background: white;
-    color: var(--primary-red);
+    background: var(--primary-red);
+    color: white;
     cursor: pointer;
-    transition: all 0.2s ease;
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: var(--shadow-sm);
+    font-size: 1.25rem;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.2s ease;
     z-index: 10;
 }
 
 .setup-btn:hover {
-    background: var(--primary-red);
-    color: white;
+    background: var(--primary-red-dark);
     transform: scale(1.1);
 }
 
@@ -176,7 +175,7 @@ body {
 .main-content {
     flex: 1;
     display: grid;
-    grid-template-columns: 0.3fr 1.7fr;
+    grid-template-columns: 1fr 1fr;
     gap: 2rem;
     max-width: none;
     margin: 0 auto;
@@ -202,7 +201,17 @@ body {
     min-height: 600px;
 }
 
-/* Target Time Display */
+/* Track Controls Panel */
+.track-controls-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 0 0 50%;
+    height: 600px;
+    justify-content: flex-start;
+}
+
+/* Target Time Display with Animation Controls */
 .target-time-display {
   background: rgba(255, 255, 255, 0.95);
   border: 2px solid var(--primary-red);
@@ -210,13 +219,16 @@ body {
   padding: 1rem;
   text-align: center;
   box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .target-time-label {
   font-size: 0.8rem;
   color: var(--neutral-600);
   font-weight: 500;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .target-time-value {
@@ -226,11 +238,65 @@ body {
   font-family: 'Courier New', monospace;
 }
 
-/* Current Status Grid */
+.time-display {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--neutral-800);
+  font-family: 'Courier New', monospace;
+}
+
+.time-display span {
+  color: var(--primary-red);
+}
+
+/* Animation Controls within target-time-display */
+.target-time-display .animation-controls {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: transparent;
+  border-radius: 0.25rem;
+  box-shadow: none;
+  margin-top: 0.5rem;
+}
+
+.target-time-display .anim-btn {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--primary-red);
+  border-radius: 50%;
+  background: white;
+  color: var(--primary-red);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+}
+
+.target-time-display .anim-btn:hover {
+  background: var(--primary-red);
+  color: white;
+  transform: scale(1.1);
+}
+
+.target-time-display .anim-btn.active {
+  background: var(--primary-red);
+  color: white;
+}
+
+.target-time-display .anim-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Current Status Grid - 1 row, 4 columns */
 .current-status-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 0.5rem;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 0.5rem;
   padding: 1rem;
@@ -245,14 +311,14 @@ body {
 }
 
 .status-label {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--neutral-600);
   font-weight: 500;
   margin-bottom: 0.25rem;
 }
 
 .status-value {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--neutral-800);
   font-family: 'Courier New', monospace;
@@ -380,25 +446,27 @@ body {
 }
 
 .time-btn {
-    padding: 0.5rem;
-    border: 1px solid var(--neutral-200);
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--neutral-300);
     border-radius: 0.25rem;
     background: white;
     color: var(--neutral-600);
     cursor: pointer;
-    transition: all 0.2s ease;
     font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
 .time-btn:hover {
-    background: var(--neutral-50);
-    border-color: var(--neutral-300);
+    background: var(--primary-red);
+    color: white;
+    border-color: var(--primary-red);
 }
 
 /* Strategy Buttons */
 .strategy-buttons {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 0.5rem;
 }
 
@@ -407,11 +475,10 @@ body {
     border: 2px solid var(--neutral-200);
     border-radius: 0.5rem;
     background: white;
-    color: var(--neutral-600);
+    color: var(--neutral-700);
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.875rem;
-    font-weight: 500;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -419,8 +486,8 @@ body {
 }
 
 .strategy-btn:hover {
-    border-color: var(--neutral-300);
-    background: var(--neutral-50);
+    border-color: var(--primary-red);
+    color: var(--primary-red);
 }
 
 .strategy-btn.active {
@@ -442,12 +509,11 @@ body {
 
 /* Surge Controls */
 .surge-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    margin-top: 1rem;
 }
 
 .surge-btn {
+    width: 100%;
     padding: 0.75rem;
     border: 2px dashed var(--neutral-300);
     border-radius: 0.5rem;
@@ -464,11 +530,13 @@ body {
 
 .surge-btn:hover {
     border-color: var(--primary-red);
-    background: var(--primary-red-light);
     color: var(--primary-red);
+    background: var(--primary-red-light);
 }
 
+/* Surge List */
 .surge-list {
+    margin-top: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -482,20 +550,17 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.875rem;
-    cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .surge-item:hover {
     border-color: var(--primary-red);
-    background: var(--primary-red-light);
+    box-shadow: var(--shadow-sm);
 }
 
 .surge-item .surge-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--neutral-700);
 }
 
 .surge-item .surge-actions {
@@ -504,12 +569,14 @@ body {
 }
 
 .surge-item .delete-surge {
-    padding: 0.25rem;
-    border: none;
-    background: none;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--error-red);
+    border-radius: 0.25rem;
+    background: white;
     color: var(--error-red);
     cursor: pointer;
-    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
 }
 
 .surge-item .delete-surge:hover {
@@ -519,29 +586,26 @@ body {
 
 /* Action Buttons */
 .action-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    margin-top: 2rem;
+    display: flex;
     gap: 1rem;
-    margin-top: 1rem;
 }
 
 .calculate-btn {
+    flex: 1;
     padding: 1rem;
     border: none;
     border-radius: 0.5rem;
-    font-weight: 600;
+    background: var(--primary-red);
+    color: white;
     cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    font-size: 0.875rem;
-}
-
-.calculate-btn {
-    background: var(--primary-red);
-    color: white;
 }
 
 .calculate-btn:hover {
@@ -550,9 +614,7 @@ body {
     box-shadow: var(--shadow-lg);
 }
 
-
-
-/* Results Section */
+/* Metrics Grid */
 .metrics-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -560,24 +622,25 @@ body {
 }
 
 .metric {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    text-align: center;
+    padding: 1rem;
+    background: var(--neutral-50);
+    border-radius: 0.5rem;
 }
 
 .metric-label {
     font-size: 0.75rem;
     color: var(--neutral-500);
     font-weight: 500;
+    margin-bottom: 0.5rem;
 }
 
 .metric-value {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--neutral-900);
+    font-family: 'Courier New', monospace;
 }
-
-
 
 /* Charts Section */
 .chart-controls {
@@ -617,106 +680,7 @@ body {
     height: 200px;
 }
 
-/* Track Controls Panel */
-.track-controls-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    flex: 0 0 50%;
-    height: fit-content;
-    min-height: 600px;
-    justify-content: flex-start;
-}
-
-
-
-/* Removed old round display styles - now using clock splits in right panel */
-
-/* Removed old round-item styles - now using table structure */
-
-/* Removed old round-item styles - now using table structure */
-
-/* Apply monospace font to other numerical displays */
-.metric-value {
-    font-family: 'Courier New', monospace;
-}
-
-.round-distance {
-    font-family: 'Courier New', monospace;
-}
-
-/* Add monospace font to more numerical elements */
-.info-value {
-    font-family: 'Courier New', monospace;
-}
-
-.round-time {
-    font-family: 'Courier New', monospace;
-}
-
-.round-number {
-    font-family: 'Courier New', monospace;
-}
-
-.speed-input {
-    font-family: 'Courier New', monospace;
-}
-
-.time-input-wrapper input {
-    font-family: 'Courier New', monospace;
-}
-
-
-
-/* Make round indicators transparent */
-.round-indicator {
-    fill: transparent;
-    stroke: transparent;
-}
-
-/* Animation Controls */
-.animation-controls {
-    display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 0.5rem;
-    box-shadow: var(--shadow-md);
-}
-
-.anim-btn {
-    width: 44px;
-    height: 44px;
-    border: 2px solid var(--primary-red);
-    border-radius: 50%;
-    background: white;
-    color: var(--primary-red);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-}
-
-.anim-btn:hover {
-    background: var(--primary-red);
-    color: white;
-    transform: scale(1.1);
-}
-
-.anim-btn.active {
-    background: var(--primary-red);
-    color: white;
-}
-
-.anim-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Speed Controls */
+/* Speed Controls with +/- buttons */
 .speed-controls {
     background: rgba(255, 255, 255, 0.95);
     padding: 1rem;
@@ -741,7 +705,7 @@ body {
 .speed-input-group {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.25rem;
 }
 
 .speed-slider {
@@ -776,14 +740,37 @@ body {
     box-shadow: var(--shadow-sm);
 }
 
+.speed-btn {
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--neutral-300);
+    border-radius: 0.25rem;
+    background: white;
+    color: var(--neutral-600);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.speed-btn:hover {
+    background: var(--primary-red);
+    color: white;
+    border-color: var(--primary-red);
+}
+
 .speed-input {
-    width: 60px;
+    width: 50px;
     padding: 0.25rem 0.5rem;
-    border: none;
+    border: 1px solid var(--neutral-300);
     border-radius: 0.25rem;
     font-size: 0.875rem;
     text-align: center;
     font-family: 'Courier New', monospace;
+    font-weight: 700;
 }
 
 .speed-input:focus {
@@ -818,31 +805,28 @@ body {
     height: 100%;
     background: #007AFF;
     border-radius: 4px;
-    width: 0%;
     transition: width 0.3s ease;
 }
 
-/* Toast notifications */
+/* Toast */
 .toast {
     position: fixed;
-    bottom: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #111827;
-    color: #fff;
-    padding: 0.75rem 1rem;
+    top: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    background: var(--neutral-900);
+    color: white;
     border-radius: 0.5rem;
     box-shadow: var(--shadow-lg);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
     z-index: 1000;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    max-width: 300px;
     font-size: 0.875rem;
-    font-weight: 500;
 }
 
 .toast.show {
-    opacity: 1;
+    transform: translateX(0);
 }
 
 /* Modal */
@@ -908,6 +892,7 @@ body {
 .btn-primary, .btn-secondary {
     padding: 0.75rem 1.5rem;
     border-radius: 0.5rem;
+    font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -924,34 +909,30 @@ body {
 }
 
 .btn-secondary {
-    background: var(--neutral-100);
-    color: var(--neutral-700);
-    border: 1px solid var(--neutral-200);
+    background: white;
+    color: var(--neutral-600);
+    border: 1px solid var(--neutral-300);
 }
 
 .btn-secondary:hover {
-    background: var(--neutral-200);
+    background: var(--neutral-50);
+    border-color: var(--neutral-400);
 }
 
 /* Footer */
 .footer {
-    background: white;
+    background: var(--neutral-50);
     border-top: 1px solid var(--neutral-200);
-    padding: 1.5rem 0;
-    margin-top: auto;
+    padding: 2rem 0;
+    text-align: center;
 }
 
 .footer p {
-    text-align: center;
     color: var(--neutral-600);
-    margin-bottom: 1rem;
+    font-size: 0.875rem;
 }
 
-
-
-
-
-/* Mobile bottom sheet */
+/* Mobile Sheet */
 .mobile-sheet {
     position: fixed;
     bottom: 0;
@@ -962,7 +943,7 @@ body {
     box-shadow: var(--shadow-xl);
     transform: translateY(100%);
     transition: transform 0.3s ease;
-    z-index: 200;
+    z-index: 100;
     max-height: 80vh;
     overflow-y: auto;
 }
@@ -988,7 +969,7 @@ body {
 @media (max-width: 1200px) {
     .main-content {
         grid-template-columns: 1fr;
-        gap: 1rem;
+        gap: 1.5rem;
     }
     
     .right-panel {
@@ -998,56 +979,51 @@ body {
 
 @media (max-width: 768px) {
     .header-content {
-        flex-direction: column;
-        gap: 1rem;
+        padding: 0 1rem;
     }
-
+    
     .main-content {
-        grid-template-columns: 1fr;
-        gap: 1rem;
         padding: 1rem;
+        grid-template-columns: 1fr;
     }
-
+    
     .track-container {
         padding: 0 1rem;
     }
-
+    
     .track-layout {
         flex-direction: column;
-        gap: 1rem;
     }
-
+    
     .track-wrap {
-        flex: 0 0 auto;
-        min-height: 400px;
+        flex: none;
+        height: 400px;
     }
-
+    
     .track-controls-panel {
-        flex: 0 0 auto;
+        flex: none;
         height: auto;
     }
-
+    
     .animation-controls {
-        justify-content: center;
+        flex-wrap: wrap;
     }
-
+    
     .anim-btn {
         width: 40px;
         height: 40px;
-        font-size: 0.9rem;
     }
-
+    
     .speed-controls {
-        padding: 0.75rem;
+        flex-direction: column;
     }
-
+    
     .speed-input {
-        width: 50px;
-        font-size: 0.8rem;
+        width: 60px;
     }
-
+    
     .lap-progress-container {
-        padding: 0.75rem;
+        margin-top: 1rem;
     }
 }
 
@@ -1056,56 +1032,48 @@ body {
         font-size: 1.25rem;
     }
     
-    .input-card, .results-card, .splits-card, .charts-card {
+    .input-card, .results-card, .charts-card {
         padding: 1rem;
     }
     
     .track-wrap {
-        height: 400px;
+        height: 300px;
     }
     
-    /* Disable expensive filters on mobile */
     #runner [filter], #glow {
-        filter: none !important;
+        filter: none;
     }
 }
 
 /* Print Styles */
 @media print {
     .header, .footer, .action-buttons, .chart-controls, .animation-controls, .speed-controls, .setup-btn, .lap-progress-container {
-        display: none !important;
+        display: none;
     }
-
+    
     .main-content {
         grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-        max-width: none;
-        padding: 0;
+        gap: 1rem;
+        padding: 1rem;
     }
-
+    
     .track-section {
-        break-inside: avoid;
-        page-break-inside: avoid;
+        page-break-after: always;
     }
-
+    
     .input-card, .results-card, .charts-card {
-        break-inside: avoid;
-        page-break-inside: avoid;
         box-shadow: none;
-        border: 1px solid #ccc;
+        border: 1px solid var(--neutral-300);
     }
-
+    
     .track-wrap {
-        break-inside: avoid;
-        page-break-inside: avoid;
-        box-shadow: none;
-        border: 1px solid #ccc;
+        border: 1px solid var(--neutral-300);
     }
 }
 
-/* Animation Classes */
+/* Animations */
 .fade-in {
-    animation: fadeIn 0.3s ease-in;
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 @keyframes fadeIn {
@@ -1118,11 +1086,11 @@ body {
 }
 
 @keyframes slideIn {
-    from { transform: translateX(-20px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
 }
 
-/* Accessibility */
+/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.01ms !important;
@@ -1131,11 +1099,11 @@ body {
     }
     
     #runner [filter], #glow {
-        filter: none !important;
+        filter: none;
     }
 }
 
-/* Focus styles for accessibility */
+/* Focus Styles */
 button:focus,
 input:focus,
 select:focus,
@@ -1144,11 +1112,11 @@ textarea:focus {
     outline-offset: 2px;
 }
 
-/* High contrast mode support */
+/* High Contrast */
 @media (prefers-contrast: high) {
     :root {
-        --primary-red: #000;
-        --neutral-200: #000;
-        --neutral-600: #000;
+        --primary-red: #000000;
+        --neutral-200: #000000;
+        --neutral-300: #000000;
     }
 }

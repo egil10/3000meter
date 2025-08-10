@@ -91,13 +91,24 @@
 
           <!-- Track controls panel -->
           <div class="track-controls-panel">
-            <!-- Target Time Display -->
+            <!-- Target Time Display with Animation Controls -->
             <div class="target-time-display">
               <div class="target-time-label" data-i18n="target_time">Target Time</div>
               <div class="target-time-value" id="largeTargetTimeDisplay">09:30</div>
+              <div class="time-display">
+                <span id="currentTimeDisplay">00:00.00</span> / <span id="targetTimeDisplay">09:30</span>
+              </div>
+              <div class="animation-controls">
+                <button id="playPauseBtn" class="anim-btn" title="Play/Pause" aria-label="Play/Pause">
+                  <i class="fas fa-play"></i>
+                </button>
+                <button id="resetBtn" class="anim-btn" title="Reset" aria-label="Reset">
+                  <i class="fas fa-undo"></i>
+                </button>
+              </div>
             </div>
 
-            <!-- Current Status Grid -->
+            <!-- Current Status Grid - 1 row, 4 columns -->
             <div class="current-status-grid">
               <div class="status-item">
                 <span class="status-label" data-i18n="lap">Lap</span>
@@ -108,23 +119,13 @@
                 <span class="status-value" id="currentDistanceDisplay">0m</span>
               </div>
               <div class="status-item">
-                <span class="status-label" data-i18n="time">Time</span>
-                <span class="status-value" id="currentTimeDisplay">00:00.00</span>
-              </div>
-              <div class="status-item">
                 <span class="status-label" data-i18n="progress">Progress</span>
                 <span class="status-value" id="progressPercentDisplay">0%</span>
               </div>
-            </div>
-
-            <!-- Animation controls -->
-            <div class="animation-controls">
-              <button id="playPauseBtn" class="anim-btn" title="Play/Pause" aria-label="Play/Pause">
-                <i class="fas fa-play"></i>
-              </button>
-              <button id="resetBtn" class="anim-btn" title="Reset" aria-label="Reset">
-                <i class="fas fa-undo"></i>
-              </button>
+              <div class="status-item">
+                <span class="status-label" data-i18n="pace">Pace</span>
+                <span class="status-value" id="currentPaceDisplay">--:--</span>
+              </div>
             </div>
 
             <!-- Speed controls -->
@@ -132,8 +133,10 @@
               <div class="speed-slider-container">
                 <label for="speedSlider" class="speed-label">Speed</label>
                 <div class="speed-input-group">
-                  <input type="range" id="speedSlider" min="0.25" max="8" step="0.25" value="1" class="speed-slider">
-                  <input type="number" id="speedInput" min="0.25" max="8" step="0.25" value="1" class="speed-input">
+                  <input type="range" id="speedSlider" min="0" max="10" step="0.25" value="1" class="speed-slider">
+                  <button class="speed-btn" id="speedMinusBtn">-</button>
+                  <input type="number" id="speedInput" min="0" max="10" step="0.25" value="1" class="speed-input">
+                  <button class="speed-btn" id="speedPlusBtn">+</button>
                   <span class="speed-unit">x</span>
                 </div>
               </div>

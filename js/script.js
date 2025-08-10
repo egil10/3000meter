@@ -147,39 +147,48 @@ const elements = {
     goalTime: document.getElementById('goalTime'),
     laneSelect: document.getElementById('laneSelect'),
     strategyButtons: document.querySelectorAll('.strategy-btn'),
-    progressiveSection: document.getElementById('progressiveSection'),
-    startPace: document.getElementById('startPace'),
-    endPace: document.getElementById('endPace'),
-    curveType: document.getElementById('curveType'),
-    addSurgeBtn: document.getElementById('addSurgeBtn'),
-    surgeList: document.getElementById('surgeList'),
     calculateBtn: document.getElementById('calculateBtn'),
-    languageToggle: document.getElementById('languageToggle'),
-    toggleCharts: document.getElementById('toggleCharts'),
-    chartsContainer: document.getElementById('chartsContainer'),
-    paceChart: document.getElementById('paceChart'),
-    deltaChart: document.getElementById('deltaChart'),
     targetTimeDisplay: document.getElementById('targetTimeDisplay'),
     largeTargetTimeDisplay: document.getElementById('largeTargetTimeDisplay'),
     overallPace: document.getElementById('overallPace'),
     avgSpeed: document.getElementById('avgSpeed'),
     lapCount: document.getElementById('lapCount'),
+    clockSplitsText: document.getElementById('clockSplitsText'),
+    toggleCharts: document.getElementById('toggleCharts'),
+    chartsContainer: document.getElementById('chartsContainer'),
+    paceChart: document.getElementById('paceChart'),
+    deltaChart: document.getElementById('deltaChart'),
     runnerDot: document.getElementById('runner-dot'),
     roundIndicators: document.getElementById('round-indicators'),
-    lapProgressFill: document.getElementById('lapProgressFill'),
-    currentLapDisplay: document.getElementById('currentLapDisplay'),
-    currentDistanceDisplay: document.getElementById('currentDistanceDisplay'),
-    currentTimeDisplay: document.getElementById('currentTimeDisplay'),
-    progressPercentDisplay: document.getElementById('progressPercentDisplay'),
     roundList: document.getElementById('roundList'),
-    clockSplitsText: document.getElementById('clockSplitsText'),
     playPauseBtn: document.getElementById('playPauseBtn'),
     resetBtn: document.getElementById('resetBtn'),
     speedSlider: document.getElementById('speedSlider'),
     speedInput: document.getElementById('speedInput'),
-    setupBtn: document.getElementById('setupBtn'),
-
-    timeHelper: document.getElementById('timeHelper')
+    speedMinusBtn: document.getElementById('speedMinusBtn'),
+    speedPlusBtn: document.getElementById('speedPlusBtn'),
+    currentLapDisplay: document.getElementById('currentLapDisplay'),
+    currentDistanceDisplay: document.getElementById('currentDistanceDisplay'),
+    currentTimeDisplay: document.getElementById('currentTimeDisplay'),
+    currentPaceDisplay: document.getElementById('currentPaceDisplay'),
+    progressPercentDisplay: document.getElementById('progressPercentDisplay'),
+    lapProgressFill: document.getElementById('lapProgressFill'),
+    languageToggle: document.getElementById('languageToggle'),
+    addSurgeBtn: document.getElementById('addSurgeBtn'),
+    surgeList: document.getElementById('surgeList'),
+    surgeModal: document.getElementById('surgeModal'),
+    surgeStart: document.getElementById('surgeStart'),
+    surgeEnd: document.getElementById('surgeEnd'),
+    surgePace: document.getElementById('surgePace'),
+    saveSurge: document.getElementById('saveSurge'),
+    cancelSurge: document.getElementById('cancelSurge'),
+    progressiveSection: document.getElementById('progressiveSection'),
+    startPace: document.getElementById('startPace'),
+    endPace: document.getElementById('endPace'),
+    curveType: document.getElementById('curveType'),
+    timeHelper: document.getElementById('timeHelper'),
+    toast: document.getElementById('toast'),
+    setupBtn: document.getElementById('setupBtn')
 };
 
 // Toast function
@@ -266,6 +275,8 @@ function setupEventListeners() {
     // Speed controls
     elements.speedSlider.addEventListener('input', updateSpeedFromSlider);
     elements.speedInput.addEventListener('input', updateSpeedFromInput);
+    elements.speedMinusBtn.addEventListener('click', () => adjustSpeed(-0.25));
+    elements.speedPlusBtn.addEventListener('click', () => adjustSpeed(0.25));
     
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboardShortcuts);
@@ -910,8 +921,28 @@ function updateAnimationUI() {
     elements.currentDistanceDisplay.textContent = `${Math.round(animationState.currentDistance)}m`;
     elements.currentTimeDisplay.textContent = formatTimeFromMs(animationState.currentTime * 1000);
     
+    // Update current pace display
+    const currentPace = calculateCurrentPace();
+    elements.currentPaceDisplay.textContent = currentPace;
+    
     const progressPercent = Math.round((animationState.currentDistance / TRACK_CONSTANTS.TOTAL_DISTANCE) * 100);
     elements.progressPercentDisplay.textContent = `${progressPercent}%`;
+}
+
+function calculateCurrentPace() {
+    if (animationState.currentDistance <= 0) return '--:--';
+    
+    const currentTimeMs = animationState.currentTime * 1000;
+    const currentDistanceKm = animationState.currentDistance / 1000;
+    const pacePerKm = currentTimeMs / currentDistanceKm;
+    
+    return formatTimeFromMs(pacePerKm);
+}
+
+function adjustSpeed(delta) {
+    const currentSpeed = parseFloat(elements.speedInput.value);
+    const newSpeed = Math.max(0, Math.min(10, currentSpeed + delta));
+    updateAnimationSpeed(newSpeed);
 }
 
 function updateRoundIndicators() {
@@ -973,11 +1004,11 @@ function updateClockSplitsText() {
         // For 1000m split: show time at 1000m if we've reached it, otherwise show lap time
         const time1000 = distance >= 1000 ? calculateExpectedTime(1000) : calculateExpectedTime(distance);
         
-        // Format the row with proper spacing
+        // Format the row with proper spacing and alignment
         const lapStr = lap.toString().padStart(3);
-        const time200Str = formatTimeFromMs(time200);
-        const time400Str = formatTimeFromMs(time400);
-        const time1000Str = formatTimeFromMs(time1000);
+        const time200Str = formatTimeFromMs(time200).padStart(7);
+        const time400Str = formatTimeFromMs(time400).padStart(7);
+        const time1000Str = formatTimeFromMs(time1000).padStart(7);
         
         text += `<span class="${rowClass}">${lapStr}   ${time200Str}   ${time400Str}   ${time1000Str}</span>\n`;
     });
