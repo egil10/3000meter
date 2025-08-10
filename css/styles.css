@@ -35,11 +35,11 @@
     --field: #bfe7a7;
     --apron: #e5e7eb;
     --lane-w: 18;
-    --inner-x: 400;
-    --inner-y: 200;
-    --inner-w: 800;
-    --inner-h: 600;
-    --inner-r: 160;
+    --inner-x: 500;
+    --inner-y: 300;
+    --inner-w: 600;
+    --inner-h: 400;
+    --inner-r: 120;
 }
 
 body {
@@ -68,7 +68,7 @@ body {
 }
 
 .header-content {
-    max-width: 1400px;
+    max-width: none;
     margin: 0 auto;
     padding: 0 2rem;
     display: flex;
@@ -117,7 +117,7 @@ body {
 
 .track-container {
     position: relative;
-    max-width: 1600px;
+    max-width: none;
     margin: 0 auto;
     padding: 0 2rem;
 }
@@ -131,7 +131,8 @@ body {
 .track-wrap {
     position: relative;
     flex: 1;
-    height: 600px;
+    height: fit-content;
+    min-height: 600px;
     border-radius: 1rem;
     overflow: hidden;
     background: white;
@@ -175,11 +176,12 @@ body {
 .main-content {
     flex: 1;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 0.4fr 1.6fr;
     gap: 2rem;
-    max-width: 1400px;
+    max-width: none;
     margin: 0 auto;
     padding: 2rem;
+    align-items: start;
 }
 
 /* Left Panel */
@@ -187,6 +189,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    height: fit-content;
+    min-height: 600px;
 }
 
 /* Right Panel */
@@ -194,6 +198,105 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    height: fit-content;
+    min-height: 600px;
+}
+
+/* Target Time Display */
+.target-time-display {
+  background: var(--neutral-50);
+  border: 2px solid var(--primary-red);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.target-time-label {
+  font-size: 0.9rem;
+  color: var(--neutral-600);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.target-time-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-red);
+  font-family: 'Courier New', monospace;
+}
+
+/* Current Status Grid */
+.current-status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  background: var(--neutral-50);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.status-label {
+  font-size: 0.8rem;
+  color: var(--neutral-600);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.status-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--neutral-800);
+  font-family: 'Courier New', monospace;
+}
+
+/* Clock Splits Display */
+.clock-splits-display {
+  background: var(--neutral-50);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.clock-splits-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--neutral-700);
+  margin-bottom: 1rem;
+}
+
+.clock-splits-text {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--neutral-700);
+  white-space: pre;
+}
+
+/* Highlight current row in clock splits */
+.clock-splits-text .current-row {
+  background: var(--primary-red);
+  color: white;
+  font-weight: 600;
+}
+
+.clock-splits-text .completed-row {
+  background: var(--success-green);
+  color: white;
+  opacity: 0.8;
+}
+
+.clock-splits-text .pending-row {
+  background: var(--neutral-100);
+  color: var(--neutral-600);
 }
 
 /* Cards */
@@ -513,11 +616,17 @@ body {
 
 .splits-table th,
 .splits-table td {
-    padding: 0.75rem;
-    text-align: left;
+    padding: 0.5rem 0.75rem;
+    text-align: center;
     border-bottom: 1px solid var(--neutral-200);
     font-size: 0.875rem;
     font-family: 'Courier New', monospace;
+}
+
+.splits-table th:first-child,
+.splits-table td:first-child {
+    text-align: left;
+    font-weight: 600;
 }
 
 .splits-table th {
@@ -629,7 +738,8 @@ body {
     gap: 1rem;
     min-width: 300px;
     max-width: 350px;
-    height: 600px;
+    height: fit-content;
+    min-height: 600px;
     justify-content: space-between;
 }
 
@@ -640,15 +750,16 @@ body {
     border-radius: 0.5rem;
     box-shadow: var(--shadow-md);
     display: flex;
-    gap: 1.5rem;
+    flex-direction: column;
+    gap: 1rem;
     max-width: 100%;
     flex: 1;
 }
 
-.track-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
 }
 
 .info-item {
@@ -673,70 +784,11 @@ body {
     text-align: right;
 }
 
-/* Round Display */
-.round-display {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    flex: 1;
-}
+/* Removed old round display styles - now using clock splits in right panel */
 
-.round-title {
-    font-size: 0.75rem;
-    color: var(--neutral-500);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
+/* Removed old round-item styles - now using table structure */
 
-.round-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    flex: 1;
-    overflow-y: auto;
-}
-
-.round-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    transition: all 0.2s ease;
-}
-
-.round-item.current {
-    background: var(--primary-red);
-    color: white;
-    font-weight: 600;
-}
-
-.round-item.completed {
-    background: var(--success-green);
-    color: white;
-    opacity: 0.8;
-}
-
-.round-item.pending {
-    background: var(--neutral-100);
-    color: var(--neutral-600);
-}
-
-.round-number {
-    font-weight: 600;
-    min-width: 1.5rem;
-}
-
-.round-distance {
-    flex: 1;
-}
-
-.round-time {
-    font-family: 'Courier New', monospace;
-    font-size: 0.7rem;
-}
+/* Removed old round-item styles - now using table structure */
 
 /* Apply monospace font to other numerical displays */
 .metric-value {
@@ -744,6 +796,35 @@ body {
 }
 
 .round-distance {
+    font-family: 'Courier New', monospace;
+}
+
+/* Add monospace font to more numerical elements */
+.info-value {
+    font-family: 'Courier New', monospace;
+}
+
+.round-time {
+    font-family: 'Courier New', monospace;
+}
+
+.round-number {
+    font-family: 'Courier New', monospace;
+}
+
+.speed-input {
+    font-family: 'Courier New', monospace;
+}
+
+.time-input-wrapper input {
+    font-family: 'Courier New', monospace;
+}
+
+.splits-table td {
+    font-family: 'Courier New', monospace;
+}
+
+.splits-table th {
     font-family: 'Courier New', monospace;
 }
 
