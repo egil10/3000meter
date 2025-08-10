@@ -4,11 +4,25 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>3000m Track Runner - Pace Calculator</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Styles and manifest -->
   <link rel="stylesheet" href="styles.css">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/svg+xml" href="stadium.svg">
+  
+  <!-- Meta tags -->
   <meta name="theme-color" content="#dc2626">
   <meta name="description" content="3000m track running pace calculator with animated runner visualization">
+  <meta property="og:title" content="3000m Track Runner – Pace Calculator">
+  <meta property="og:description" content="Plan perfect 3K pacing with lane-aware splits, surges, and live track animation.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="stadium.svg">
+  <meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
   <div class="app-container">
@@ -20,16 +34,17 @@
             <circle cx="12" cy="12" r="10"/>
             <path d="M12 2v20M2 12h20"/>
           </svg>
-          3000m Track Runner
+          <span data-i18n="title">3000m Track Runner</span>
         </h1>
         <div class="header-controls">
+          <span id="offlineToggle" class="status-pill" aria-live="polite">Online</span>
           <button id="languageToggle" class="lang-btn" title="Switch language">
             <i class="fas fa-globe"></i> EN
           </button>
           <button id="proModeToggle" class="pro-btn" title="Toggle Pro Mode">
             <i class="fas fa-crown"></i> Pro
           </button>
-          <button id="shareBtn" class="share-btn" title="Share">
+          <button id="shareBtn" class="share-btn" title="Share" aria-label="Share">
             <i class="fas fa-share"></i>
           </button>
         </div>
@@ -90,46 +105,51 @@
         </div>
 
         <!-- Track overlay with info -->
-        <div class="track-overlay">
+        <div class="track-overlay" aria-live="polite">
           <div class="track-info">
             <div class="info-item">
-              <span class="info-label">Lap</span>
+              <span class="info-label" data-i18n="lap">Lap</span>
               <span class="info-value" id="currentLap">1</span>
             </div>
             <div class="info-item">
-              <span class="info-label">Distance</span>
+              <span class="info-label" data-i18n="distance">Distance</span>
               <span class="info-value" id="currentDistance">0m</span>
             </div>
             <div class="info-item">
-              <span class="info-label">Time</span>
+              <span class="info-label" data-i18n="time">Time</span>
               <span class="info-value" id="currentTime">00:00</span>
             </div>
             <div class="info-item">
-              <span class="info-label">Progress</span>
+              <span class="info-label" data-i18n="progress">Progress</span>
               <span class="info-value" id="progressPercent">0%</span>
             </div>
           </div>
           <div class="round-display">
-            <div class="round-title">Rounds</div>
+            <div class="round-title" data-i18n="rounds">Rounds</div>
             <div id="roundList" class="round-list"></div>
           </div>
         </div>
 
         <!-- Animation controls -->
         <div class="animation-controls">
-          <button id="playPauseBtn" class="anim-btn" title="Play/Pause">
+          <button id="playPauseBtn" class="anim-btn" title="Play/Pause" aria-label="Play/Pause">
             <i class="fas fa-play"></i>
           </button>
-          <button id="resetBtn" class="anim-btn" title="Reset">
+          <button id="resetBtn" class="anim-btn" title="Reset" aria-label="Reset">
             <i class="fas fa-undo"></i>
           </button>
-          <button id="speedBtn" class="anim-btn" title="Change Speed">
+          <button id="speedBtn" class="anim-btn" title="Change Speed" aria-label="Change Speed">
             <i class="fas fa-tachometer-alt"></i>
           </button>
         </div>
 
         <!-- Speed indicator -->
         <div class="speed-indicator" id="speedDisplay">1x Speed</div>
+        
+        <!-- Mobile setup button -->
+        <button id="setupBtn" class="setup-btn" title="Setup" aria-label="Setup">
+          <i class="fas fa-cog"></i>
+        </button>
       </div>
     </section>
 
@@ -139,23 +159,24 @@
       <div class="left-panel">
         <!-- Input Card -->
         <div class="input-card">
-          <h2>Race Setup</h2>
-          
+          <h2 data-i18n="race_setup">Race Setup</h2>
+
           <div class="input-group">
-            <label for="goalTime">Target Time (mm:ss)</label>
+            <label for="goalTime" data-i18n="target_time">Target Time (mm:ss)</label>
             <div class="time-input-wrapper">
-              <input type="text" id="goalTime" value="09:30" placeholder="09:30" maxlength="7">
+              <input type="text" id="goalTime" value="09:30" placeholder="09:30" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
               <div class="time-controls">
-                <button class="time-btn" data-adjust="1" title="+1s">+1</button>
-                <button class="time-btn" data-adjust="5" title="+5s">+5</button>
-                <button class="time-btn" data-adjust="-1" title="-1s">-1</button>
-                <button class="time-btn" data-adjust="-5" title="-5s">-5</button>
+                <button class="time-btn" data-adjust="1" title="+1s" aria-label="Add 1 second">+1</button>
+                <button class="time-btn" data-adjust="5" title="+5s" aria-label="Add 5 seconds">+5</button>
+                <button class="time-btn" data-adjust="-1" title="-1s" aria-label="Subtract 1 second">-1</button>
+                <button class="time-btn" data-adjust="-5" title="-5s" aria-label="Subtract 5 seconds">-5</button>
               </div>
             </div>
+            <div class="input-helper" id="timeHelper"></div>
           </div>
 
           <div class="input-group">
-            <label for="laneSelect">Lane</label>
+            <label for="laneSelect" data-i18n="lane">Lane</label>
             <select id="laneSelect">
               <option value="1">Lane 1 (400m)</option>
               <option value="2">Lane 2 (407m)</option>
@@ -169,19 +190,25 @@
           </div>
 
           <div class="input-group">
-            <label>Pacing Strategy</label>
+            <label data-i18n="pacing_strategy">Pacing Strategy</label>
             <div class="strategy-buttons">
               <button class="strategy-btn active" data-strategy="even">
-                <i class="fas fa-equals"></i> Even
+                <i class="fas fa-equals"></i> <span data-i18n="even">Even</span>
               </button>
               <button class="strategy-btn" data-strategy="neg1">
-                <i class="fas fa-arrow-down"></i> Neg 1%
+                <i class="fas fa-arrow-down"></i> <span data-i18n="neg1">Neg 1%</span>
               </button>
               <button class="strategy-btn" data-strategy="neg2">
-                <i class="fas fa-arrow-down"></i> Neg 2.5%
+                <i class="fas fa-arrow-down"></i> <span data-i18n="neg2">Neg 2.5%</span>
+              </button>
+              <button class="strategy-btn" data-strategy="pos1">
+                <i class="fas fa-arrow-up"></i> <span data-i18n="pos1">Pos 1%</span>
+              </button>
+              <button class="strategy-btn" data-strategy="kick600">
+                <i class="fas fa-bolt"></i> <span data-i18n="kick600">Kick 600m</span>
               </button>
               <button class="strategy-btn" data-strategy="custom">
-                <i class="fas fa-sliders-h"></i> Custom
+                <i class="fas fa-sliders-h"></i> <span data-i18n="custom">Custom</span>
               </button>
             </div>
           </div>
@@ -189,60 +216,60 @@
           <div id="progressiveSection" class="input-group" style="display: none;">
             <div class="progressive-inputs">
               <div>
-                <label for="startPace">Start Pace (mm:ss/km)</label>
+                <label for="startPace" data-i18n="start_pace">Start Pace (mm:ss/km)</label>
                 <input type="text" id="startPace" value="03:10" placeholder="03:10">
               </div>
               <div>
-                <label for="endPace">End Pace (mm:ss/km)</label>
+                <label for="endPace" data-i18n="end_pace">End Pace (mm:ss/km)</label>
                 <input type="text" id="endPace" value="03:00" placeholder="03:00">
               </div>
               <div class="curve-select">
-                <label for="curveType">Progression Type</label>
+                <label for="curveType" data-i18n="progression_type">Progression Type</label>
                 <select id="curveType">
-                  <option value="linear">Linear</option>
-                  <option value="exponential">Exponential</option>
-                  <option value="sigmoidal">Sigmoidal</option>
+                  <option value="linear" data-i18n="linear">Linear</option>
+                  <option value="exponential" data-i18n="exponential">Exponential</option>
+                  <option value="sigmoidal" data-i18n="sigmoidal">Sigmoidal</option>
                 </select>
               </div>
             </div>
           </div>
 
           <div class="input-group">
-            <label>Surge Designer</label>
+            <label data-i18n="surge_designer">Surge Designer</label>
             <button id="addSurgeBtn" class="surge-btn">
-              <i class="fas fa-plus"></i> Add Surge
+              <i class="fas fa-plus"></i> <span data-i18n="add_surge">Add Surge</span>
             </button>
             <div id="surgeList" class="surge-list"></div>
           </div>
 
           <div class="action-buttons">
             <button id="calculateBtn" class="calculate-btn">
-              <i class="fas fa-calculator"></i> Calculate
+              <i class="fas fa-calculator"></i> <span data-i18n="calculate">Calculate</span>
             </button>
             <button id="printBtn" class="print-btn">
-              <i class="fas fa-print"></i> Print
+              <i class="fas fa-print"></i> <span data-i18n="print">Print</span>
             </button>
           </div>
         </div>
 
         <!-- Results Card -->
         <div class="results-card">
-          <h3>Results</h3>
+          <h3 data-i18n="results">Results</h3>
           <div class="metrics-grid">
             <div class="metric">
-              <span class="metric-label">Target Time</span>
+              <span class="metric-label" data-i18n="target_time">Target Time</span>
               <span class="metric-value" id="targetTimeDisplay">09:30</span>
             </div>
             <div class="metric">
-              <span class="metric-label">Overall Pace</span>
+              <span class="metric-label" data-i18n="overall_pace">Overall Pace</span>
               <span class="metric-value" id="overallPace">03:10</span>
             </div>
             <div class="metric">
-              <span class="metric-label">Avg Speed</span>
+              <span class="metric-label" data-i18n="avg_speed">Avg Speed</span>
               <span class="metric-value" id="avgSpeed">18.9 km/h</span>
             </div>
             <div class="metric">
-              <span class="metric-label">Laps</span>
+              <span class="metric-label" data-i18n="laps">Laps</span>
               <span class="metric-value" id="lapCount">7.5</span>
             </div>
           </div>
@@ -253,22 +280,30 @@
       <div class="right-panel">
         <!-- Splits Card -->
         <div class="splits-card">
-          <h3>Splits</h3>
+          <h3 data-i18n="splits">Splits</h3>
           <div class="splits-tabs">
             <button class="tab-btn active" data-distance="100">100m</button>
             <button class="tab-btn" data-distance="200">200m</button>
             <button class="tab-btn" data-distance="400">400m</button>
             <button class="tab-btn" data-distance="1000">1000m</button>
           </div>
-          <div id="splitsTable" class="splits-table"></div>
+          <div id="splitsTable" class="splits-table" aria-live="polite"></div>
+          <div class="splits-actions">
+            <button id="copyCsvBtn" class="csv-btn">
+              <i class="fas fa-copy"></i> <span data-i18n="copy_csv">Copy CSV</span>
+            </button>
+            <button id="downloadCsvBtn" class="csv-btn">
+              <i class="fas fa-download"></i> <span data-i18n="download_csv">Download CSV</span>
+            </button>
+          </div>
         </div>
 
         <!-- Charts Card -->
         <div class="charts-card">
-          <h3>Analytics</h3>
+          <h3 data-i18n="analytics">Analytics</h3>
           <div class="chart-controls">
             <button id="toggleCharts" class="chart-btn">
-              <i class="fas fa-chart-line"></i> Show Charts
+              <i class="fas fa-chart-line"></i> <span data-i18n="show_charts">Show Charts</span>
             </button>
           </div>
           <div id="chartsContainer" class="charts-container" style="display: none;">
@@ -285,13 +320,13 @@
 
     <!-- Footer -->
     <footer class="footer">
-      <p>3000m Track Runner - Professional pace calculator for track athletes</p>
+      <p data-i18n="footer_text">3000m Track Runner - Professional pace calculator for track athletes</p>
       <div class="footer-links">
         <button class="footer-btn" onclick="restoreSession()">
-          <i class="fas fa-history"></i> Restore Session
+          <i class="fas fa-history"></i> <span data-i18n="restore_session">Restore Session</span>
         </button>
         <button class="footer-btn" onclick="window.print()">
-          <i class="fas fa-print"></i> Print
+          <i class="fas fa-print"></i> <span data-i18n="print">Print</span>
         </button>
       </div>
     </footer>
@@ -300,31 +335,34 @@
   <!-- Surge Modal -->
   <div id="surgeModal" class="modal" style="display: none;">
     <div class="modal-content">
-      <h3>Add Surge</h3>
+      <h3 data-i18n="add_surge">Add Surge</h3>
       <form class="surge-form">
         <div class="form-group">
-          <label for="surgeStart">Start Distance (m)</label>
-          <input type="number" id="surgeStart" min="0" max="3000" step="100">
+          <label for="surgeStart" data-i18n="surge_start">Start Distance (m)</label>
+          <input type="number" id="surgeStart" min="0" max="3000" step="50">
         </div>
         <div class="form-group">
-          <label for="surgeEnd">End Distance (m)</label>
-          <input type="number" id="surgeEnd" min="0" max="3000" step="100">
+          <label for="surgeEnd" data-i18n="surge_end">End Distance (m)</label>
+          <input type="number" id="surgeEnd" min="0" max="3000" step="50">
         </div>
         <div class="form-group">
-          <label for="surgePace">Pace Adjustment (s/km)</label>
+          <label for="surgePace" data-i18n="surge_pace">Pace Adjustment (s/km)</label>
           <input type="number" id="surgePace" step="0.1" placeholder="e.g., -5 for faster">
         </div>
       </form>
       <div class="modal-actions">
-        <button id="cancelSurge" class="btn-secondary">Cancel</button>
-        <button id="saveSurge" class="btn-primary">Save Surge</button>
+        <button id="cancelSurge" class="btn-secondary" data-i18n="cancel">Cancel</button>
+        <button id="saveSurge" class="btn-primary" data-i18n="save">Save</button>
       </div>
     </div>
   </div>
 
+  <!-- Toast container -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
   <!-- Scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js" defer></script>
   <script src="script.js"></script>
 </body>
 </html>

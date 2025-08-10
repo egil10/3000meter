@@ -9,6 +9,98 @@ let isProMode = false;
 let isNorwegian = false;
 let debounceTimer = null;
 
+// Translations
+const translations = {
+    en: {
+        title: "3000m Track Runner",
+        race_setup: "Race Setup",
+        target_time: "Target Time (mm:ss)",
+        lane: "Lane",
+        pacing_strategy: "Pacing Strategy",
+        even: "Even",
+        neg1: "Neg 1%",
+        neg2: "Neg 2.5%",
+        pos1: "Pos 1%",
+        kick600: "Kick 600m",
+        custom: "Custom",
+        start_pace: "Start Pace (mm:ss/km)",
+        end_pace: "End Pace (mm:ss/km)",
+        progression_type: "Progression Type",
+        linear: "Linear",
+        exponential: "Exponential",
+        sigmoidal: "Sigmoidal",
+        surge_designer: "Surge Designer",
+        add_surge: "Add Surge",
+        calculate: "Calculate",
+        print: "Print",
+        results: "Results",
+        overall_pace: "Overall Pace",
+        avg_speed: "Avg Speed",
+        laps: "Laps",
+        splits: "Splits",
+        analytics: "Analytics",
+        show_charts: "Show Charts",
+        copy_csv: "Copy CSV",
+        download_csv: "Download CSV",
+        lap: "Lap",
+        distance: "Distance",
+        time: "Time",
+        progress: "Progress",
+        rounds: "Rounds",
+        surge_start: "Start Distance (m)",
+        surge_end: "End Distance (m)",
+        surge_pace: "Pace Adjustment (s/km)",
+        cancel: "Cancel",
+        save: "Save",
+        footer_text: "3000m Track Runner - Professional pace calculator for track athletes",
+        restore_session: "Restore Session"
+    },
+    no: {
+        title: "3000m Bane Løper",
+        race_setup: "Løps Oppsett",
+        target_time: "Måltid (mm:ss)",
+        lane: "Bane",
+        pacing_strategy: "Tempo Strategi",
+        even: "Jevnt",
+        neg1: "Neg 1%",
+        neg2: "Neg 2.5%",
+        pos1: "Pos 1%",
+        kick600: "Sprint 600m",
+        custom: "Egendefinert",
+        start_pace: "Start Tempo (mm:ss/km)",
+        end_pace: "Slutt Tempo (mm:ss/km)",
+        progression_type: "Progresjon Type",
+        linear: "Lineær",
+        exponential: "Eksponentiell",
+        sigmoidal: "Sigmoidal",
+        surge_designer: "Sprint Designer",
+        add_surge: "Legg til Sprint",
+        calculate: "Beregn",
+        print: "Skriv ut",
+        results: "Resultater",
+        overall_pace: "Gjennomsnitt Tempo",
+        avg_speed: "Gjennomsnitt Fart",
+        laps: "Runder",
+        splits: "Deltider",
+        analytics: "Analyse",
+        show_charts: "Vis Grafer",
+        copy_csv: "Kopier CSV",
+        download_csv: "Last ned CSV",
+        lap: "Runde",
+        distance: "Distanse",
+        time: "Tid",
+        progress: "Framgang",
+        rounds: "Runder",
+        surge_start: "Start Distanse (m)",
+        surge_end: "Slutt Distanse (m)",
+        surge_pace: "Tempo Justering (s/km)",
+        cancel: "Avbryt",
+        save: "Lagre",
+        footer_text: "3000m Bane Løper - Profesjonell tempo kalkulator for baneløpere",
+        restore_session: "Gjenopprett Sesjon"
+    }
+};
+
 // Animation state variables
 let animationState = {
     isPlaying: false,
@@ -90,17 +182,36 @@ const elements = {
     playPauseBtn: document.getElementById('playPauseBtn'),
     resetBtn: document.getElementById('resetBtn'),
     speedBtn: document.getElementById('speedBtn'),
-    speedDisplay: document.getElementById('speedDisplay')
+    speedDisplay: document.getElementById('speedDisplay'),
+    offlineToggle: document.getElementById('offlineToggle'),
+    setupBtn: document.getElementById('setupBtn'),
+    copyCsvBtn: document.getElementById('copyCsvBtn'),
+    downloadCsvBtn: document.getElementById('downloadCsvBtn'),
+    timeHelper: document.getElementById('timeHelper')
 };
+
+// Toast function
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1800);
+}
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
+    // Set initial language based on browser
+    if (navigator.language.startsWith('no')) {
+        isNorwegian = true;
+    }
+    
     initializeApp();
     setupEventListeners();
     setupServiceWorker();
     loadFromURL();
     updateLanguageUI();
     updateProModeUI();
+    updateI18n();
 });
 
 function initializeApp() {
@@ -150,6 +261,10 @@ function setupEventListeners() {
     elements.calculateBtn.addEventListener('click', calculatePace);
     elements.printBtn.addEventListener('click', printPaceBand);
     elements.shareBtn.addEventListener('click', shareLink);
+    
+    // CSV buttons
+    elements.copyCsvBtn.addEventListener('click', copyCSV);
+    elements.downloadCsvBtn.addEventListener('click', downloadCSV);
     
     // UI toggles
     elements.languageToggle.addEventListener('click', toggleLanguage);
@@ -450,10 +565,53 @@ function generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm) {
 }
 
 function calculateExpectedTime(distance) {
-    // This is a simplified calculation - in a real app you'd use the actual pacing strategy
+    // Apply pacing strategy
+    let paceMultiplier = 1.0;
+    
+    switch(currentStrategy) {
+        case 'even':
+            paceMultiplier = 1.0;
+            break;
+        case 'neg1':
+            // Negative split: start 1% slower, end 1% faster
+            const progress = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            paceMultiplier = 1.01 - (progress * 0.02);
+            break;
+        case 'neg2':
+            // Negative split: start 2.5% slower, end 2.5% faster
+            const progress2 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            paceMultiplier = 1.025 - (progress2 * 0.05);
+            break;
+        case 'pos1':
+            // Positive split: start 1% faster, end 1% slower
+            const progress3 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            paceMultiplier = 0.99 + (progress3 * 0.02);
+            break;
+        case 'kick600':
+            // Even pace until 2400m, then gradually increase speed
+            if (distance <= 2400) {
+                paceMultiplier = 1.0;
+            } else {
+                const kickProgress = (distance - 2400) / 600;
+                paceMultiplier = 1.0 - (kickProgress * 0.05); // 5% faster at finish
+            }
+            break;
+        case 'custom':
+            // Use progressive inputs if available
+            if (elements.startPace.value && elements.endPace.value) {
+                const startPace = parseTimeToMs(elements.startPace.value) / 1000;
+                const endPace = parseTimeToMs(elements.endPace.value) / 1000;
+                const progress4 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+                paceMultiplier = startPace + (endPace - startPace) * progress4;
+            }
+            break;
+    }
+    
     const basePacePerKm = currentPaceData ? currentPaceData.basePacePerKm : 180; // 3:00/km default
-    return (distance / 1000) * basePacePerKm * 1000;
+    return (distance / 1000) * basePacePerKm * paceMultiplier * 1000;
 }
+
+
 
 // Update functions
 function updateResults(data) {
@@ -461,6 +619,9 @@ function updateResults(data) {
     elements.overallPace.textContent = formatTime(data.basePacePerKm);
     elements.avgSpeed.textContent = `${(3.6 / data.basePacePerKm).toFixed(1)} km/h`;
     elements.lapCount.textContent = data.totalLaps.toFixed(1);
+    
+    // Update page title
+    document.title = `3000m – ${elements.goalTime.value}`;
 }
 
 function updateSplitsTable(data) {
@@ -485,8 +646,10 @@ function updateSplitsTable(data) {
     
     splitData.splits.forEach(split => {
         const paceZone = calculatePaceZone(split.pace, data.basePacePerKm);
+        const isCurrent = Math.abs(split.distance - animationState.currentDistance) < splitDistance / 2;
+        const rowClass = isCurrent ? 'current' : '';
         html += `
-            <tr>
+            <tr class="${rowClass}">
                 <td>${split.distance}m</td>
                 <td>${formatTimeFromMs(split.expectedTime)}</td>
                 <td>${formatTime(split.pace)}</td>
@@ -683,7 +846,7 @@ function validateInputs() {
     const totalMs = parseTimeToMs(timeStr);
     
     if (!totalMs) {
-        alert('Please enter a valid time in mm:ss format');
+        showToast(isNorwegian ? 'Vennligst skriv inn en gyldig tid i mm:ss format' : 'Please enter a valid time in mm:ss format');
         return false;
     }
     
@@ -717,6 +880,19 @@ function validateTimeInput(e) {
     }
     
     e.target.value = value;
+    
+    // Update helper text
+    const helper = elements.timeHelper;
+    if (!value) {
+        helper.textContent = '';
+        helper.className = 'input-helper';
+    } else if (!/^\d{1,2}:\d{2}(\.\d{1,2})?$/.test(value)) {
+        helper.textContent = isNorwegian ? 'Format: mm:ss eller mm:ss.t' : 'Format: mm:ss or mm:ss.t';
+        helper.className = 'input-helper error';
+    } else {
+        helper.textContent = '';
+        helper.className = 'input-helper success';
+    }
 }
 
 function adjustTime(seconds) {
@@ -880,16 +1056,36 @@ function saveSurge() {
     const paceAdjustment = parseFloat(document.getElementById('surgePace').value);
     
     if (isNaN(start) || isNaN(end) || isNaN(paceAdjustment)) {
-        alert('Please fill in all fields with valid numbers');
+        showToast(isNorwegian ? 'Vennligst fyll ut alle felter med gyldige tall' : 'Please fill in all fields with valid numbers');
         return;
     }
     
     if (start >= end) {
-        alert('End distance must be greater than start distance');
+        showToast(isNorwegian ? 'Slutt distanse må være større enn start distanse' : 'End distance must be greater than start distance');
         return;
     }
     
-    surges.push({ start, end, paceAdjustment });
+    // Check for overlaps
+    for (let surge of surges) {
+        if ((start >= surge.start && start < surge.end) || (end > surge.start && end <= surge.end)) {
+            showToast(isNorwegian ? 'Sprint overlapper med eksisterende sprint' : 'Surge overlaps with existing surge');
+            return;
+        }
+    }
+    
+    const editingIndex = document.getElementById('surgeModal').getAttribute('data-editing');
+    
+    if (editingIndex !== null) {
+        // Update existing surge
+        surges[parseInt(editingIndex)] = { start, end, paceAdjustment };
+        document.getElementById('surgeModal').removeAttribute('data-editing');
+        showToast(isNorwegian ? 'Sprint oppdatert' : 'Surge updated');
+    } else {
+        // Add new surge
+        surges.push({ start, end, paceAdjustment });
+        showToast(isNorwegian ? 'Sprint lagt til' : 'Surge added');
+    }
+    
     updateSurgeList();
     hideSurgeModal();
     debouncedCalculate();
@@ -899,13 +1095,13 @@ function updateSurgeList() {
     let html = '';
     surges.forEach((surge, index) => {
         html += `
-            <div class="surge-item">
+            <div class="surge-item" onclick="editSurge(${index})">
                 <div class="surge-info">
                     <div>${surge.start}m - ${surge.end}m</div>
                     <div>${surge.paceAdjustment > 0 ? '+' : ''}${surge.paceAdjustment}s/km</div>
                 </div>
                 <div class="surge-actions">
-                    <button class="delete-surge" onclick="deleteSurge(${index})">
+                    <button class="delete-surge" onclick="event.stopPropagation(); deleteSurge(${index})">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -913,6 +1109,17 @@ function updateSurgeList() {
         `;
     });
     elements.surgeList.innerHTML = html;
+}
+
+function editSurge(index) {
+    const surge = surges[index];
+    document.getElementById('surgeStart').value = surge.start;
+    document.getElementById('surgeEnd').value = surge.end;
+    document.getElementById('surgePace').value = surge.paceAdjustment;
+    
+    // Store the index being edited
+    document.getElementById('surgeModal').setAttribute('data-editing', index);
+    showSurgeModal();
 }
 
 function deleteSurge(index) {
@@ -931,10 +1138,13 @@ async function shareLink() {
     url.searchParams.set('lane', currentLane);
     url.searchParams.set('strategy', currentStrategy);
     
+    const shareText = isNorwegian ? '3000m tempoplan' : '3K pace plan';
+    
     if (navigator.share) {
         try {
             await navigator.share({
-                title: '3000m Track Runner',
+                title: document.title,
+                text: shareText,
                 url: url.toString()
             });
         } catch (err) {
@@ -947,7 +1157,7 @@ async function shareLink() {
 
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
-        alert('Link copied to clipboard!');
+        showToast(isNorwegian ? 'Lenke kopiert til utklippstavle' : 'Link copied to clipboard!');
     }).catch(() => {
         // Fallback for older browsers
         const textArea = document.createElement('textarea');
@@ -956,8 +1166,52 @@ function copyToClipboard(text) {
         textArea.select();
         document.execCommand('copy');
         document.body.removeChild(textArea);
-        alert('Link copied to clipboard!');
+        showToast(isNorwegian ? 'Lenke kopiert til utklippstavle' : 'Link copied to clipboard!');
     });
+}
+
+function generateCSV() {
+    if (!currentPaceData) {
+        showToast(isNorwegian ? 'Beregn først en løpsplan' : 'Calculate a race plan first');
+        return null;
+    }
+    
+    const activeTab = document.querySelector('.tab-btn.active');
+    const splitDistance = parseInt(activeTab.dataset.distance);
+    const splitData = currentPaceData.splits.find(s => s.distance === splitDistance);
+    
+    if (!splitData) return null;
+    
+    let csv = 'Distance,Time,Pace,Zone\n';
+    splitData.splits.forEach(split => {
+        const paceZone = calculatePaceZone(split.pace, currentPaceData.basePacePerKm);
+        csv += `${split.distance}m,${formatTimeFromMs(split.expectedTime)},${formatTime(split.pace)},${paceZone}\n`;
+    });
+    
+    return csv;
+}
+
+function copyCSV() {
+    const csv = generateCSV();
+    if (csv) {
+        copyToClipboard(csv);
+    }
+}
+
+function downloadCSV() {
+    const csv = generateCSV();
+    if (csv) {
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `3000m_splits_${elements.goalTime.value.replace(':', '_')}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        showToast(isNorwegian ? 'CSV lastet ned' : 'CSV downloaded');
+    }
 }
 
 function loadFromURL() {
@@ -993,6 +1247,18 @@ function updateURL() {
 function toggleLanguage() {
     isNorwegian = !isNorwegian;
     updateLanguageUI();
+    updateI18n();
+    saveToLocalStorage();
+}
+
+function updateI18n() {
+    const lang = isNorwegian ? 'no' : 'en';
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+            element.textContent = translations[lang][key];
+        }
+    });
 }
 
 function updateLanguageUI() {
@@ -1027,9 +1293,25 @@ function handleKeyboardShortcuts(e) {
         }
     }
     
+    // Animation controls
     if (e.key === ' ') {
         e.preventDefault();
         toggleAnimation();
+    } else if (e.key === 'r') {
+        e.preventDefault();
+        resetAnimation();
+    } else if (e.key === 's' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        changeAnimationSpeed();
+    }
+    
+    // Time adjustments
+    if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        adjustTime(e.shiftKey ? 5 : 1);
+    } else if (e.key === '-') {
+        e.preventDefault();
+        adjustTime(e.shiftKey ? -5 : -1);
     }
 }
 
@@ -1092,7 +1374,26 @@ function setupServiceWorker() {
                 console.log('SW registration failed: ', registrationError);
             });
     }
+    
+    // Set up offline status monitoring
+    updateOfflineStatus();
+    window.addEventListener('online', updateOfflineStatus);
+    window.addEventListener('offline', updateOfflineStatus);
 }
 
-// Global function for surge deletion
+function updateOfflineStatus() {
+    const isOffline = !navigator.onLine;
+    const statusElement = elements.offlineToggle;
+    
+    if (isOffline) {
+        statusElement.textContent = isNorwegian ? 'Offline' : 'Offline';
+        statusElement.classList.add('offline');
+    } else {
+        statusElement.textContent = isNorwegian ? 'Online' : 'Online';
+        statusElement.classList.remove('offline');
+    }
+}
+
+// Global functions
 window.deleteSurge = deleteSurge;
+window.editSurge = editSurge;
