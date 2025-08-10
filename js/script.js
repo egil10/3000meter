@@ -439,36 +439,17 @@ function drawMarkers() {
                 numbersG.appendChild(t);
             }
             
-            if(label) {
-                const t = document.createElementNS('http://www.w3.org/2000/svg','text');
-                t.textContent = label;
-                t.setAttribute('x', p0.x - tx * 30 + nx * 10);
-                t.setAttribute('y', p0.y - ty * 30 + ny * 10);
-                t.setAttribute('fill', '#ffffff');
-                t.setAttribute('font-size', '14');
-                t.setAttribute('font-weight', '700');
-                markersG.appendChild(t);
-            }
+
         } else {
             drawSingle(0, 0);
-            if(label) {
-                const t = document.createElementNS('http://www.w3.org/2000/svg','text');
-                t.textContent = label;
-                t.setAttribute('x', p0.x + nx * (outerOff + 12));
-                t.setAttribute('y', p0.y + ny * (outerOff + 12));
-                t.setAttribute('fill', '#111827');
-                t.setAttribute('font-size', '12');
-                t.setAttribute('font-weight', '700');
-                markersG.appendChild(t);
-            }
         }
     }
     
     // Place markers
-    drawPerpMarker(0, 'START', {start:true});
-    drawPerpMarker(totalLen * 0.25, '300m');
-    drawPerpMarker(totalLen * 0.50, '200m');
-    drawPerpMarker(totalLen * 0.75, '100m');
+    drawPerpMarker(0, '', {start:true});
+    drawPerpMarker(totalLen * 0.25, '');
+    drawPerpMarker(totalLen * 0.50, '');
+    drawPerpMarker(totalLen * 0.75, '');
 }
 
 function addRoundIndicators() {
