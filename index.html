@@ -200,92 +200,60 @@
                 <section class="track-section">
                     <div class="track-card">
                         <h3>Track Visualization</h3>
-                        <div class="track-container">
-                            <!-- Field SVG as Centerpiece -->
-                            <div class="field-backdrop">
-                                <img src="field.svg" alt="Track Field" class="field-image">
-                                <div class="field-overlay"></div>
-                            </div>
-                            
-                            <!-- Track SVG with Runner -->
-                            <svg id="trackSVG" class="track-svg" viewBox="0 0 800 600">
-                                <defs>
-                                    <filter id="glow">
-                                        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                                        <feMerge> 
-                                            <feMergeNode in="coloredBlur"/>
-                                            <feMergeNode in="SourceGraphic"/>
-                                        </feMerge>
-                                    </filter>
-                                    <filter id="shadow">
-                                        <feDropShadow dx="2" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.3)"/>
-                                    </filter>
-                                </defs>
-                                
-                                <!-- Runner Animation -->
-                                <g id="runnerGroup">
-                                    <circle id="runner" cx="400" cy="300" r="8" fill="#dc2626" filter="url(#glow)">
-                                        <animate id="runnerAnimation" attributeName="opacity" values="1;0.7;1" dur="1s" repeatCount="indefinite"/>
-                                    </circle>
-                                    <circle id="runnerTrail" cx="400" cy="300" r="4" fill="#fecaca" opacity="0.6">
-                                        <animate attributeName="opacity" values="0.6;0.2;0.6" dur="0.8s" repeatCount="indefinite"/>
-                                    </circle>
+                        <div id="trackContainer">
+                            <svg id="trackSVG" width="800" height="600">
+                                <g id="trackGroup">
+                                    <svg width="682" height="442" x="59" y="79" viewBox="0 0 682 442">
+                                        <g>
+                                            <path d="M 209.16 1 L 472.84 1 C 587.8 1 681 99.5 681 221 C 681 342.5 587.8 441 472.84 441 L 209.16 441 C 94.2 441 1 99.5 1 221 C 1 99.5 94.2 1 209.16 1 Z" fill="#f5f5f5" stroke="#666666" stroke-width="2" style="fill: light-dark(rgb(245, 245, 245), rgb(26, 26, 26)); stroke: light-dark(rgb(102, 102, 102), rgb(149, 149, 149));"/>
+                                            <path d="M 224.67 41 L 457.33 41 C 558.77 41 641 121.59 641 221 C 641 320.41 558.77 401 457.33 401 L 224.67 401 C 123.23 401 41 320.41 41 221 C 41 121.59 123.23 41 224.67 41 Z" fill="#d46a6a" stroke="none" style="fill: light-dark(rgb(212, 106, 106), rgb(198, 107, 107));"/>
+                                            <path d="M 236.31 61 L 445.69 61 C 536.99 61 611 132.63 611 221 C 611 309.37 536.99 381 445.69 381 L 236.31 381 C 145.01 381 71 309.37 71 221 C 71 132.63 145.01 61 236.31 61 Z" fill="none" stroke="#ffffff" stroke-width="2" style="stroke: light-dark(rgb(255, 255, 255), rgb(18, 18, 18));"/>
+                                            <path d="M 228.55 47 L 453.45 47 C 551.51 47 631 124.9 631 317.1 551.51 395 453.45 395 L 228.55 395 C 130.49 395 51 317.1 51 221 C 51 124.9 130.49 47 228.55 47 Z" fill="none" stroke="#ffffff" stroke-width="2" style="stroke: light-dark(rgb(255, 255, 255), rgb(18, 18, 18));"/>
+                                            <path d="M 232.43 53 L 449.57 53 C 544.25 53 621 128.22 621 221 C 621 313.78 544.25 389 449.57 389 L 232.43 389 C 137.75 389 61 313.78 61 221 C 61 128.22 137.75 53 232.43 53 Z" fill="none" stroke="#ffffff" stroke-width="2" style="stroke: light-dark(rgb(255, 255, 255), rgb(18, 18, 18));"/>
+                                            <path d="M 186 112.67 C 186 100.7 195.46 91 207.12 91 L 519.69 91 C 569.24 114.3 601.01 165.08 601.01 221 C 601.01 276.92 569.24 327.7 519.69 351 L 207.12 351 C 201.52 351 196.15 348.72 192.19 344.65 C 188.23 340.59 186 335.08 186 329.33 L 186 112.67 Z" fill="#7ac47a" stroke="none" style="fill: light-dark(rgb(122, 196, 122), rgb(42, 105, 42));"/>
+                                            <path d="M 76 112.67 C 76 100.7 85.46 91 97.12 91 L 409.69 91 C 459.24 114.3 491.01 165.08 491.01 221 C 491.01 276.92 459.24 327.7 409.69 351 L 97.12 351 C 91.52 351 86.15 348.72 82.19 344.65 C 78.23 340.59 76 335.08 76 329.33 L 76 112.67 Z" fill="#7ac47a" stroke="none" transform="rotate(-180,283.5,221)" style="fill: light-dark(rgb(122, 196, 122), rgb(42, 105, 42));"/>
+                                            <rect x="519" y="55" width="2" height="28" fill="#ffffff" stroke="none" style="fill: light-dark(#ffffff, var(--ge-dark-color, #121212));"/>
+                                            <rect x="155" y="59" width="2" height="28" fill="#ffffff" stroke="none" style="fill: light-dark(#ffffff, var(--ge-dark-color, #121212));"/>
+                                            <rect x="157" y="357" width="2" height="28" fill="#ffffff" stroke="none" style="fill: light-dark(#ffffff, var(--ge-dark-color, #121212));"/>
+                                            <rect x="521" y="357" width="2" height="2" fill="#ffffff" stroke="none" style="fill: light-dark(rgb(255, 255, 255), rgb(18, 18, 18));"/>
+                                            <rect x="521" y="359" width="2" height="2" fill="#000000" stroke="none" style="fill: light-dark(rgb(0, 0, 0), rgb(237, 237, 237));"/>
+                                            <rect x="521" y="361" width="2" height="2" fill="#ffffff" stroke="none" style="fill: light-dark(rgb(255, 255, 255), rgb(18, 18, 18));"/>
+                                            <rect x="521" y="363" width="2" height="2" fill="#000000" stroke="none" style="fill: light-dark(rgb(0, 0, 0), rgb(237, 237, 237));"/>
+                                            <rect x="521" y="365" width="2" height="2" fill="#ffffff" stroke="none" style="fill: light-dark(rgb(255, 255, 255), rgb(18, 18, 18));"/>
+                                            <rect x="521" y="367" width="2" height="2" fill="#000000" stroke="none" style="fill: light-dark(rgb(0, 0, 0), rgb(237, 237, 237));"/>
+                                            <rect x="521" y="369" width="2" height="2" fill="#ffffff" stroke="none" style="fill: light-dark(rgb(255, 255, 255), rgb(18, 18, 18));"/>
+                                            <rect x="521" y="371" width="2" height="2" fill="#000000" stroke="none" style="fill: light-dark(rgb(0, 0, 0), rgb(237, 237, 237));"/>
+                                            <rect x="523" y="357" width="2" height="2" fill="#ffffff" stroke="none" style="fill: light-dark(rgb(255, 255, 255), rgb(18, 18, 18));"/>
+                                            <rect x="523" y="359" width="2" height="2" fill="#000000" stroke="none" style="fill: light-dark(rgb(0, 0, 0), rgb(237, 237, 237));"/>
+                                            <rect x="523" y="361" width="2" height="2" fill="#ffffff" stroke="none" style="fill: light-dark(rgb(255, 255, 255), rgb(18, 18, 18));"/>
+                                            <rect x="523" y="363" width="2" height="2" fill="#000000" stroke="none" style="fill: light-dark(rgb(0, 0, 0), rgb(237, 237, 237));"/>
+                                            <rect x="523" y="365" width="2" height="2" fill="#ffffff" stroke="none" style="fill: light-dark(rgb(255, 255, 255), rgb(18, 18, 18));"/>
+                                            <rect x="523" y="367" width="2" height="2" fill="#000000" stroke="none" style="fill: light-dark(rgb(0, 0, 0), rgb(237, 237, 237));"/>
+                                            <rect x="523" y="369" width="2" height="2" fill="#ffffff" stroke="none" style="fill: light-dark(rgb(255, 255, 255), rgb(18, 18, 18));"/>
+                                            <rect x="523" y="371" width="2" height="2" fill="#000000" stroke="none" style="fill: light-dark(rgb(0, 0, 0), rgb(237, 237, 237));"/>
+                                        </g>
+                                    </svg>
                                 </g>
-                                
-                                <!-- Round Indicators -->
+                                <g id="runnerGroup">
+                                    <circle id="runnerTrail" cx="400" cy="300" r="8" class="runner-trail"/>
+                                    <circle id="runner" cx="400" cy="300" r="5" class="runner"/>
+                                </g>
                                 <g id="roundIndicators"></g>
-                                
-                                <!-- Lap Progress Bar -->
-                                <rect id="lapProgressBar" x="50" y="550" width="700" height="8" rx="4" fill="#e5e5e5" opacity="0.3"/>
-                                <rect id="lapProgressFill" x="50" y="550" width="0" height="8" rx="4" fill="#dc2626"/>
                             </svg>
-                            
-                            <!-- Enhanced Track Overlay -->
-                            <div class="track-overlay">
-                                <div class="track-info">
-                                    <div class="info-item">
-                                        <span class="info-label">Current Lap:</span>
-                                        <span id="currentLap" class="info-value">0</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Distance:</span>
-                                        <span id="currentDistance" class="info-value">0m</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Time:</span>
-                                        <span id="currentTime" class="info-value">--:--</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Progress:</span>
-                                        <span id="progressPercent" class="info-value">0%</span>
-                                    </div>
-                                </div>
-                                
-                                <!-- Round Display -->
-                                <div class="round-display">
-                                    <div class="round-title">Rounds</div>
-                                    <div id="roundList" class="round-list">
-                                        <!-- Rounds will be generated here -->
-                                    </div>
-                                </div>
+                            <div id="lapProgressBar">
+                                <div id="lapProgressFill"></div>
                             </div>
-                            
-                            <!-- Animation Controls -->
-                            <div class="animation-controls">
-                                <button id="playPauseBtn" class="anim-btn" title="Play/Pause Animation">
-                                    <i class="fas fa-play"></i>
-                                </button>
-                                <button id="resetBtn" class="anim-btn" title="Reset Animation">
-                                    <i class="fas fa-undo"></i>
-                                </button>
-                                <button id="speedBtn" class="anim-btn" title="Change Speed">
-                                    <i class="fas fa-tachometer-alt"></i> 1x
-                                </button>
-                            </div>
-                            
-                            <!-- Speed Indicator -->
-                            <div class="speed-indicator">
+                            <div id="animationControls">
+                                <button id="playPauseBtn"><i class="fas fa-play"></i></button>
+                                <button id="resetBtn"><i class="fas fa-redo"></i></button>
+                                <button id="speedBtn"><i class="fas fa-tachometer-alt"></i> 1x</button>
                                 <span id="speedDisplay">1x Speed</span>
+                            </div>
+                            <div id="animationInfo">
+                                <p>Lap: <span id="currentLap">0</span></p>
+                                <p>Distance: <span id="currentDistance">0m</span></p>
+                                <p>Time: <span id="currentTime">--:--</span></p>
+                                <p>Progress: <span id="progressPercent">0%</span></p>
                             </div>
                         </div>
                     </div>
