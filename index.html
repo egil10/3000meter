@@ -258,17 +258,30 @@
         <!-- Charts Card -->
         <div class="charts-card">
           <h3 data-i18n="analytics">Analytics</h3>
-          <div class="chart-controls">
-            <button id="toggleCharts" class="chart-btn">
-              <i class="fas fa-chart-line"></i> <span data-i18n="show_charts">Show Charts</span>
-            </button>
-          </div>
-          <div id="chartsContainer" class="charts-container" style="display: none;">
+          <div id="chartsContainer" class="charts-container">
             <div class="chart-wrapper">
               <canvas id="paceChart"></canvas>
             </div>
             <div class="chart-wrapper">
               <canvas id="deltaChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cumulative Times Panel -->
+      <div class="cumulative-times-panel">
+        <div class="cumulative-times-card">
+          <h3>Cumulative Times</h3>
+          <div id="cumulativeTimesContainer" class="cumulative-times-container">
+            <div class="cumulative-times-table">
+              <div class="table-header">
+                <span>Distance</span>
+                <span>Time</span>
+              </div>
+              <div id="cumulativeTimesList" class="table-body">
+                <!-- Cumulative times will be populated here -->
+              </div>
             </div>
           </div>
         </div>

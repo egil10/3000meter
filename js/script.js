@@ -198,6 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
         curveType: document.getElementById('curveType'),
         timeHelper: document.getElementById('timeHelper'),
         paceHelper: document.getElementById('paceHelper'),
+        cumulativeTimesList: document.getElementById('cumulativeTimesList'),
         toast: document.getElementById('toast')
     };
     
@@ -293,7 +294,6 @@ function setupEventListeners() {
     
     // UI toggles
     elements.languageToggle.addEventListener('click', toggleLanguage);
-    elements.toggleCharts.addEventListener('click', toggleCharts);
     
     // Tab buttons (removed - now showing all splits in one table)
     
@@ -560,7 +560,7 @@ function generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm) {
     splitDistances.forEach(splitDist => {
         const splits = [];
         for(let distance = splitDist; distance <= TRACK_CONSTANTS.TOTAL_DISTANCE; distance += splitDist) {
-            const expectedTime = calculateExpectedTime(distance);
+            const expectedTime = calculateExpectedTime(distance, basePacePerKm);
             splits.push({
                 distance: distance,
                 expectedTime: expectedTime,
@@ -573,9 +573,9 @@ function generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm) {
     // Generate lap segments
     for(let lap = 1; lap <= totalLaps; lap++) {
         const lapDistance = lap * laneDistance;
-        const expectedTime = calculateExpectedTime(lapDistance);
+        const expectedTime = calculateExpectedTime(lapDistance, basePacePerKm);
         const prevLapDistance = (lap - 1) * laneDistance;
-        const prevExpectedTime = calculateExpectedTime(prevLapDistance);
+        const prevExpectedTime = calculateExpectedTime(prevLapDistance, basePacePerKm);
         
         data.segments.push({
             lap: lap,
@@ -590,14 +590,20 @@ function generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm) {
     return data;
 }
 
-function calculateExpectedTime(distance) {
-    if (!currentPaceData) {
+function calculateExpectedTime(distance, basePacePerKmParam = null) {
+    // Use provided basePacePerKm or fall back to currentPaceData
+    let basePacePerKm;
+    
+    if (basePacePerKmParam !== null) {
+        basePacePerKm = basePacePerKmParam;
+    } else if (currentPaceData) {
+        basePacePerKm = currentPaceData.basePacePerKm;
+    } else {
         // If no pace data is available, calculate from goal time
         const goalTimeMs = parseTimeToMs(elements.goalTime.value);
         const laneDistance = LANE_DISTANCES[currentLane];
         const totalLaps = TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance;
-        const basePacePerKm = (goalTimeMs / 1000) / (TRACK_CONSTANTS.TOTAL_DISTANCE / 1000);
-        return (distance / 1000) * basePacePerKm * 1000;
+        basePacePerKm = (goalTimeMs / 1000) / (TRACK_CONSTANTS.TOTAL_DISTANCE / 1000);
     }
     
     // Apply pacing strategy
@@ -612,21 +618,24 @@ function calculateExpectedTime(distance) {
             const progress = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
             const secondsPer400m = -2;
             const totalSecondsAdjustment = (distance / 400) * secondsPer400m;
-            paceMultiplier = 1.0 + (totalSecondsAdjustment / (distance / 1000 * basePacePerKm));
+            const baseTimeForDistance = (distance / 1000) * basePacePerKm;
+            paceMultiplier = (baseTimeForDistance + totalSecondsAdjustment) / baseTimeForDistance;
             break;
         case 'neg1':
             // Negative split: -1 second per 400m
             const progress2 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
             const secondsPer400m2 = -1;
             const totalSecondsAdjustment2 = (distance / 400) * secondsPer400m2;
-            paceMultiplier = 1.0 + (totalSecondsAdjustment2 / (distance / 1000 * basePacePerKm));
+            const baseTimeForDistance2 = (distance / 1000) * basePacePerKm;
+            paceMultiplier = (baseTimeForDistance2 + totalSecondsAdjustment2) / baseTimeForDistance2;
             break;
         case 'pos1':
             // Positive split: +1 second per 400m
             const progress3 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
             const secondsPer400m3 = 1;
             const totalSecondsAdjustment3 = (distance / 400) * secondsPer400m3;
-            paceMultiplier = 1.0 + (totalSecondsAdjustment3 / (distance / 1000 * basePacePerKm));
+            const baseTimeForDistance3 = (distance / 1000) * basePacePerKm;
+            paceMultiplier = (baseTimeForDistance3 + totalSecondsAdjustment3) / baseTimeForDistance3;
             break;
         case 'neg5p':
             // Negative split: start 5% slower, end 5% faster
@@ -658,8 +667,6 @@ function calculateExpectedTime(distance) {
             break;
     }
     
-    const basePacePerKm = currentPaceData.basePacePerKm;
-    
     // For even pacing, ensure exact calculation to avoid precision issues
     if (currentStrategy === 'even') {
         return (distance / 1000) * basePacePerKm * 1000;
@@ -672,11 +679,14 @@ function calculateExpectedTime(distance) {
 
 // Update functions
 function updateResults(data) {
-    elements.largeTargetTimeDisplay.textContent = `00:00 / ${formatTimeFromMsSimple(data.totalTime)}`;
+    elements.largeTargetTimeDisplay.textContent = `00:00.00 / ${formatTimeFromMs(data.totalTime)}`;
     // Removed references to non-existent elements
     
     // Update page title
     document.title = `3000METER.com – ${elements.goalTime.value}`;
+    
+    // Update cumulative times
+    updateCumulativeTimes(data);
 }
 
 
@@ -773,6 +783,11 @@ function updateDeltaChart(data) {
         return Math.round(delta * 10) / 10;
     });
     
+    // Calculate dynamic Y-axis range based on data
+    const maxDelta = Math.max(...deltas.map(Math.abs));
+    const yMin = Math.max(-10, -Math.ceil(maxDelta * 1.2)); // At least -10, but can go lower if needed
+    const yMax = Math.max(10, Math.ceil(maxDelta * 1.2));   // At least 10, but can go higher if needed
+    
     deltaChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -790,10 +805,10 @@ function updateDeltaChart(data) {
             maintainAspectRatio: false,
             scales: {
                 y: {
-                    min: -10,
-                    max: 10,
+                    min: yMin,
+                    max: yMax,
                     ticks: {
-                        stepSize: 2
+                        stepSize: Math.max(1, Math.ceil((yMax - yMin) / 10)) // Dynamic step size
                     }
                 }
             },
@@ -1111,10 +1126,15 @@ function updateAnimationUI() {
     elements.progressPercentDisplay.textContent = `${progressPercent}%`;
     
     // Update the large target time display with current time / target time format
-    const currentTimeFormatted = formatTimeFromMsSimple(animationState.currentTime * 1000);
+    const currentTimeFormatted = formatTimeFromMs(animationState.currentTime * 1000);
     const goalTimeMs = parseTimeToMs(elements.goalTime.value);
-    const targetTimeFormatted = formatTimeFromMsSimple(goalTimeMs);
+    const targetTimeFormatted = formatTimeFromMs(goalTimeMs);
     elements.largeTargetTimeDisplay.textContent = `${currentTimeFormatted} / ${targetTimeFormatted}`;
+    
+    // Update cumulative times during animation
+    if (currentPaceData) {
+        updateCumulativeTimes(currentPaceData);
+    }
     
 
 }
@@ -1161,6 +1181,41 @@ function updateRoundList() {
     // Clock splits display removed from UI
 }
 
+function updateCumulativeTimes(data) {
+    if (!elements.cumulativeTimesList || !data) return;
+    
+    const container = elements.cumulativeTimesList;
+    container.innerHTML = '';
+    
+    // Get cumulative times for 200m, 400m, and 1000m intervals
+    const intervals = [200, 400, 1000];
+    const currentDistance = animationState.currentDistance;
+    
+    intervals.forEach(interval => {
+        for (let distance = interval; distance <= TRACK_CONSTANTS.TOTAL_DISTANCE; distance += interval) {
+            const expectedTime = calculateExpectedTime(distance, data.basePacePerKm);
+            const timeFormatted = formatTimeFromMsSimple(expectedTime);
+            
+            const row = document.createElement('div');
+            row.className = 'cumulative-time-row';
+            
+            // Determine row state
+            if (distance === currentDistance) {
+                row.classList.add('current');
+            } else if (distance < currentDistance) {
+                row.classList.add('completed');
+            }
+            
+            row.innerHTML = `
+                <span class="distance">${distance}m</span>
+                <span class="time">${timeFormatted}</span>
+            `;
+            
+            container.appendChild(row);
+        }
+    });
+}
+
 
 
 function calculatePaceZone(segmentPace, basePace) {
@@ -1171,17 +1226,7 @@ function calculatePaceZone(segmentPace, basePace) {
 }
 
 // UI functions
-function toggleCharts() {
-    const isVisible = elements.chartsContainer.style.display !== 'none';
-    elements.chartsContainer.style.display = isVisible ? 'none' : 'block';
-    elements.toggleCharts.innerHTML = isVisible ? 
-        '<i class="fas fa-chart-line"></i> Show Charts' : 
-        '<i class="fas fa-chart-line"></i> Hide Charts';
-    
-    if (!isVisible && currentPaceData) {
-        updateCharts(currentPaceData);
-    }
-}
+
 
 function showSurgeModal() {
     document.getElementById('surgeModal').style.display = 'flex';
