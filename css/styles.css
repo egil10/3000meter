@@ -137,7 +137,6 @@ body {
     background: white;
     box-shadow: var(--shadow-lg);
     border: 2px solid var(--primary-red);
-    padding: 1rem;
 }
 
 .track-wrap svg {
@@ -518,6 +517,7 @@ body {
     text-align: left;
     border-bottom: 1px solid var(--neutral-200);
     font-size: 0.875rem;
+    font-family: 'Courier New', monospace;
 }
 
 .splits-table th {
@@ -738,6 +738,21 @@ body {
     font-size: 0.7rem;
 }
 
+/* Apply monospace font to other numerical displays */
+.metric-value {
+    font-family: 'Courier New', monospace;
+}
+
+.round-distance {
+    font-family: 'Courier New', monospace;
+}
+
+/* Make round indicators transparent */
+.round-indicator {
+    fill: transparent;
+    stroke: transparent;
+}
+
 /* Animation Controls */
 .animation-controls {
     display: flex;
@@ -843,7 +858,7 @@ body {
 .speed-input {
     width: 60px;
     padding: 0.25rem 0.5rem;
-    border: 1px solid var(--neutral-200);
+    border: none;
     border-radius: 0.25rem;
     font-size: 0.875rem;
     text-align: center;

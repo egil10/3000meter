@@ -900,25 +900,22 @@ function parseTimeToMs(timeStr) {
 }
 
 function formatTimeFromMs(ms) {
-    if (!ms || ms < 0) return '00:00';
+    if (!ms || ms < 0) return '00:00.00';
     
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    const tenths = Math.floor((ms % 1000) / 100);
+    const hundredths = Math.floor((ms % 1000) / 10);
     
-    if (tenths > 0) {
-        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${tenths}`;
-    }
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${hundredths.toString().padStart(2, '0')}`;
 }
 
 function formatTime(seconds) {
-    if (!seconds || seconds < 0) return '00:00';
+    if (!seconds || seconds < 0) return '00:00.00';
     
     const minutes = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.00`;
 }
 
 function updateProgressiveSection() {
