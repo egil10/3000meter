@@ -159,7 +159,6 @@ const elements = {
     chartsContainer: document.getElementById('chartsContainer'),
     paceChart: document.getElementById('paceChart'),
     deltaChart: document.getElementById('deltaChart'),
-    splitsTable: document.getElementById('splitsTable'),
     targetTimeDisplay: document.getElementById('targetTimeDisplay'),
     largeTargetTimeDisplay: document.getElementById('largeTargetTimeDisplay'),
     overallPace: document.getElementById('overallPace'),
@@ -183,8 +182,7 @@ const elements = {
     speedSlider: document.getElementById('speedSlider'),
     speedInput: document.getElementById('speedInput'),
     setupBtn: document.getElementById('setupBtn'),
-    copyCsvBtn: document.getElementById('copyCsvBtn'),
-    downloadCsvBtn: document.getElementById('downloadCsvBtn'),
+
     timeHelper: document.getElementById('timeHelper')
 };
 
@@ -257,9 +255,7 @@ function setupEventListeners() {
     // Action buttons
     elements.calculateBtn.addEventListener('click', calculatePace);
     
-    // CSV buttons
-    elements.copyCsvBtn.addEventListener('click', copyCSV);
-    elements.downloadCsvBtn.addEventListener('click', downloadCSV);
+
     
     // UI toggles
     elements.languageToggle.addEventListener('click', toggleLanguage);
@@ -483,7 +479,6 @@ function calculatePace() {
     currentPaceData = data;
     
     updateResults(data);
-    updateSplitsTable(data);
     updateTrackVisualization(data);
     updateCharts(data);
     updateAnimationState(data);
@@ -596,57 +591,7 @@ function updateResults(data) {
     document.title = `3000m – ${elements.goalTime.value}`;
 }
 
-function updateSplitsTable(data) {
-    // Create a compact table with columns for Lap, 100m, 200m, 400m, 1000m
-    let html = `
-        <table>
-            <thead>
-                <tr>
-                    <th>Lap</th>
-                    <th>100m</th>
-                    <th>200m</th>
-                    <th>400m</th>
-                    <th>1000m</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-    
-    // Get all split data
-    const split100 = data.splits.find(s => s.distance === 100);
-    const split200 = data.splits.find(s => s.distance === 200);
-    const split400 = data.splits.find(s => s.distance === 400);
-    const split1000 = data.splits.find(s => s.distance === 1000);
-    
-    // Create rows for each lap (up to 9 laps)
-    for (let lap = 1; lap <= 9; lap++) {
-        const lapDistance = lap * data.laneDistance;
-        const currentDistance = animationState.currentDistance;
-        
-        // Determine if this row is current
-        const isCurrent = Math.abs(lapDistance - currentDistance) < data.laneDistance / 2;
-        const rowClass = isCurrent ? 'current' : '';
-        
-        // Get times for each split at this lap distance
-        const time100 = split100?.splits.find(s => s.distance === lapDistance)?.expectedTime;
-        const time200 = split200?.splits.find(s => s.distance === lapDistance)?.expectedTime;
-        const time400 = split400?.splits.find(s => s.distance === lapDistance)?.expectedTime;
-        const time1000 = split1000?.splits.find(s => s.distance === lapDistance)?.expectedTime;
-        
-        html += `
-            <tr class="${rowClass}">
-                <td>${lap}</td>
-                <td>${time100 ? formatTimeFromMs(time100) : '-'}</td>
-                <td>${time200 ? formatTimeFromMs(time200) : '-'}</td>
-                <td>${time400 ? formatTimeFromMs(time400) : '-'}</td>
-                <td>${time1000 ? formatTimeFromMs(time1000) : '-'}</td>
-            </tr>
-        `;
-    }
-    
-    html += '</tbody></table>';
-    elements.splitsTable.innerHTML = html;
-}
+
 
 function updateTrackVisualization(data) {
     // Reset animation state
@@ -1164,59 +1109,7 @@ function copyToClipboard(text) {
     });
 }
 
-function generateCSV() {
-    if (!currentPaceData) {
-        showToast(isNorwegian ? 'Beregn først en løpsplan' : 'Calculate a race plan first');
-        return null;
-    }
-    
-    // Generate CSV for the new compact table format
-    let csv = 'Lap,100m,200m,400m,1000m\n';
-    
-    // Get all split data
-    const split100 = currentPaceData.splits.find(s => s.distance === 100);
-    const split200 = currentPaceData.splits.find(s => s.distance === 200);
-    const split400 = currentPaceData.splits.find(s => s.distance === 400);
-    const split1000 = currentPaceData.splits.find(s => s.distance === 1000);
-    
-    // Create rows for each lap (up to 9 laps)
-    for (let lap = 1; lap <= 9; lap++) {
-        const lapDistance = lap * currentPaceData.laneDistance;
-        
-        // Get times for each split at this lap distance
-        const time100 = split100?.splits.find(s => s.distance === lapDistance)?.expectedTime;
-        const time200 = split200?.splits.find(s => s.distance === lapDistance)?.expectedTime;
-        const time400 = split400?.splits.find(s => s.distance === lapDistance)?.expectedTime;
-        const time1000 = split1000?.splits.find(s => s.distance === lapDistance)?.expectedTime;
-        
-        csv += `${lap},${time100 ? formatTimeFromMs(time100) : ''},${time200 ? formatTimeFromMs(time200) : ''},${time400 ? formatTimeFromMs(time400) : ''},${time1000 ? formatTimeFromMs(time1000) : ''}\n`;
-    }
-    
-    return csv;
-}
 
-function copyCSV() {
-    const csv = generateCSV();
-    if (csv) {
-        copyToClipboard(csv);
-    }
-}
-
-function downloadCSV() {
-    const csv = generateCSV();
-    if (csv) {
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `3000m_splits_${elements.goalTime.value.replace(':', '_')}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        showToast(isNorwegian ? 'CSV lastet ned' : 'CSV downloaded');
-    }
-}
 
 function loadFromURL() {
     const urlParams = new URLSearchParams(window.location.search);

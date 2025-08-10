@@ -94,25 +94,29 @@
 
           <!-- Track controls panel -->
           <div class="track-controls-panel">
-            <!-- Track overlay with info -->
-            <div class="track-overlay" aria-live="polite">
-              <div class="info-grid">
-                <div class="info-item">
-                  <span class="info-label" data-i18n="lap">Lap</span>
-                  <span class="info-value" id="currentLap">1</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label" data-i18n="distance">Distance</span>
-                  <span class="info-value" id="currentDistance">0m</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label" data-i18n="time">Time</span>
-                  <span class="info-value" id="currentTime">00:00.00</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label" data-i18n="progress">Progress</span>
-                  <span class="info-value" id="progressPercent">0%</span>
-                </div>
+            <!-- Target Time Display -->
+            <div class="target-time-display">
+              <div class="target-time-label" data-i18n="target_time">Target Time</div>
+              <div class="target-time-value" id="largeTargetTimeDisplay">09:30</div>
+            </div>
+
+            <!-- Current Status Grid -->
+            <div class="current-status-grid">
+              <div class="status-item">
+                <span class="status-label" data-i18n="lap">Lap</span>
+                <span class="status-value" id="currentLapDisplay">1</span>
+              </div>
+              <div class="status-item">
+                <span class="status-label" data-i18n="distance">Distance</span>
+                <span class="status-value" id="currentDistanceDisplay">0m</span>
+              </div>
+              <div class="status-item">
+                <span class="status-label" data-i18n="time">Time</span>
+                <span class="status-value" id="currentTimeDisplay">00:00.00</span>
+              </div>
+              <div class="status-item">
+                <span class="status-label" data-i18n="progress">Progress</span>
+                <span class="status-value" id="progressPercentDisplay">0%</span>
               </div>
             </div>
 
@@ -275,31 +279,6 @@
 
       <!-- Right Panel -->
       <div class="right-panel">
-        <!-- Target Time Display -->
-        <div class="target-time-display">
-          <div class="target-time-label" data-i18n="target_time">Target Time</div>
-          <div class="target-time-value" id="largeTargetTimeDisplay">09:30</div>
-        </div>
-
-        <!-- Current Status Grid -->
-        <div class="current-status-grid">
-          <div class="status-item">
-            <span class="status-label" data-i18n="lap">Lap</span>
-            <span class="status-value" id="currentLapDisplay">1</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label" data-i18n="distance">Distance</span>
-            <span class="status-value" id="currentDistanceDisplay">0m</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label" data-i18n="time">Time</span>
-            <span class="status-value" id="currentTimeDisplay">00:00.00</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label" data-i18n="progress">Progress</span>
-            <span class="status-value" id="progressPercentDisplay">0%</span>
-          </div>
-        </div>
 
         <!-- Clock Splits Display -->
         <div class="clock-splits-display">
@@ -307,19 +286,7 @@
           <div id="clockSplitsText" class="clock-splits-text"></div>
         </div>
 
-        <!-- Splits Card -->
-        <div class="splits-card">
-          <h3 data-i18n="splits">Splits</h3>
-          <div id="splitsTable" class="splits-table" aria-live="polite"></div>
-          <div class="splits-actions">
-            <button id="copyCsvBtn" class="csv-btn">
-              <i class="fas fa-copy"></i> <span data-i18n="copy_csv">Copy CSV</span>
-            </button>
-            <button id="downloadCsvBtn" class="csv-btn">
-              <i class="fas fa-download"></i> <span data-i18n="download_csv">Download CSV</span>
-            </button>
-          </div>
-        </div>
+
 
         <!-- Charts Card -->
         <div class="charts-card">
