@@ -11,15 +11,17 @@ let debounceTimer = null;
 // Translations
 const translations = {
     en: {
-        title: "3k Run Tracker",
+        title: "3000METER.com",
         race_setup: "Race Setup",
         target_time: "Target Time (mm:ss)",
         lane: "Lane",
         pacing_strategy: "Pacing Strategy",
         even: "Even",
-        neg1: "Neg 1%",
-        neg2: "Neg 2.5%",
-        pos1: "Pos 1%",
+        neg1: "-1s/400m",
+        neg2: "-2s/400m",
+        pos1: "+1s/400m",
+        neg5p: "-5%",
+        pos5p: "+5%",
         kick600: "Kick 600m",
         custom: "Custom",
         start_pace: "Start Pace (mm:ss/km)",
@@ -55,15 +57,17 @@ const translations = {
     
     },
     no: {
-        title: "3k Løp Sporer",
+        title: "3000METER.com",
         race_setup: "Løps Oppsett",
         target_time: "Måltid (mm:ss)",
         lane: "Bane",
         pacing_strategy: "Tempo Strategi",
         even: "Jevnt",
-        neg1: "Neg 1%",
-        neg2: "Neg 2.5%",
-        pos1: "Pos 1%",
+        neg1: "-1s/400m",
+        neg2: "-2s/400m",
+        pos1: "+1s/400m",
+        neg5p: "-5%",
+        pos5p: "+5%",
         kick600: "Sprint 600m",
         custom: "Egendefinert",
         start_pace: "Start Tempo (mm:ss/km)",
@@ -505,6 +509,13 @@ function calculatePace() {
         return;
     }
     
+    // Add success feedback to calculate button
+    const calculateBtn = elements.calculateBtn;
+    calculateBtn.classList.add('success');
+    setTimeout(() => {
+        calculateBtn.classList.remove('success');
+    }, 2000);
+    
     const timeStr = elements.goalTime.value;
     const totalMs = parseTimeToMs(timeStr);
     const laneDistance = LANE_DISTANCES[currentLane];
@@ -589,20 +600,36 @@ function calculateExpectedTime(distance) {
         case 'even':
             paceMultiplier = 1.0;
             break;
-        case 'neg1':
-            // Negative split: start 1% slower, end 1% faster
-            const progress = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
-            paceMultiplier = 1.01 - (progress * 0.02);
-            break;
         case 'neg2':
-            // Negative split: start 2.5% slower, end 2.5% faster
+            // Negative split: -2 seconds per 400m
+            const progress = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            const secondsPer400m = -2;
+            const totalSecondsAdjustment = (distance / 400) * secondsPer400m;
+            paceMultiplier = 1.0 + (totalSecondsAdjustment / (distance / 1000 * basePacePerKm));
+            break;
+        case 'neg1':
+            // Negative split: -1 second per 400m
             const progress2 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
-            paceMultiplier = 1.025 - (progress2 * 0.05);
+            const secondsPer400m2 = -1;
+            const totalSecondsAdjustment2 = (distance / 400) * secondsPer400m2;
+            paceMultiplier = 1.0 + (totalSecondsAdjustment2 / (distance / 1000 * basePacePerKm));
             break;
         case 'pos1':
-            // Positive split: start 1% faster, end 1% slower
+            // Positive split: +1 second per 400m
             const progress3 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
-            paceMultiplier = 0.99 + (progress3 * 0.02);
+            const secondsPer400m3 = 1;
+            const totalSecondsAdjustment3 = (distance / 400) * secondsPer400m3;
+            paceMultiplier = 1.0 + (totalSecondsAdjustment3 / (distance / 1000 * basePacePerKm));
+            break;
+        case 'neg5p':
+            // Negative split: start 5% slower, end 5% faster
+            const progress4 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            paceMultiplier = 1.05 - (progress4 * 0.10);
+            break;
+        case 'pos5p':
+            // Positive split: start 5% faster, end 5% slower
+            const progress5 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            paceMultiplier = 0.95 + (progress5 * 0.10);
             break;
         case 'kick600':
             // Even pace until 2400m, then gradually increase speed
@@ -618,8 +645,8 @@ function calculateExpectedTime(distance) {
             if (elements.startPace.value && elements.endPace.value) {
                 const startPace = parseTimeToMs(elements.startPace.value) / 1000;
                 const endPace = parseTimeToMs(elements.endPace.value) / 1000;
-                const progress4 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
-                paceMultiplier = startPace + (endPace - startPace) * progress4;
+                const progress6 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+                paceMultiplier = startPace + (endPace - startPace) * progress6;
             }
             break;
     }
@@ -636,7 +663,7 @@ function updateResults(data) {
     // Removed references to non-existent elements
     
     // Update page title
-    document.title = `3k Run Tracker – ${elements.goalTime.value}`;
+    document.title = `3000METER.com – ${elements.goalTime.value}`;
 }
 
 
