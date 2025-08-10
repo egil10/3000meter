@@ -159,26 +159,30 @@
 
         <div class="input-group">
           <label for="goalTime" data-i18n="target_time">Target Time (mm:ss)</label>
-          <input type="text" id="goalTime" value="15:00" placeholder="15:00" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
-          <div class="input-helper" id="timeHelper"></div>
-          <div class="adjustment-buttons">
-            <button type="button" class="adjust-btn" onclick="adjustTime(-10)">-10s</button>
-            <button type="button" class="adjust-btn" onclick="adjustTime(-5)">-5s</button>
-            <button type="button" class="adjust-btn" onclick="adjustTime(5)">+5s</button>
-            <button type="button" class="adjust-btn" onclick="adjustTime(10)">+10s</button>
+          <div class="input-with-buttons">
+            <input type="text" id="goalTime" value="15:00" placeholder="15:00" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
+            <div class="adjustment-buttons">
+              <button type="button" class="adjust-btn" onclick="adjustTime(-10)">-10s</button>
+              <button type="button" class="adjust-btn" onclick="adjustTime(-5)">-5s</button>
+              <button type="button" class="adjust-btn" onclick="adjustTime(5)">+5s</button>
+              <button type="button" class="adjust-btn" onclick="adjustTime(10)">+10s</button>
+            </div>
           </div>
+          <div class="input-helper" id="timeHelper"></div>
         </div>
 
         <div class="input-group">
           <label for="targetPace" data-i18n="target_pace">Target Pace (mm:ss/km)</label>
-          <input type="text" id="targetPace" value="05:00" placeholder="05:00" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
-          <div class="input-helper" id="paceHelper"></div>
-          <div class="adjustment-buttons">
-            <button type="button" class="adjust-btn" onclick="adjustPace(-5)">-5s</button>
-            <button type="button" class="adjust-btn" onclick="adjustPace(-1)">-1s</button>
-            <button type="button" class="adjust-btn" onclick="adjustPace(1)">+1s</button>
-            <button type="button" class="adjust-btn" onclick="adjustPace(5)">+5s</button>
+          <div class="input-with-buttons">
+            <input type="text" id="targetPace" value="05:00" placeholder="05:00" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
+            <div class="adjustment-buttons">
+              <button type="button" class="adjust-btn" onclick="adjustPace(-5)">-5s</button>
+              <button type="button" class="adjust-btn" onclick="adjustPace(-1)">-1s</button>
+              <button type="button" class="adjust-btn" onclick="adjustPace(1)">+1s</button>
+              <button type="button" class="adjust-btn" onclick="adjustPace(5)">+5s</button>
+            </div>
           </div>
+          <div class="input-helper" id="paceHelper"></div>
         </div>
 
         <div class="input-group">

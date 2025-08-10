@@ -593,10 +593,19 @@ body {
     color: var(--success-green);
 }
 
+.input-with-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.input-with-buttons input {
+    flex: 1;
+}
+
 .adjustment-buttons {
     display: flex;
     gap: 0.25rem;
-    margin-top: 0.5rem;
     flex-wrap: wrap;
 }
 
@@ -1075,8 +1084,15 @@ body {
         padding: 0.25rem 0.15rem;
     }
 
+    .input-with-buttons {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.25rem;
+    }
+
     .adjustment-buttons {
         gap: 0.125rem;
+        justify-content: center;
     }
 
     .adjust-btn {

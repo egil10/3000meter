@@ -583,16 +583,20 @@ function calculateExpectedTime(distance, basePacePerKmParam = null) {
             paceMultiplier = (baseTimeForDistance3 + totalSecondsAdjustment3) / baseTimeForDistance3;
             break;
         case 'neg5p':
-            // Negative split: start 5% slower, end 5% faster
+            // Negative split: -5 seconds per 400m (equivalent to ~5% variation)
             const progress4 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
-            // Linear interpolation from 1.05 (start) to 0.95 (end)
-            paceMultiplier = 1.05 - (progress4 * 0.10);
+            const secondsPer400m4 = -5;
+            const totalSecondsAdjustment4 = (distance / 400) * secondsPer400m4;
+            const baseTimeForDistance4 = (distance / 1000) * basePacePerKm;
+            paceMultiplier = (baseTimeForDistance4 + totalSecondsAdjustment4) / baseTimeForDistance4;
             break;
         case 'pos5p':
-            // Positive split: start 5% faster, end 5% slower
+            // Positive split: +5 seconds per 400m (equivalent to ~5% variation)
             const progress5 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
-            // Linear interpolation from 0.95 (start) to 1.05 (end)
-            paceMultiplier = 0.95 + (progress5 * 0.10);
+            const secondsPer400m5 = 5;
+            const totalSecondsAdjustment5 = (distance / 400) * secondsPer400m5;
+            const baseTimeForDistance5 = (distance / 1000) * basePacePerKm;
+            paceMultiplier = (baseTimeForDistance5 + totalSecondsAdjustment5) / baseTimeForDistance5;
             break;
         case 'kick600':
             // Even pace until 2400m, then gradually increase speed
@@ -614,37 +618,7 @@ function calculateExpectedTime(distance, basePacePerKmParam = null) {
             break;
     }
     
-    // For percentage-based strategies, we need to adjust the base pace to ensure the total time equals the target time
-    if (currentStrategy === 'neg5p' || currentStrategy === 'pos5p') {
-        const goalTimeMs = parseTimeToMs(elements.goalTime.value);
-        const targetTime = goalTimeMs / 1000; // Convert to seconds
-        
-        // Calculate what the total time would be with the current base pace and varying multipliers
-        let totalTimeWithVaryingPace = 0;
-        const stepDistance = 100; // Calculate in 100m increments for accuracy
-        const totalSteps = Math.ceil(TRACK_CONSTANTS.TOTAL_DISTANCE / stepDistance);
-        
-        for (let i = 0; i < totalSteps; i++) {
-            const stepDist = Math.min((i + 1) * stepDistance, TRACK_CONSTANTS.TOTAL_DISTANCE);
-            const stepProgress = stepDist / TRACK_CONSTANTS.TOTAL_DISTANCE;
-            
-            let stepPaceMultiplier;
-            if (currentStrategy === 'neg5p') {
-                // Linear interpolation from 1.05 (start) to 0.95 (end)
-                stepPaceMultiplier = 1.05 - (stepProgress * 0.10);
-            } else { // pos5p
-                // Linear interpolation from 0.95 (start) to 1.05 (end)
-                stepPaceMultiplier = 0.95 + (stepProgress * 0.10);
-            }
-            
-            const stepTime = (stepDistance / 1000) * basePacePerKm * stepPaceMultiplier;
-            totalTimeWithVaryingPace += stepTime;
-        }
-        
-        // Adjust the base pace to make the total time equal the target time
-        const adjustmentFactor = targetTime / totalTimeWithVaryingPace;
-        basePacePerKm *= adjustmentFactor;
-    }
+
     
     // For even pacing, ensure exact calculation to avoid precision issues
     if (currentStrategy === 'even') {
