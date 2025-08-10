@@ -70,6 +70,6 @@ A professional, modern web application for calculating and visualizing 3K runnin
 - Safari
 - Edge
 
----
+--- 
 
 Built with ❤️ for the running community
