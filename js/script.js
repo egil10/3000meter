@@ -183,11 +183,6 @@ document.addEventListener('DOMContentLoaded', function() {
         currentPaceDisplay: document.getElementById('currentPaceDisplay'),
         progressPercentDisplay: document.getElementById('progressPercentDisplay'),
         lapProgressFill: document.getElementById('lapProgressFill'),
-        // New display elements for the moved current-status-grid
-        currentLapDisplay2: document.getElementById('currentLapDisplay2'),
-        currentDistanceDisplay2: document.getElementById('currentDistanceDisplay2'),
-        currentPaceDisplay2: document.getElementById('currentPaceDisplay2'),
-        progressPercentDisplay2: document.getElementById('progressPercentDisplay2'),
         languageToggle: document.getElementById('languageToggle'),
         addSurgeBtn: document.getElementById('addSurgeBtn'),
         surgeList: document.getElementById('surgeList'),
@@ -795,7 +790,7 @@ function updateSpeedFromSlider() {
 }
 
 function updateSpeedFromInput() {
-    const newSpeed = parseInt(elements.speedInput.value);
+    const newSpeed = parseFloat(elements.speedInput.value);
     if (newSpeed >= 0 && newSpeed <= 10) {
         updateAnimationSpeed(newSpeed);
         elements.speedSlider.value = newSpeed;
@@ -976,13 +971,7 @@ function updateAnimationUI() {
     const targetTimeFormatted = formatTimeFromMs(goalTimeMs);
     elements.largeTargetTimeDisplay.textContent = `${currentTimeFormatted} / ${targetTimeFormatted}`;
     
-    // Update the moved current-status-grid elements
-    if (elements.currentLapDisplay2) {
-        elements.currentLapDisplay2.textContent = animationState.currentLap;
-        elements.currentDistanceDisplay2.textContent = `${Math.round(animationState.currentDistance)}m`;
-        elements.currentPaceDisplay2.textContent = currentPace;
-        elements.progressPercentDisplay2.textContent = `${progressPercent}%`;
-    }
+
 }
 
 function calculateCurrentPace() {
@@ -992,12 +981,15 @@ function calculateCurrentPace() {
     const currentDistanceKm = animationState.currentDistance / 1000;
     const pacePerKm = currentTimeMs / currentDistanceKm;
     
-    return formatTimeFromMs(pacePerKm);
+    // Round to nearest second to reduce jittering
+    const roundedPaceMs = Math.round(pacePerKm / 1000) * 1000;
+    
+    return formatTimeFromMs(roundedPaceMs);
 }
 
 function adjustSpeed(delta) {
     const currentSpeed = parseFloat(elements.speedInput.value);
-    const newSpeed = Math.max(0, Math.min(10, currentSpeed + delta));
+    const newSpeed = Math.max(0, Math.min(10, currentSpeed + delta * 0.5));
     updateAnimationSpeed(newSpeed);
 }
 

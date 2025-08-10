@@ -132,9 +132,9 @@
               <div class="speed-slider-container">
                 <label for="speedSlider" class="speed-label">Speed</label>
                 <div class="speed-input-group">
-                  <input type="range" id="speedSlider" min="0" max="10" step="1" value="1" class="speed-slider">
-                  <button class="speed-btn" id="speedMinusBtn">-</button>
-                  <input type="number" id="speedInput" min="0" max="10" step="1" value="1" class="speed-input" readonly>
+                                  <input type="range" id="speedSlider" min="0" max="10" step="0.5" value="1" class="speed-slider">
+                <button class="speed-btn" id="speedMinusBtn">-</button>
+                <input type="number" id="speedInput" min="0" max="10" step="0.5" value="1" class="speed-input" readonly>
                   <button class="speed-btn" id="speedPlusBtn">+</button>
                   <span class="speed-unit">x</span>
                 </div>
@@ -147,6 +147,98 @@
                 <div class="lap-progress-fill" id="lapProgressFill"></div>
               </div>
             </div>
+
+            <!-- Race Setup Section -->
+            <div class="race-setup-section">
+              <h3 data-i18n="race_setup">Race Setup</h3>
+
+              <div class="input-group">
+                <label for="goalTime" data-i18n="target_time">Target Time (mm:ss)</label>
+                <div class="time-input-wrapper">
+                  <input type="text" id="goalTime" value="09:30" placeholder="09:30" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
+                  <div class="time-controls">
+                    <button class="time-btn" data-adjust="1" title="+1s" aria-label="Add 1 second">+1</button>
+                    <button class="time-btn" data-adjust="5" title="+5s" aria-label="Add 5 seconds">+5</button>
+                    <button class="time-btn" data-adjust="-1" title="-1s" aria-label="Subtract 1 second">-1</button>
+                    <button class="time-btn" data-adjust="-5" title="-5s" aria-label="Subtract 5 seconds">-5</button>
+                  </div>
+                </div>
+                <div class="input-helper" id="timeHelper"></div>
+              </div>
+
+              <div class="input-group">
+                <label for="laneSelect" data-i18n="lane">Lane</label>
+                <select id="laneSelect">
+                  <option value="1">Lane 1 (400m)</option>
+                  <option value="2">Lane 2 (407m)</option>
+                  <option value="3">Lane 3 (414m)</option>
+                  <option value="4">Lane 4 (421m)</option>
+                  <option value="5">Lane 5 (428m)</option>
+                  <option value="6">Lane 6 (435m)</option>
+                  <option value="7">Lane 7 (442m)</option>
+                  <option value="8">Lane 8 (449m)</option>
+                </select>
+              </div>
+
+              <div class="input-group">
+                <label data-i18n="pacing_strategy">Pacing Strategy</label>
+                <div class="strategy-buttons">
+                  <button class="strategy-btn active" data-strategy="even">
+                    <i class="fas fa-equals"></i> <span data-i18n="even">Even</span>
+                  </button>
+                  <button class="strategy-btn" data-strategy="neg1">
+                    <i class="fas fa-arrow-down"></i> <span data-i18n="neg1">Neg 1%</span>
+                  </button>
+                  <button class="strategy-btn" data-strategy="neg2">
+                    <i class="fas fa-arrow-down"></i> <span data-i18n="neg2">Neg 2.5%</span>
+                  </button>
+                  <button class="strategy-btn" data-strategy="pos1">
+                    <i class="fas fa-arrow-up"></i> <span data-i18n="pos1">Pos 1%</span>
+                  </button>
+                  <button class="strategy-btn" data-strategy="kick600">
+                    <i class="fas fa-bolt"></i> <span data-i18n="kick600">Kick 600m</span>
+                  </button>
+                  <button class="strategy-btn" data-strategy="custom">
+                    <i class="fas fa-sliders-h"></i> <span data-i18n="custom">Custom</span>
+                  </button>
+                </div>
+              </div>
+
+              <div id="progressiveSection" class="input-group" style="display: none;">
+                <div class="progressive-inputs">
+                  <div>
+                    <label for="startPace" data-i18n="start_pace">Start Pace (mm:ss/km)</label>
+                    <input type="text" id="startPace" value="03:10" placeholder="03:10">
+                  </div>
+                  <div>
+                    <label for="endPace" data-i18n="end_pace">End Pace (mm:ss/km)</label>
+                    <input type="text" id="endPace" value="03:00" placeholder="03:00">
+                  </div>
+                  <div class="curve-select">
+                    <label for="curveType" data-i18n="progression_type">Progression Type</label>
+                    <select id="curveType">
+                      <option value="linear" data-i18n="linear">Linear</option>
+                      <option value="exponential" data-i18n="exponential">Exponential</option>
+                      <option value="sigmoidal" data-i18n="sigmoidal">Sigmoidal</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="input-group">
+                <label data-i18n="surge_designer">Surge Designer</label>
+                <button id="addSurgeBtn" class="surge-btn">
+                  <i class="fas fa-plus"></i> <span data-i18n="add_surge">Add Surge</span>
+                </button>
+                <div id="surgeList" class="surge-list"></div>
+              </div>
+
+              <div class="action-buttons">
+                <button id="calculateBtn" class="calculate-btn">
+                  <i class="fas fa-calculator"></i> <span data-i18n="calculate">Calculate</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -154,123 +246,8 @@
 
     <!-- Main Content -->
     <main class="main-content">
-      <!-- Left Panel -->
-      <div class="left-panel">
-        <!-- Input Card -->
-        <div class="input-card">
-          <h2 data-i18n="race_setup">Race Setup</h2>
-
-          <div class="input-group">
-            <label for="goalTime" data-i18n="target_time">Target Time (mm:ss)</label>
-            <div class="time-input-wrapper">
-              <input type="text" id="goalTime" value="09:30" placeholder="09:30" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
-              <div class="time-controls">
-                <button class="time-btn" data-adjust="1" title="+1s" aria-label="Add 1 second">+1</button>
-                <button class="time-btn" data-adjust="5" title="+5s" aria-label="Add 5 seconds">+5</button>
-                <button class="time-btn" data-adjust="-1" title="-1s" aria-label="Subtract 1 second">-1</button>
-                <button class="time-btn" data-adjust="-5" title="-5s" aria-label="Subtract 5 seconds">-5</button>
-              </div>
-            </div>
-            <div class="input-helper" id="timeHelper"></div>
-          </div>
-
-          <div class="input-group">
-            <label for="laneSelect" data-i18n="lane">Lane</label>
-            <select id="laneSelect">
-              <option value="1">Lane 1 (400m)</option>
-              <option value="2">Lane 2 (407m)</option>
-              <option value="3">Lane 3 (414m)</option>
-              <option value="4">Lane 4 (421m)</option>
-              <option value="5">Lane 5 (428m)</option>
-              <option value="6">Lane 6 (435m)</option>
-              <option value="7">Lane 7 (442m)</option>
-              <option value="8">Lane 8 (449m)</option>
-            </select>
-          </div>
-
-          <div class="input-group">
-            <label data-i18n="pacing_strategy">Pacing Strategy</label>
-            <div class="strategy-buttons">
-              <button class="strategy-btn active" data-strategy="even">
-                <i class="fas fa-equals"></i> <span data-i18n="even">Even</span>
-              </button>
-              <button class="strategy-btn" data-strategy="neg1">
-                <i class="fas fa-arrow-down"></i> <span data-i18n="neg1">Neg 1%</span>
-              </button>
-              <button class="strategy-btn" data-strategy="neg2">
-                <i class="fas fa-arrow-down"></i> <span data-i18n="neg2">Neg 2.5%</span>
-              </button>
-              <button class="strategy-btn" data-strategy="pos1">
-                <i class="fas fa-arrow-up"></i> <span data-i18n="pos1">Pos 1%</span>
-              </button>
-              <button class="strategy-btn" data-strategy="kick600">
-                <i class="fas fa-bolt"></i> <span data-i18n="kick600">Kick 600m</span>
-              </button>
-              <button class="strategy-btn" data-strategy="custom">
-                <i class="fas fa-sliders-h"></i> <span data-i18n="custom">Custom</span>
-              </button>
-            </div>
-          </div>
-
-          <div id="progressiveSection" class="input-group" style="display: none;">
-            <div class="progressive-inputs">
-              <div>
-                <label for="startPace" data-i18n="start_pace">Start Pace (mm:ss/km)</label>
-                <input type="text" id="startPace" value="03:10" placeholder="03:10">
-              </div>
-              <div>
-                <label for="endPace" data-i18n="end_pace">End Pace (mm:ss/km)</label>
-                <input type="text" id="endPace" value="03:00" placeholder="03:00">
-              </div>
-              <div class="curve-select">
-                <label for="curveType" data-i18n="progression_type">Progression Type</label>
-                <select id="curveType">
-                  <option value="linear" data-i18n="linear">Linear</option>
-                  <option value="exponential" data-i18n="exponential">Exponential</option>
-                  <option value="sigmoidal" data-i18n="sigmoidal">Sigmoidal</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="input-group">
-            <label data-i18n="surge_designer">Surge Designer</label>
-            <button id="addSurgeBtn" class="surge-btn">
-              <i class="fas fa-plus"></i> <span data-i18n="add_surge">Add Surge</span>
-            </button>
-            <div id="surgeList" class="surge-list"></div>
-          </div>
-
-          <div class="action-buttons">
-            <button id="calculateBtn" class="calculate-btn">
-              <i class="fas fa-calculator"></i> <span data-i18n="calculate">Calculate</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Current Status Grid (moved from track-controls-panel) -->
-        <div class="current-status-grid">
-          <div class="status-item">
-            <span class="status-label" data-i18n="lap">Lap</span>
-            <span class="status-value" id="currentLapDisplay2">1</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label" data-i18n="distance">Distance</span>
-            <span class="status-value" id="currentDistanceDisplay2">0m</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label" data-i18n="progress">Progress</span>
-            <span class="status-value" id="progressPercentDisplay2">0%</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label" data-i18n="pace">Pace</span>
-            <span class="status-value" id="currentPaceDisplay2">--:--</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Panel -->
-      <div class="right-panel">
+      <!-- Analytics Panel -->
+      <div class="analytics-panel">
 
         <!-- Charts Card -->
         <div class="charts-card">

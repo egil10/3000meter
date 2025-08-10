@@ -151,31 +151,23 @@ body {
 /* Main Content */
 .main-content {
     flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 2rem;
     max-width: none;
     margin: 0 auto;
     padding: 2rem;
-    align-items: start;
+    align-items: stretch;
 }
 
-/* Left Panel */
-.left-panel {
+/* Analytics Panel */
+.analytics-panel {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     height: fit-content;
     min-height: 600px;
-}
-
-/* Right Panel */
-.right-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    height: fit-content;
-    min-height: 600px;
+    width: 100%;
 }
 
 /* Track Controls Panel */
@@ -186,6 +178,59 @@ body {
     flex: 0 0 50%;
     height: 600px;
     justify-content: flex-start;
+    overflow-y: auto;
+}
+
+/* Race Setup Section */
+.race-setup-section {
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid var(--primary-red);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: var(--shadow-md);
+    margin-top: 1rem;
+}
+
+.race-setup-section h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-red);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.race-setup-section .input-group {
+    margin-bottom: 1rem;
+}
+
+.race-setup-section .input-group:last-child {
+    margin-bottom: 0;
+}
+
+.race-setup-section .strategy-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.race-setup-section .strategy-btn {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.race-setup-section .progressive-inputs {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+}
+
+.race-setup-section .surge-list {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.race-setup-section .action-buttons {
+    margin-top: 1rem;
 }
 
 /* Target Time Display with Animation Controls */
@@ -943,30 +988,6 @@ body {
 
 /* Responsive Design */
 @media (max-width: 1200px) {
-    .main-content {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-    
-    .right-panel {
-        order: -1;
-    }
-}
-
-@media (max-width: 768px) {
-    .header-content {
-        padding: 0 1rem;
-    }
-    
-    .main-content {
-        padding: 1rem;
-        grid-template-columns: 1fr;
-    }
-    
-    .track-container {
-        padding: 0 1rem;
-    }
-    
     .track-layout {
         flex-direction: column;
     }
@@ -979,6 +1000,45 @@ body {
     .track-controls-panel {
         flex: none;
         height: auto;
+        max-height: 500px;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        padding: 0 1rem;
+    }
+    
+    .main-content {
+        padding: 1rem;
+    }
+    
+    .track-container {
+        padding: 0 1rem;
+    }
+    
+    .track-layout {
+        flex-direction: column;
+    }
+    
+    .track-wrap {
+        flex: none;
+        height: 300px;
+    }
+    
+    .track-controls-panel {
+        flex: none;
+        height: auto;
+        max-height: none;
+    }
+    
+    .race-setup-section {
+        margin-top: 0.5rem;
+        padding: 0.75rem;
+    }
+    
+    .race-setup-section .strategy-buttons {
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .animation-controls {
