@@ -3,7 +3,6 @@ let currentPaceData = null;
 let currentLane = 1;
 let currentStrategy = 'even';
 let isNorwegian = false;
-let debounceTimer = null;
 
 // Translations
 const translations = {
@@ -197,8 +196,7 @@ function initializeApp() {
     drawMarkers();
     addRoundIndicators();
     // Ensure animation state is initialized
-    console.log('Calling calculatePace from initializeApp');
-    calculatePace();
+    console.log('Removed automatic calculation from initializeApp');
     console.log('initializeApp completed');
 }
 
@@ -208,14 +206,12 @@ function setupEventListeners() {
         validateTimeInput(e);
         updatePaceFromTime();
     });
-    elements.goalTime.addEventListener('blur', debouncedCalculate);
     
     // Target pace input listeners
     elements.targetPace.addEventListener('input', (e) => {
         validateTimeInput(e);
         updateTimeFromPace();
     });
-    elements.targetPace.addEventListener('blur', debouncedCalculate);
     
     // Strategy buttons
     elements.strategyButtons.forEach(btn => {
@@ -223,7 +219,6 @@ function setupEventListeners() {
             elements.strategyButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentStrategy = btn.dataset.strategy;
-            debouncedCalculate();
         });
     });
     
@@ -783,18 +778,7 @@ function validateInputs() {
     return true;
 }
 
-function debouncedCalculate() {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        calculatePace();
-        updateURL();
-        // Reset animation when analysis changes
-        if (animationState.isPlaying) {
-            pauseAnimation();
-        }
-        resetAnimation();
-    }, 300);
-}
+// Removed debouncedCalculate function - no longer needed since all updates happen only on Calculate button click
 
 function validateTimeInput(e) {
     let value = e.target.value;
@@ -864,7 +848,6 @@ function adjustTime(seconds) {
     const newMs = currentMs + (seconds * 1000);
     elements.goalTime.value = formatTimeFromMsSimple(newMs);
     updatePaceFromTime();
-    debouncedCalculate();
 }
 
 function adjustPace(seconds) {
@@ -873,7 +856,6 @@ function adjustPace(seconds) {
     const newMs = currentMs + (seconds * 1000);
     elements.targetPace.value = formatTimeFromMsSimple(newMs);
     updateTimeFromPace();
-    debouncedCalculate();
 }
 
 function parseTimeToMs(timeStr) {
@@ -1098,7 +1080,7 @@ function loadFromURL() {
         });
     }
     
-    calculatePace();
+    // Removed automatic calculation - user must click Calculate button
 }
 
 function updateURL() {
@@ -1137,7 +1119,7 @@ function handleKeyboardShortcuts(e) {
         switch(e.key) {
             case 'Enter':
                 e.preventDefault();
-                calculatePace();
+                // Removed automatic calculation - user must click Calculate button
                 break;
         }
     }
