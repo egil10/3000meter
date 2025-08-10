@@ -418,7 +418,7 @@ function drawMarkers() {
         const dx = p1.x - p0.x, dy = p1.y - p0.y;
         const mag = Math.hypot(dx, dy) || 1;
         const tx = dx / mag, ty = dy / mag; // unit tangent (clockwise)
-        const nx = -ty, ny = tx;            // outward normal
+        const nx = ty, ny = -tx;            // outward normal (flipped)
 
         const innerOff = -0.5 * LANE_W;  // inner white boundary relative to lane1 center
         const outerOff =  7.5 * LANE_W;  // outer white boundary relative to lane1 center
@@ -1868,7 +1868,8 @@ function animationLoop() {
     const distance = progress * TRACK_CONSTANTS.TOTAL_DISTANCE;
     animationState.currentDistance = distance;
     animationState.currentLap = Math.floor(distance / LANE_DISTANCES[currentLane]) + 1;
-    animationState.lapProgress = (distance % LANE_DISTANCES[currentLane]) / LANE_DISTANCES[currentLane];
+    // Counter-clockwise: invert the lap progress
+    animationState.lapProgress = 1 - ((distance % LANE_DISTANCES[currentLane]) / LANE_DISTANCES[currentLane]);
     updateRunnerPosition(animationState.lapProgress, distance);
     updateAnimationUI();
     updateRoundIndicators();

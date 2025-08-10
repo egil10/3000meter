@@ -36,8 +36,105 @@
       </div>
     </header>
 
-    <!-- Main Layout -->
-    <main class="main-layout">
+    <!-- Track Visualization - Main Centerpiece -->
+    <section class="track-section">
+      <div class="track-container">
+        <div class="track-wrap">
+          <svg viewBox="0 0 1200 800" role="img" aria-label="3000m oval track with eight lanes and animated runner">
+            <defs>
+              <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="8" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="runner-glow" x="-100%" y="-100%" width="300%" height="300%">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <!-- Background -->
+            <rect x="0" y="0" width="1200" height="800" fill="#f8fafc"/>
+
+            <!-- Stadium apron (grey ring around the track) -->
+            <g id="stadium"></g>
+
+            <!-- Infield (inside inner boundary) -->
+            <g id="infield"></g>
+
+            <!-- Track base: red lanes as a continuous band -->
+            <g id="track-base" stroke-linecap="round" stroke-linejoin="round"></g>
+
+            <!-- White lane boundary lines (including inner & outer edges) -->
+            <g id="lane-boundaries" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></g>
+
+            <!-- Distance & start lines across all lanes -->
+            <g id="markers"></g>
+
+            <!-- Lane numbers at start line -->
+            <g id="lane-numbers"></g>
+
+            <!-- Runner -->
+            <g id="runner" class="runner-shadow">
+              <circle id="runner-dot" r="12" fill="#007AFF" stroke="#ffffff" stroke-width="4" filter="url(#runner-glow)"/>
+            </g>
+
+            <!-- Round indicators -->
+            <g id="round-indicators"></g>
+
+            <!-- Lap progress bar -->
+            <g id="lap-progress">
+              <rect x="50" y="750" width="700" height="8" fill="#e5e7eb" rx="4"/>
+              <rect id="lap-progress-fill" x="50" y="750" width="0" height="8" fill="#007AFF" rx="4"/>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Track overlay with info -->
+        <div class="track-overlay">
+          <div class="track-info">
+            <div class="info-item">
+              <span class="info-label">Lap</span>
+              <span class="info-value" id="currentLap">1</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Distance</span>
+              <span class="info-value" id="currentDistance">0m</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Time</span>
+              <span class="info-value" id="currentTime">00:00</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Progress</span>
+              <span class="info-value" id="progressPercent">0%</span>
+            </div>
+          </div>
+          <div class="round-display">
+            <div class="round-title">Rounds</div>
+            <div id="roundList" class="round-list"></div>
+          </div>
+        </div>
+
+        <!-- Animation controls -->
+        <div class="animation-controls">
+          <button id="playPauseBtn" class="anim-btn" title="Play/Pause">
+            <i class="fas fa-play"></i>
+          </button>
+          <button id="resetBtn" class="anim-btn" title="Reset">
+            <i class="fas fa-undo"></i>
+          </button>
+          <button id="speedBtn" class="anim-btn" title="Change Speed">
+            <i class="fas fa-tachometer-alt"></i>
+          </button>
+        </div>
+
+        <!-- Speed indicator -->
+        <div class="speed-indicator" id="speedDisplay">1x Speed</div>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
       <!-- Left Panel -->
       <div class="left-panel">
         <!-- Input Card -->
@@ -154,104 +251,6 @@
 
       <!-- Right Panel -->
       <div class="right-panel">
-        <!-- Track Visualization Card -->
-        <div class="track-card">
-          <h3>Track Visualization</h3>
-          <div class="track-container">
-            <div class="track-wrap">
-              <svg viewBox="0 0 1200 800" role="img" aria-label="3000m oval track with eight lanes and animated runner">
-                <defs>
-                  <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="8" result="blur"/>
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                  </filter>
-                  <filter id="runner-glow" x="-100%" y="-100%" width="300%" height="300%">
-                    <feGaussianBlur stdDeviation="4" result="blur"/>
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                  </filter>
-                </defs>
-
-                <!-- Background -->
-                <rect x="0" y="0" width="1200" height="800" fill="#f8fafc"/>
-
-                <!-- Stadium apron (grey ring around the track) -->
-                <g id="stadium"></g>
-
-                <!-- Infield (inside inner boundary) -->
-                <g id="infield"></g>
-
-                <!-- Track base: red lanes as a continuous band -->
-                <g id="track-base" stroke-linecap="round" stroke-linejoin="round"></g>
-
-                <!-- White lane boundary lines (including inner & outer edges) -->
-                <g id="lane-boundaries" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></g>
-
-                <!-- Distance & start lines across all lanes -->
-                <g id="markers"></g>
-
-                <!-- Lane numbers at start line -->
-                <g id="lane-numbers"></g>
-
-                <!-- Runner -->
-                <g id="runner" class="runner-shadow">
-                  <circle id="runner-dot" r="12" fill="#007AFF" stroke="#ffffff" stroke-width="4" filter="url(#runner-glow)"/>
-                </g>
-
-                <!-- Round indicators -->
-                <g id="round-indicators"></g>
-
-                <!-- Lap progress bar -->
-                <g id="lap-progress">
-                  <rect x="50" y="750" width="700" height="8" fill="#e5e7eb" rx="4"/>
-                  <rect id="lap-progress-fill" x="50" y="750" width="0" height="8" fill="#007AFF" rx="4"/>
-                </g>
-              </svg>
-            </div>
-
-            <!-- Track overlay with info -->
-            <div class="track-overlay">
-              <div class="track-info">
-                <div class="info-item">
-                  <span class="info-label">Lap</span>
-                  <span class="info-value" id="currentLap">1</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Distance</span>
-                  <span class="info-value" id="currentDistance">0m</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Time</span>
-                  <span class="info-value" id="currentTime">00:00</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Progress</span>
-                  <span class="info-value" id="progressPercent">0%</span>
-                </div>
-              </div>
-              <div class="round-display">
-                <div class="round-title">Rounds</div>
-                <div id="roundList" class="round-list"></div>
-              </div>
-            </div>
-
-            <!-- Animation controls -->
-            <div class="animation-controls">
-              <button id="playPauseBtn" class="anim-btn" title="Play/Pause">
-                <i class="fas fa-play"></i>
-              </button>
-              <button id="resetBtn" class="anim-btn" title="Reset">
-                <i class="fas fa-undo"></i>
-              </button>
-              <button id="speedBtn" class="anim-btn" title="Change Speed">
-                <i class="fas fa-tachometer-alt"></i>
-              </button>
-            </div>
-
-            <!-- Speed indicator -->
-            <div class="speed-indicator" id="speedDisplay">1x Speed</div>
-          </div>
-        </div>
-
         <!-- Splits Card -->
         <div class="splits-card">
           <h3>Splits</h3>
