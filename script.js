@@ -1130,15 +1130,13 @@ function startAnimation() {
         const timeStr = elements.goalTime.value;
         const totalMs = parseTimeToMs(timeStr);
         if (!totalMs) return;
-        
         animationState.totalTime = totalMs;
-        animationState.startTime = Date.now() - (animationState.currentTime * animationState.speed);
     }
-    
+    const now = Date.now();
+    animationState.startTime = now - (animationState.currentTime / animationState.speed * 1000);
     animationState.isPlaying = true;
     elements.playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
     elements.playPauseBtn.classList.add('active');
-    
     animationLoop();
 }
 
@@ -1168,36 +1166,29 @@ function resetAnimation() {
 function changeAnimationSpeed() {
     const currentIndex = ANIMATION_SPEEDS.indexOf(animationState.speed);
     const nextIndex = (currentIndex + 1) % ANIMATION_SPEEDS.length;
-    animationState.speed = ANIMATION_SPEEDS[nextIndex];
-    
+    const newSpeed = ANIMATION_SPEEDS[nextIndex];
+    if (animationState.isPlaying) {
+        const now = Date.now();
+        animationState.startTime = now - (animationState.currentTime / newSpeed * 1000);
+    }
+    animationState.speed = newSpeed;
     elements.speedBtn.innerHTML = `<i class="fas fa-tachometer-alt"></i> ${SPEED_LABELS[nextIndex]}`;
     elements.speedDisplay.textContent = `${SPEED_LABELS[nextIndex]}x Speed`;
-    
-    // Update start time to maintain current position
-    if (animationState.isPlaying) {
-        animationState.startTime = Date.now() - (animationState.currentTime * animationState.speed);
-    }
 }
 
-// Animation loop
 function animationLoop() {
     if (!animationState.isPlaying) return;
-    
     const now = Date.now();
-    const elapsed = (now - animationState.startTime) / 1000; // Convert to seconds
+    const elapsed = ((now - animationState.startTime) / 1000) * animationState.speed;
     animationState.currentTime = Math.min(elapsed, animationState.totalTime / 1000);
-    
     const progress = animationState.currentTime / (animationState.totalTime / 1000);
     const distance = progress * TRACK_CONSTANTS.TOTAL_DISTANCE;
-    
     animationState.currentDistance = distance;
     animationState.currentLap = Math.floor(distance / LANE_DISTANCES[currentLane]) + 1;
     animationState.lapProgress = (distance % LANE_DISTANCES[currentLane]) / LANE_DISTANCES[currentLane];
-    
     updateRunnerPosition(animationState.lapProgress, distance);
     updateAnimationUI();
     updateRoundIndicators();
-    
     if (progress < 1) {
         animationState.animationId = requestAnimationFrame(animationLoop);
     } else {
