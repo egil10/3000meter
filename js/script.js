@@ -142,54 +142,8 @@ let lanePaths = [];
 let totalLen = 0;
 let lane1 = null;
 
-// DOM elements
-const elements = {
-    goalTime: document.getElementById('goalTime'),
-    laneSelect: document.getElementById('laneSelect'),
-    strategyButtons: document.querySelectorAll('.strategy-btn'),
-    calculateBtn: document.getElementById('calculateBtn'),
-    targetTimeDisplay: document.getElementById('targetTimeDisplay'),
-    largeTargetTimeDisplay: document.getElementById('largeTargetTimeDisplay'),
-    overallPace: document.getElementById('overallPace'),
-    avgSpeed: document.getElementById('avgSpeed'),
-    lapCount: document.getElementById('lapCount'),
-    clockSplitsText: document.getElementById('clockSplitsText'),
-    toggleCharts: document.getElementById('toggleCharts'),
-    chartsContainer: document.getElementById('chartsContainer'),
-    paceChart: document.getElementById('paceChart'),
-    deltaChart: document.getElementById('deltaChart'),
-    runnerDot: document.getElementById('runner-dot'),
-    roundIndicators: document.getElementById('round-indicators'),
-    roundList: document.getElementById('roundList'),
-    playPauseBtn: document.getElementById('playPauseBtn'),
-    resetBtn: document.getElementById('resetBtn'),
-    speedSlider: document.getElementById('speedSlider'),
-    speedInput: document.getElementById('speedInput'),
-    speedMinusBtn: document.getElementById('speedMinusBtn'),
-    speedPlusBtn: document.getElementById('speedPlusBtn'),
-    currentLapDisplay: document.getElementById('currentLapDisplay'),
-    currentDistanceDisplay: document.getElementById('currentDistanceDisplay'),
-    currentTimeDisplay: document.getElementById('currentTimeDisplay'),
-    currentPaceDisplay: document.getElementById('currentPaceDisplay'),
-    progressPercentDisplay: document.getElementById('progressPercentDisplay'),
-    lapProgressFill: document.getElementById('lapProgressFill'),
-    languageToggle: document.getElementById('languageToggle'),
-    addSurgeBtn: document.getElementById('addSurgeBtn'),
-    surgeList: document.getElementById('surgeList'),
-    surgeModal: document.getElementById('surgeModal'),
-    surgeStart: document.getElementById('surgeStart'),
-    surgeEnd: document.getElementById('surgeEnd'),
-    surgePace: document.getElementById('surgePace'),
-    saveSurge: document.getElementById('saveSurge'),
-    cancelSurge: document.getElementById('cancelSurge'),
-    progressiveSection: document.getElementById('progressiveSection'),
-    startPace: document.getElementById('startPace'),
-    endPace: document.getElementById('endPace'),
-    curveType: document.getElementById('curveType'),
-    timeHelper: document.getElementById('timeHelper'),
-    toast: document.getElementById('toast'),
-    setupBtn: document.getElementById('setupBtn')
-};
+// DOM elements - will be initialized after DOM loads
+let elements = {};
 
 // Toast function
 function showToast(msg) {
@@ -201,6 +155,66 @@ function showToast(msg) {
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize DOM elements
+    elements = {
+        goalTime: document.getElementById('goalTime'),
+        laneSelect: document.getElementById('laneSelect'),
+        strategyButtons: document.querySelectorAll('.strategy-btn'),
+        calculateBtn: document.getElementById('calculateBtn'),
+        largeTargetTimeDisplay: document.getElementById('largeTargetTimeDisplay'),
+        overallPace: document.getElementById('overallPace'),
+        avgSpeed: document.getElementById('avgSpeed'),
+        lapCount: document.getElementById('lapCount'),
+        toggleCharts: document.getElementById('toggleCharts'),
+        chartsContainer: document.getElementById('chartsContainer'),
+        paceChart: document.getElementById('paceChart'),
+        deltaChart: document.getElementById('deltaChart'),
+        runnerDot: document.getElementById('runner-dot'),
+        roundIndicators: document.getElementById('round-indicators'),
+        roundList: document.getElementById('roundList'),
+        playPauseBtn: document.getElementById('playPauseBtn'),
+        resetBtn: document.getElementById('resetBtn'),
+        speedSlider: document.getElementById('speedSlider'),
+        speedInput: document.getElementById('speedInput'),
+        speedMinusBtn: document.getElementById('speedMinusBtn'),
+        speedPlusBtn: document.getElementById('speedPlusBtn'),
+        currentLapDisplay: document.getElementById('currentLapDisplay'),
+        currentDistanceDisplay: document.getElementById('currentDistanceDisplay'),
+        currentPaceDisplay: document.getElementById('currentPaceDisplay'),
+        progressPercentDisplay: document.getElementById('progressPercentDisplay'),
+        lapProgressFill: document.getElementById('lapProgressFill'),
+        // New display elements for the moved current-status-grid
+        currentLapDisplay2: document.getElementById('currentLapDisplay2'),
+        currentDistanceDisplay2: document.getElementById('currentDistanceDisplay2'),
+        currentPaceDisplay2: document.getElementById('currentPaceDisplay2'),
+        progressPercentDisplay2: document.getElementById('progressPercentDisplay2'),
+        languageToggle: document.getElementById('languageToggle'),
+        addSurgeBtn: document.getElementById('addSurgeBtn'),
+        surgeList: document.getElementById('surgeList'),
+        surgeModal: document.getElementById('surgeModal'),
+        surgeStart: document.getElementById('surgeStart'),
+        surgeEnd: document.getElementById('surgeEnd'),
+        surgePace: document.getElementById('surgePace'),
+        saveSurge: document.getElementById('saveSurge'),
+        cancelSurge: document.getElementById('cancelSurge'),
+        progressiveSection: document.getElementById('progressiveSection'),
+        startPace: document.getElementById('startPace'),
+        endPace: document.getElementById('endPace'),
+        curveType: document.getElementById('curveType'),
+        timeHelper: document.getElementById('timeHelper'),
+        toast: document.getElementById('toast')
+    };
+    
+    // Debug: Check if critical elements are found
+    console.log('Critical elements check:');
+    console.log('goalTime:', elements.goalTime);
+    console.log('playPauseBtn:', elements.playPauseBtn);
+    console.log('resetBtn:', elements.resetBtn);
+    console.log('speedSlider:', elements.speedSlider);
+    console.log('speedInput:', elements.speedInput);
+    console.log('largeTargetTimeDisplay:', elements.largeTargetTimeDisplay);
+    console.log('runnerDot:', elements.runnerDot);
+    
     // Set initial language based on browser
     if (navigator.language.startsWith('no')) {
         isNorwegian = true;
@@ -215,11 +229,15 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
+    console.log('initializeApp called');
     drawTrack();
     drawMarkers();
     addRoundIndicators();
     updateRoundList();
+    // Ensure animation state is initialized
+    console.log('Calling calculatePace from initializeApp');
     calculatePace();
+    console.log('initializeApp completed');
 }
 
 function setupEventListeners() {
@@ -275,8 +293,8 @@ function setupEventListeners() {
     // Speed controls
     elements.speedSlider.addEventListener('input', updateSpeedFromSlider);
     elements.speedInput.addEventListener('input', updateSpeedFromInput);
-    elements.speedMinusBtn.addEventListener('click', () => adjustSpeed(-0.25));
-    elements.speedPlusBtn.addEventListener('click', () => adjustSpeed(0.25));
+    elements.speedMinusBtn.addEventListener('click', () => adjustSpeed(-1));
+    elements.speedPlusBtn.addEventListener('click', () => adjustSpeed(1));
     
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboardShortcuts);
@@ -447,6 +465,7 @@ function drawMarkers() {
 
 function addRoundIndicators() {
     const roundIndicatorsG = document.getElementById('round-indicators');
+    roundIndicatorsG.replaceChildren(); // Clear existing indicators
     const laneDistance = LANE_DISTANCES[currentLane];
     const totalLaps = Math.ceil(TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance);
     
@@ -474,7 +493,11 @@ function calculateTrackPosition(lapProgress) {
 
 // Core calculation functions
 function calculatePace() {
-    if (!validateInputs()) return;
+    console.log('calculatePace called');
+    if (!validateInputs()) {
+        console.log('Input validation failed');
+        return;
+    }
     
     const timeStr = elements.goalTime.value;
     const totalMs = parseTimeToMs(timeStr);
@@ -482,13 +505,19 @@ function calculatePace() {
     const totalLaps = Math.ceil(TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance);
     const basePacePerKm = (totalMs / 1000) / (TRACK_CONSTANTS.TOTAL_DISTANCE / 1000);
     
+    console.log('Pace calculation:', { timeStr, totalMs, laneDistance, totalLaps, basePacePerKm });
+    
     const data = generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm);
     currentPaceData = data;
+    
+    console.log('Generated pace data:', data);
     
     updateResults(data);
     updateTrackVisualization(data);
     updateCharts(data);
     updateAnimationState(data);
+    
+    console.log('Animation state after update:', animationState);
 }
 
 function generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm) {
@@ -597,11 +626,10 @@ function calculateExpectedTime(distance) {
 
 // Update functions
 function updateResults(data) {
-    elements.targetTimeDisplay.textContent = formatTimeFromMs(data.totalTime);
-    elements.largeTargetTimeDisplay.textContent = formatTimeFromMs(data.totalTime);
-    elements.overallPace.textContent = formatTime(data.basePacePerKm);
-    elements.avgSpeed.textContent = `${(3.6 / data.basePacePerKm).toFixed(1)} km/h`;
-    elements.lapCount.textContent = data.totalLaps.toFixed(1);
+    elements.largeTargetTimeDisplay.textContent = `00:00.00 / ${formatTimeFromMs(data.totalTime)}`;
+    if (elements.overallPace) elements.overallPace.textContent = formatTime(data.basePacePerKm);
+    if (elements.avgSpeed) elements.avgSpeed.textContent = `${(3.6 / data.basePacePerKm).toFixed(1)} km/h`;
+    if (elements.lapCount) elements.lapCount.textContent = data.totalLaps.toFixed(1);
     
     // Update page title
     document.title = `3k Run Tracker – ${elements.goalTime.value}`;
@@ -701,11 +729,14 @@ function updateDeltaChart(data) {
 }
 
 function updateAnimationState(data) {
+    console.log('updateAnimationState called with data:', data);
     animationState.totalTime = data.totalTime;
     animationState.currentTime = 0;
     animationState.currentDistance = 0;
     animationState.currentLap = 1;
     animationState.lapProgress = 0;
+    
+    console.log('Animation state updated:', animationState);
     
     updateRunnerPosition(0, 0);
     updateAnimationUI();
@@ -722,11 +753,19 @@ function toggleAnimation() {
 }
 
 function startAnimation() {
-    if (!currentPaceData) return;
+    console.log('startAnimation called');
+    console.log('currentPaceData:', currentPaceData);
+    console.log('animationState:', animationState);
+    
+    if (!currentPaceData) {
+        console.log('No currentPaceData, returning');
+        return;
+    }
     
     animationState.isPlaying = true;
     animationState.startTime = Date.now() - (animationState.currentTime * 1000);
     elements.playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+    console.log('Starting animation loop');
     animationLoop();
 }
 
@@ -756,8 +795,8 @@ function updateSpeedFromSlider() {
 }
 
 function updateSpeedFromInput() {
-    const newSpeed = parseFloat(elements.speedInput.value);
-    if (newSpeed >= 0.25 && newSpeed <= 8) {
+    const newSpeed = parseInt(elements.speedInput.value);
+    if (newSpeed >= 0 && newSpeed <= 10) {
         updateAnimationSpeed(newSpeed);
         elements.speedSlider.value = newSpeed;
     }
@@ -774,7 +813,10 @@ function updateAnimationSpeed(newSpeed) {
 }
 
 function animationLoop() {
-    if (!animationState.isPlaying) return;
+    if (!animationState.isPlaying) {
+        console.log('Animation not playing, returning');
+        return;
+    }
     
     const now = Date.now();
     const elapsed = ((now - animationState.startTime) / 1000) * animationState.speed;
@@ -792,6 +834,7 @@ function animationLoop() {
     if (progress < 1) {
         animationState.animationId = requestAnimationFrame(animationLoop);
     } else {
+        console.log('Animation completed');
         pauseAnimation();
     }
 }
@@ -919,7 +962,6 @@ function updateRunnerPosition(lapProgress, distance) {
 function updateAnimationUI() {
     elements.currentLapDisplay.textContent = animationState.currentLap;
     elements.currentDistanceDisplay.textContent = `${Math.round(animationState.currentDistance)}m`;
-    elements.currentTimeDisplay.textContent = formatTimeFromMs(animationState.currentTime * 1000);
     
     // Update current pace display
     const currentPace = calculateCurrentPace();
@@ -927,6 +969,20 @@ function updateAnimationUI() {
     
     const progressPercent = Math.round((animationState.currentDistance / TRACK_CONSTANTS.TOTAL_DISTANCE) * 100);
     elements.progressPercentDisplay.textContent = `${progressPercent}%`;
+    
+    // Update the large target time display with current time / target time format
+    const currentTimeFormatted = formatTimeFromMs(animationState.currentTime * 1000);
+    const goalTimeMs = parseTimeToMs(elements.goalTime.value);
+    const targetTimeFormatted = formatTimeFromMs(goalTimeMs);
+    elements.largeTargetTimeDisplay.textContent = `${currentTimeFormatted} / ${targetTimeFormatted}`;
+    
+    // Update the moved current-status-grid elements
+    if (elements.currentLapDisplay2) {
+        elements.currentLapDisplay2.textContent = animationState.currentLap;
+        elements.currentDistanceDisplay2.textContent = `${Math.round(animationState.currentDistance)}m`;
+        elements.currentPaceDisplay2.textContent = currentPace;
+        elements.progressPercentDisplay2.textContent = `${progressPercent}%`;
+    }
 }
 
 function calculateCurrentPace() {
@@ -961,60 +1017,14 @@ function updateRoundIndicators() {
         }
     });
     
-    // Update clock splits text
-    updateClockSplitsText();
+
 }
 
 function updateRoundList() {
-    updateClockSplitsText();
+    // Clock splits display removed from UI
 }
 
-function updateClockSplitsText() {
-    const laneDistance = LANE_DISTANCES[currentLane];
-    const currentDistance = animationState.currentDistance;
-    
-    // Create text-formatted table with only 200m, 400m, and 1000m cumulative times
-    let text = 'Lap    200m    400m   1000m\n';
-    text += '─────────────────────────────\n';
-    
-    // Create rows for each lap (1, 2, 3, 4, 5, 6, 7, 7.5)
-    const lapNumbers = [1, 2, 3, 4, 5, 6, 7, 7.5];
-    
-    lapNumbers.forEach(lap => {
-        const distance = lap * laneDistance;
-        
-        // Determine if this row is current
-        const isCurrent = Math.abs(distance - currentDistance) < laneDistance / 2;
-        let rowClass = '';
-        if (isCurrent) {
-            rowClass = 'current-row';
-        } else if (distance <= currentDistance) {
-            rowClass = 'completed-row';
-        } else {
-            rowClass = 'pending-row';
-        }
-        
-        // Calculate cumulative times for each split
-        // For 200m split: show time at 200m if we've reached it, otherwise show lap time
-        const time200 = distance >= 200 ? calculateExpectedTime(200) : calculateExpectedTime(distance);
-        
-        // For 400m split: show time at 400m if we've reached it, otherwise show lap time
-        const time400 = distance >= 400 ? calculateExpectedTime(400) : calculateExpectedTime(distance);
-        
-        // For 1000m split: show time at 1000m if we've reached it, otherwise show lap time
-        const time1000 = distance >= 1000 ? calculateExpectedTime(1000) : calculateExpectedTime(distance);
-        
-        // Format the row with proper spacing and alignment
-        const lapStr = lap.toString().padStart(3);
-        const time200Str = formatTimeFromMs(time200).padStart(7);
-        const time400Str = formatTimeFromMs(time400).padStart(7);
-        const time1000Str = formatTimeFromMs(time1000).padStart(7);
-        
-        text += `<span class="${rowClass}">${lapStr}   ${time200Str}   ${time400Str}   ${time1000Str}</span>\n`;
-    });
-    
-    elements.clockSplitsText.innerHTML = text;
-}
+
 
 function calculatePaceZone(segmentPace, basePace) {
     const diff = segmentPace - basePace;
@@ -1217,7 +1227,10 @@ function handleKeyboardShortcuts(e) {
         resetAnimation();
     } else if (e.key === 's' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
-        changeAnimationSpeed();
+        // Toggle speed between 1x and 2x
+        const currentSpeed = parseFloat(elements.speedInput.value);
+        const newSpeed = currentSpeed === 1 ? 2 : 1;
+        updateAnimationSpeed(newSpeed);
     }
     
     // Time adjustments
