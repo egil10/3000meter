@@ -5,7 +5,6 @@ let deltaChart = null;
 let currentLane = 1;
 let currentStrategy = 'even';
 let surges = [];
-let isProMode = false;
 let isNorwegian = false;
 let debounceTimer = null;
 
@@ -53,7 +52,7 @@ const translations = {
         cancel: "Cancel",
         save: "Save",
         footer_text: "3000m Track Runner - Professional pace calculator for track athletes",
-        restore_session: "Restore Session"
+    
     },
     no: {
         title: "3000m Bane Løper",
@@ -96,8 +95,7 @@ const translations = {
         surge_pace: "Tempo Justering (s/km)",
         cancel: "Avbryt",
         save: "Lagre",
-        footer_text: "3000m Bane Løper - Profesjonell tempo kalkulator for baneløpere",
-        restore_session: "Gjenopprett Sesjon"
+        footer_text: "3000m Bane Løper - Profesjonell tempo kalkulator for baneløpere"
     }
 };
 
@@ -157,10 +155,7 @@ const elements = {
     addSurgeBtn: document.getElementById('addSurgeBtn'),
     surgeList: document.getElementById('surgeList'),
     calculateBtn: document.getElementById('calculateBtn'),
-    printBtn: document.getElementById('printBtn'),
-    shareBtn: document.getElementById('shareBtn'),
     languageToggle: document.getElementById('languageToggle'),
-    proModeToggle: document.getElementById('proModeToggle'),
     toggleCharts: document.getElementById('toggleCharts'),
     chartsContainer: document.getElementById('chartsContainer'),
     paceChart: document.getElementById('paceChart'),
@@ -183,7 +178,6 @@ const elements = {
     resetBtn: document.getElementById('resetBtn'),
     speedBtn: document.getElementById('speedBtn'),
     speedDisplay: document.getElementById('speedDisplay'),
-    offlineToggle: document.getElementById('offlineToggle'),
     setupBtn: document.getElementById('setupBtn'),
     copyCsvBtn: document.getElementById('copyCsvBtn'),
     downloadCsvBtn: document.getElementById('downloadCsvBtn'),
@@ -210,7 +204,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setupServiceWorker();
     loadFromURL();
     updateLanguageUI();
-    updateProModeUI();
     updateI18n();
 });
 
@@ -259,8 +252,6 @@ function setupEventListeners() {
     
     // Action buttons
     elements.calculateBtn.addEventListener('click', calculatePace);
-    elements.printBtn.addEventListener('click', printPaceBand);
-    elements.shareBtn.addEventListener('click', shareLink);
     
     // CSV buttons
     elements.copyCsvBtn.addEventListener('click', copyCSV);
@@ -268,7 +259,6 @@ function setupEventListeners() {
     
     // UI toggles
     elements.languageToggle.addEventListener('click', toggleLanguage);
-    elements.proModeToggle.addEventListener('click', toggleProMode);
     elements.toggleCharts.addEventListener('click', toggleCharts);
     
     // Tab buttons
@@ -1109,32 +1099,7 @@ function deleteSurge(index) {
     debouncedCalculate();
 }
 
-async function printPaceBand() {
-    window.print();
-}
 
-async function shareLink() {
-    const url = new URL(window.location);
-    url.searchParams.set('time', elements.goalTime.value);
-    url.searchParams.set('lane', currentLane);
-    url.searchParams.set('strategy', currentStrategy);
-    
-    const shareText = isNorwegian ? '3000m tempoplan' : '3K pace plan';
-    
-    if (navigator.share) {
-        try {
-            await navigator.share({
-                title: document.title,
-                text: shareText,
-                url: url.toString()
-            });
-        } catch (err) {
-            copyToClipboard(url.toString());
-        }
-    } else {
-        copyToClipboard(url.toString());
-    }
-}
 
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
@@ -1246,15 +1211,7 @@ function updateLanguageUI() {
     elements.languageToggle.innerHTML = `<i class="fas fa-globe"></i> ${isNorwegian ? 'NO' : 'EN'}`;
 }
 
-function toggleProMode() {
-    isProMode = !isProMode;
-    document.body.classList.toggle('pro-mode', isProMode);
-    elements.proModeToggle.classList.toggle('active', isProMode);
-}
 
-function updateProModeUI() {
-    elements.proModeToggle.classList.toggle('active', isProMode);
-}
 
 function handleKeyboardShortcuts(e) {
     if (e.ctrlKey || e.metaKey) {
@@ -1262,14 +1219,6 @@ function handleKeyboardShortcuts(e) {
             case 'Enter':
                 e.preventDefault();
                 calculatePace();
-                break;
-            case 'p':
-                e.preventDefault();
-                printPaceBand();
-                break;
-            case 's':
-                e.preventDefault();
-                shareLink();
                 break;
         }
     }
@@ -1302,48 +1251,12 @@ function saveToLocalStorage() {
         lane: currentLane,
         strategy: currentStrategy,
         surges: surges,
-        isProMode: isProMode,
         isNorwegian: isNorwegian
     };
     localStorage.setItem('3000mRunner', JSON.stringify(data));
 }
 
-function restoreSession() {
-    const saved = localStorage.getItem('3000mRunner');
-    if (saved) {
-        try {
-            const data = JSON.parse(saved);
-            if (data.goalTime) elements.goalTime.value = data.goalTime;
-            if (data.lane) {
-                currentLane = data.lane;
-                elements.laneSelect.value = data.lane;
-            }
-            if (data.strategy) {
-                currentStrategy = data.strategy;
-                elements.strategyButtons.forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.strategy === data.strategy);
-                });
-                updateProgressiveSection();
-            }
-            if (data.surges) {
-                surges = data.surges;
-                updateSurgeList();
-            }
-            if (data.isProMode !== undefined) {
-                isProMode = data.isProMode;
-                toggleProMode();
-            }
-            if (data.isNorwegian !== undefined) {
-                isNorwegian = data.isNorwegian;
-                updateLanguageUI();
-            }
-            
-            calculatePace();
-        } catch (err) {
-            console.error('Failed to restore session:', err);
-        }
-    }
-}
+
 
 function setupServiceWorker() {
     if ('serviceWorker' in navigator) {
@@ -1355,25 +1268,9 @@ function setupServiceWorker() {
                 console.log('SW registration failed: ', registrationError);
             });
     }
-    
-    // Set up offline status monitoring
-    updateOfflineStatus();
-    window.addEventListener('online', updateOfflineStatus);
-    window.addEventListener('offline', updateOfflineStatus);
 }
 
-function updateOfflineStatus() {
-    const isOffline = !navigator.onLine;
-    const statusElement = elements.offlineToggle;
-    
-    if (isOffline) {
-        statusElement.textContent = isNorwegian ? 'Offline' : 'Offline';
-        statusElement.classList.add('offline');
-    } else {
-        statusElement.textContent = isNorwegian ? 'Online' : 'Online';
-        statusElement.classList.remove('offline');
-    }
-}
+
 
 // Global functions
 window.deleteSurge = deleteSurge;
