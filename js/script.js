@@ -114,8 +114,7 @@ let animationState = {
 };
 
 // Animation speeds
-const ANIMATION_SPEEDS = [1, 2, 4, 8];
-const SPEED_LABELS = ['1x', '2x', '4x', '8x'];
+
 
 // Track geometry constants
 const TRACK_CONSTANTS = {
@@ -168,7 +167,7 @@ const elements = {
     lapCount: document.getElementById('lapCount'),
     runnerDot: document.getElementById('runner-dot'),
     roundIndicators: document.getElementById('round-indicators'),
-    lapProgressFill: document.getElementById('lap-progress-fill'),
+    lapProgressFill: document.getElementById('lapProgressFill'),
     currentLap: document.getElementById('currentLap'),
     currentDistance: document.getElementById('currentDistance'),
     currentTime: document.getElementById('currentTime'),
@@ -176,8 +175,8 @@ const elements = {
     roundList: document.getElementById('roundList'),
     playPauseBtn: document.getElementById('playPauseBtn'),
     resetBtn: document.getElementById('resetBtn'),
-    speedBtn: document.getElementById('speedBtn'),
-    speedDisplay: document.getElementById('speedDisplay'),
+    speedSlider: document.getElementById('speedSlider'),
+    speedInput: document.getElementById('speedInput'),
     setupBtn: document.getElementById('setupBtn'),
     copyCsvBtn: document.getElementById('copyCsvBtn'),
     downloadCsvBtn: document.getElementById('downloadCsvBtn'),
@@ -273,7 +272,10 @@ function setupEventListeners() {
     // Animation controls
     elements.playPauseBtn.addEventListener('click', toggleAnimation);
     elements.resetBtn.addEventListener('click', resetAnimation);
-    elements.speedBtn.addEventListener('click', changeAnimationSpeed);
+    
+    // Speed controls
+    elements.speedSlider.addEventListener('input', updateSpeedFromSlider);
+    elements.speedInput.addEventListener('input', updateSpeedFromInput);
     
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboardShortcuts);
@@ -774,18 +776,27 @@ function resetAnimation() {
     updateRoundIndicators();
 }
 
-function changeAnimationSpeed() {
-    const currentIndex = ANIMATION_SPEEDS.indexOf(animationState.speed);
-    const nextIndex = (currentIndex + 1) % ANIMATION_SPEEDS.length;
-    const newSpeed = ANIMATION_SPEEDS[nextIndex];
-    
+function updateSpeedFromSlider() {
+    const newSpeed = parseFloat(elements.speedSlider.value);
+    updateAnimationSpeed(newSpeed);
+}
+
+function updateSpeedFromInput() {
+    const newSpeed = parseFloat(elements.speedInput.value);
+    if (newSpeed >= 0.25 && newSpeed <= 8) {
+        updateAnimationSpeed(newSpeed);
+        elements.speedSlider.value = newSpeed;
+    }
+}
+
+function updateAnimationSpeed(newSpeed) {
     if (animationState.isPlaying) {
         const now = Date.now();
         animationState.startTime = now - (animationState.currentTime / newSpeed * 1000);
     }
     animationState.speed = newSpeed;
-    elements.speedBtn.innerHTML = `<i class="fas fa-tachometer-alt"></i> ${SPEED_LABELS[nextIndex]}`;
-    elements.speedDisplay.textContent = `${SPEED_LABELS[nextIndex]}x Speed`;
+    elements.speedInput.value = newSpeed;
+    elements.speedSlider.value = newSpeed;
 }
 
 function animationLoop() {
@@ -889,7 +900,7 @@ function parseTimeToMs(timeStr) {
 }
 
 function formatTimeFromMs(ms) {
-    if (!ms || ms < 0) return '--:--';
+    if (!ms || ms < 0) return '00:00';
     
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -897,17 +908,17 @@ function formatTimeFromMs(ms) {
     const tenths = Math.floor((ms % 1000) / 100);
     
     if (tenths > 0) {
-        return `${minutes}:${seconds.toString().padStart(2, '0')}.${tenths}`;
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${tenths}`;
     }
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
 function formatTime(seconds) {
-    if (!seconds || seconds < 0) return '--:--';
+    if (!seconds || seconds < 0) return '00:00';
     
     const minutes = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
 function updateProgressiveSection() {
@@ -925,8 +936,8 @@ function updateRunnerPosition(lapProgress, distance) {
     elements.runnerDot.setAttribute('cy', position.y);
     
     // Update lap progress bar
-    const progressWidth = (distance / TRACK_CONSTANTS.TOTAL_DISTANCE) * 700;
-    elements.lapProgressFill.setAttribute('width', Math.max(0, progressWidth));
+    const progressPercent = (distance / TRACK_CONSTANTS.TOTAL_DISTANCE) * 100;
+    elements.lapProgressFill.style.width = `${Math.max(0, progressPercent)}%`;
 }
 
 function updateAnimationUI() {

@@ -49,7 +49,7 @@
       <div class="track-container">
         <div class="track-layout">
           <div class="track-wrap">
-            <svg viewBox="0 0 1400 900" role="img" aria-label="3000m oval track with eight lanes and animated runner">
+            <svg viewBox="0 0 1600 1000" role="img" aria-label="3000m oval track with eight lanes and animated runner">
               <defs>
                 <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
                   <feGaussianBlur stdDeviation="8" result="blur"/>
@@ -62,7 +62,7 @@
               </defs>
 
               <!-- Background -->
-              <rect x="0" y="0" width="1400" height="900" fill="#f8fafc"/>
+              <rect x="0" y="0" width="1600" height="1000" fill="#f8fafc"/>
 
               <!-- Stadium apron (grey ring around the track) -->
               <g id="stadium"></g>
@@ -89,12 +89,6 @@
 
               <!-- Round indicators -->
               <g id="round-indicators"></g>
-
-              <!-- Lap progress bar -->
-              <g id="lap-progress">
-                <rect x="50" y="850" width="700" height="8" fill="#e5e7eb" rx="4"/>
-                <rect id="lap-progress-fill" x="50" y="850" width="0" height="8" fill="#007AFF" rx="4"/>
-              </g>
             </svg>
           </div>
 
@@ -134,15 +128,27 @@
               <button id="resetBtn" class="anim-btn" title="Reset" aria-label="Reset">
                 <i class="fas fa-undo"></i>
               </button>
-              <button id="speedBtn" class="anim-btn" title="Change Speed" aria-label="Change Speed">
-                <i class="fas fa-tachometer-alt"></i>
-              </button>
             </div>
 
-            <!-- Speed indicator -->
-            <div class="speed-indicator" id="speedDisplay">1x Speed</div>
+            <!-- Speed controls -->
+            <div class="speed-controls">
+              <div class="speed-slider-container">
+                <label for="speedSlider" class="speed-label">Speed</label>
+                <div class="speed-input-group">
+                  <input type="range" id="speedSlider" min="0.25" max="8" step="0.25" value="1" class="speed-slider">
+                  <input type="number" id="speedInput" min="0.25" max="8" step="0.25" value="1" class="speed-input">
+                  <span class="speed-unit">x</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lap progress bar -->
+            <div class="lap-progress-container">
+              <div class="lap-progress-bar">
+                <div class="lap-progress-fill" id="lapProgressFill"></div>
+              </div>
+            </div>
           </div>
-        </div>
         
         <!-- Mobile setup button -->
         <button id="setupBtn" class="setup-btn" title="Setup" aria-label="Setup">
