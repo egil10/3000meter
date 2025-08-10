@@ -237,15 +237,18 @@ function initializeApp() {
 
 function setupEventListeners() {
     // Input event listeners
-    elements.goalTime.addEventListener('input', validateTimeInput);
+    elements.goalTime.addEventListener('input', (e) => {
+        validateTimeInput(e);
+        updatePaceFromTime();
+    });
     elements.goalTime.addEventListener('blur', debouncedCalculate);
     
     // Target pace input listeners
-    elements.targetPace.addEventListener('input', validateTimeInput);
-    elements.targetPace.addEventListener('blur', () => {
+    elements.targetPace.addEventListener('input', (e) => {
+        validateTimeInput(e);
         updateTimeFromPace();
-        debouncedCalculate();
     });
+    elements.targetPace.addEventListener('blur', debouncedCalculate);
     
     // Strategy buttons
     elements.strategyButtons.forEach(btn => {
@@ -284,7 +287,7 @@ function setupEventListeners() {
     document.getElementById('cancelSurge').addEventListener('click', hideSurgeModal);
     
     // Action buttons
-    elements.calculateBtn.addEventListener('click', calculatePace);
+    elements.calculateBtn.addEventListener('click', handleCalculateButtonClick);
     
 
     
@@ -504,17 +507,10 @@ function calculateTrackPosition(lapProgress) {
 // Core calculation functions
 function calculatePace() {
     console.log('calculatePace called');
+    
     if (!validateInputs()) {
-        console.log('Input validation failed');
         return;
     }
-    
-    // Add success feedback to calculate button
-    const calculateBtn = elements.calculateBtn;
-    calculateBtn.classList.add('success');
-    setTimeout(() => {
-        calculateBtn.classList.remove('success');
-    }, 1500);
     
     const timeStr = elements.goalTime.value;
     const totalMs = parseTimeToMs(timeStr);
@@ -535,6 +531,17 @@ function calculatePace() {
     updateAnimationState(data);
     
     console.log('Animation state after update:', animationState);
+}
+
+function handleCalculateButtonClick() {
+    // Add success feedback to calculate button
+    const calculateBtn = elements.calculateBtn;
+    calculateBtn.classList.add('success');
+    setTimeout(() => {
+        calculateBtn.classList.remove('success');
+    }, 1500);
+    
+    calculatePace();
 }
 
 function generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm) {
@@ -732,7 +739,8 @@ function updatePaceChart(data) {
                     ticks: {
                         callback: function(value) {
                             return formatPace(value);
-                        }
+                        },
+                        stepSize: 60 // 60 seconds = 1 minute, ensures no duplicate ticks
                     }
                 }
             },
@@ -758,8 +766,11 @@ function updateDeltaChart(data) {
     const labels = data.segments.map(s => `Lap ${s.lap}`);
     const deltas = data.segments.map(s => {
         const expected = s.segmentTime;
-        const target = (data.totalTime / data.totalLaps);
-        return ((expected - target) / 1000).toFixed(1);
+        // For even pacing, each lap should take the same time
+        const target = data.totalTime / data.totalLaps;
+        const delta = ((expected - target) / 1000);
+        // Round to 1 decimal place to avoid floating point precision issues
+        return Math.round(delta * 10) / 10;
     });
     
     deltaChart = new Chart(ctx, {

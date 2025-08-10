@@ -31,7 +31,7 @@
     
     /* Font families */
     --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+    --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', monospace;
     
     /* Track-specific variables */
     --bg: #0f172a;
@@ -461,6 +461,9 @@ body {
     color: var(--neutral-800);
     margin-bottom: 1rem;
     font-family: var(--font-display);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Input Groups */
@@ -701,14 +704,6 @@ body {
 .calculate-btn.success {
     background: var(--success-green);
     transform: scale(1.02);
-}
-
-.calculate-btn.success::after {
-    content: "✓";
-    position: absolute;
-    right: 1rem;
-    font-weight: bold;
-    animation: fadeInOut 2s ease-in-out;
 }
 
 .calculate-btn:active {
