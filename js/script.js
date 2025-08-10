@@ -392,7 +392,7 @@ function drawMarkers() {
         const dx = p1.x - p0.x, dy = p1.y - p0.y;
         const mag = Math.hypot(dx, dy) || 1;
         const tx = dx / mag, ty = dy / mag;
-        const nx = -ty, ny = tx;
+        const nx = ty, ny = -tx;
         
         const LANE_W = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-w'));
         const innerOff = -0.5 * LANE_W;
