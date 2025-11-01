@@ -56,9 +56,27 @@ function setupEventListeners() {
     // Strategy option buttons
     document.querySelectorAll('.strategy-btn-simple').forEach(btn => {
         btn.addEventListener('click', () => {
+            const clickedStrategy = btn.dataset.strategy;
+            const wasCustomActive = currentStrategy === 'custom';
+            const wasAdvancedVisible = elements.advancedStrategyOptions && elements.advancedStrategyOptions.style.display === 'block';
+            
+            // If clicking custom and it was already active, toggle the advanced options
+            if (clickedStrategy === 'custom' && wasCustomActive) {
+                // Toggle the advanced options visibility
+                if (elements.advancedStrategyOptions) {
+                    if (wasAdvancedVisible) {
+                        elements.advancedStrategyOptions.style.display = 'none';
+                    } else {
+                        elements.advancedStrategyOptions.style.display = 'block';
+                    }
+                }
+                return; // Keep custom selected, just toggle visibility
+            }
+            
+            // Normal behavior - update active state
             document.querySelectorAll('.strategy-btn-simple').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            currentStrategy = btn.dataset.strategy;
+            currentStrategy = clickedStrategy;
             
             if (currentStrategy === 'progressive' || currentStrategy === 'degressive' || currentStrategy === 'custom') {
                 if (elements.advancedStrategyOptions) {

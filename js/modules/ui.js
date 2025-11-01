@@ -157,6 +157,9 @@ function getTimeSuggestions(distance) {
     else if (distance >= 42190 && distance <= 42200) {
         suggestions.push('2:55:00', '3:05:00', '3:15:00', '3:25:00', '3:35:00', '3:45:00', '3:55:00', '4:05:00', '4:15:00', '4:25:00');
     }
+    else if (distance === 100000) {
+        suggestions.push('8:00:00', '8:30:00', '9:00:00', '9:30:00', '10:00:00', '10:30:00', '11:00:00', '11:30:00', '12:00:00', '12:30:00');
+    }
     // Range-based fallbacks
     else if (distance <= 100) {
         suggestions.push('0:11.5', '0:12.0', '0:12.5', '0:13.0', '0:13.5', '0:14.0', '0:14.5', '0:15.0', '0:15.5', '0:16.0');
@@ -191,9 +194,12 @@ function getTimeSuggestions(distance) {
     else if (distance <= 42195) {
         suggestions.push('2:55:00', '3:05:00', '3:15:00', '3:25:00', '3:35:00', '3:45:00', '3:55:00', '4:05:00', '4:15:00', '4:25:00');
     }
-    // Ultra distances - use marathon times as fallback
+    else if (distance <= 100000) {
+        suggestions.push('8:00:00', '8:30:00', '9:00:00', '9:30:00', '10:00:00', '10:30:00', '11:00:00', '11:30:00', '12:00:00', '12:30:00');
+    }
+    // Ultra distances beyond 100k
     else {
-        suggestions.push('2:55:00', '3:05:00', '3:15:00', '3:25:00', '3:35:00', '3:45:00', '3:55:00', '4:05:00', '4:15:00', '4:25:00');
+        suggestions.push('12:00:00', '13:00:00', '14:00:00', '15:00:00', '16:00:00', '17:00:00', '18:00:00', '19:00:00', '20:00:00', '21:00:00');
     }
     
     return suggestions.slice(0, 10); // Return max 10 suggestions
@@ -400,21 +406,35 @@ function updateCumulativeTimes(data) {
 
 function updateSplitRowColors() {
     const currentDistance = animationState.currentDistance;
-    const rows = document.querySelectorAll('.cumulative-time-row');
+    const tables = document.querySelectorAll('.splits-table');
     
-    rows.forEach(row => {
-        const rowDistance = parseFloat(row.dataset.distance);
+    tables.forEach(table => {
+        const rows = table.querySelectorAll('.cumulative-time-row');
         
-        // Remove all status classes
-        row.classList.remove('completed', 'in-progress');
+        // Get all rows sorted by distance for this table
+        const sortedRows = Array.from(rows).map(row => ({
+            element: row,
+            distance: parseFloat(row.dataset.distance)
+        })).sort((a, b) => a.distance - b.distance);
         
-        if (rowDistance < currentDistance) {
-            // Completed - green
-            row.classList.add('completed');
-        } else if (rowDistance <= currentDistance + 50) {
-            // In progress - yellow (within 50m of current distance)
-            row.classList.add('in-progress');
-        }
+        let foundNextIncomplete = false;
+        
+        sortedRows.forEach(rowData => {
+            const row = rowData.element;
+            const rowDistance = rowData.distance;
+            
+            // Remove all status classes
+            row.classList.remove('completed', 'in-progress');
+            
+            if (rowDistance < currentDistance) {
+                // Completed - green
+                row.classList.add('completed');
+            } else if (!foundNextIncomplete) {
+                // The first incomplete split in this table should be yellow (in-progress)
+                row.classList.add('in-progress');
+                foundNextIncomplete = true;
+            }
+        });
     });
 }
 
