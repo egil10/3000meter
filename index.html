@@ -23,6 +23,9 @@
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/stadium.svg">
   <meta name="twitter:card" content="summary_large_image">
+  
+  <!-- Chart.js for pace visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <div class="app-container">
@@ -34,6 +37,9 @@
           <span data-i18n="title">3000METER.com</span>
         </h1>
         <div class="header-controls">
+          <button id="themeToggle" class="theme-btn" title="Toggle dark mode" aria-label="Toggle theme">
+            <i class="fas fa-moon"></i>
+          </button>
           <button id="languageToggle" class="lang-btn" title="Switch language">
             <i class="fas fa-globe"></i> EN
           </button>
@@ -158,6 +164,21 @@
         <h3 data-i18n="race_setup">Race Setup</h3>
 
         <div class="input-group">
+          <label for="raceDistance" data-i18n="race_distance">Race Distance</label>
+          <select id="raceDistance" class="distance-select">
+            <option value="800">800m</option>
+            <option value="1500">1500m</option>
+            <option value="3000" selected>3000m</option>
+            <option value="5000">5000m</option>
+            <option value="10000">10000m</option>
+            <option value="custom">Custom Distance</option>
+          </select>
+          <div id="customDistanceGroup" class="input-group" style="display: none; margin-top: 0.5rem;">
+            <input type="number" id="customDistance" placeholder="Distance in meters" min="100" step="100" style="width: 100%;">
+          </div>
+        </div>
+
+        <div class="input-group">
           <label for="goalTime" data-i18n="target_time">Target Time (mm:ss)</label>
           <div class="input-with-buttons">
             <input type="text" id="goalTime" value="15:00" placeholder="15:00" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
@@ -207,50 +228,102 @@
           <button id="calculateBtn" class="calculate-btn">
             <i class="fas fa-calculator"></i> <span data-i18n="calculate">Calculate</span>
           </button>
+          <button id="shareBtn" class="share-btn" title="Share">
+            <i class="fas fa-share-alt"></i>
+          </button>
+          <button id="exportBtn" class="export-btn" title="Export">
+            <i class="fas fa-download"></i>
+          </button>
         </div>
       </div>
 
       <!-- Cumulative Times Panel -->
       <div class="cumulative-times-panel">
         <div class="cumulative-times-card">
-          <h3>Cumulative Times</h3>
-          <div id="cumulativeTimesContainer" class="cumulative-times-container">
-            <!-- Left side: 200m intervals table -->
-            <div class="cumulative-times-left">
-              <div class="cumulative-times-table">
-                <div class="table-header">
-                  <span>200m Intervals</span>
-                  <span>Time</span>
-                </div>
-                <div id="cumulativeTimes200m" class="table-body">
-                  <!-- 200m cumulative times will be populated here -->
-                </div>
-              </div>
-            </div>
-            
-            <!-- Right side: 400m and 1000m tables stacked -->
-            <div class="cumulative-times-right">
-              <!-- 400m intervals table -->
-              <div class="cumulative-times-table">
-                <div class="table-header">
-                  <span>400m Intervals</span>
-                  <span>Time</span>
-                </div>
-                <div id="cumulativeTimes400m" class="table-body">
-                  <!-- 400m cumulative times will be populated here -->
+          <div class="card-tabs">
+            <button class="tab-btn active" data-tab="splits">
+              <i class="fas fa-list"></i> <span data-i18n="splits">Splits</span>
+            </button>
+            <button class="tab-btn" data-tab="chart">
+              <i class="fas fa-chart-line"></i> <span data-i18n="pace_chart">Pace Chart</span>
+            </button>
+            <button class="tab-btn" data-tab="intervals">
+              <i class="fas fa-stopwatch"></i> <span data-i18n="intervals">Intervals</span>
+            </button>
+          </div>
+          
+          <!-- Splits Tab -->
+          <div id="splitsTab" class="tab-content active">
+            <div id="cumulativeTimesContainer" class="cumulative-times-container">
+              <!-- Left side: 200m intervals table -->
+              <div class="cumulative-times-left">
+                <div class="cumulative-times-table">
+                  <div class="table-header">
+                    <span>200m Intervals</span>
+                    <span>Time</span>
+                  </div>
+                  <div id="cumulativeTimes200m" class="table-body">
+                    <!-- 200m cumulative times will be populated here -->
+                  </div>
                 </div>
               </div>
               
-              <!-- 1000m intervals table -->
-              <div class="cumulative-times-table">
-                <div class="table-header">
-                  <span>1000m Intervals</span>
-                  <span>Time</span>
+              <!-- Right side: 400m and 1000m tables stacked -->
+              <div class="cumulative-times-right">
+                <!-- 400m intervals table -->
+                <div class="cumulative-times-table">
+                  <div class="table-header">
+                    <span>400m Intervals</span>
+                    <span>Time</span>
+                  </div>
+                  <div id="cumulativeTimes400m" class="table-body">
+                    <!-- 400m cumulative times will be populated here -->
+                  </div>
                 </div>
-                <div id="cumulativeTimes1000m" class="table-body">
-                  <!-- 1000m cumulative times will be populated here -->
+                
+                <!-- 1000m intervals table -->
+                <div class="cumulative-times-table">
+                  <div class="table-header">
+                    <span>1000m Intervals</span>
+                    <span>Time</span>
+                  </div>
+                  <div id="cumulativeTimes1000m" class="table-body">
+                    <!-- 1000m cumulative times will be populated here -->
+                  </div>
                 </div>
               </div>
+            </div>
+          </div>
+          
+          <!-- Chart Tab -->
+          <div id="chartTab" class="tab-content">
+            <div class="chart-container">
+              <canvas id="paceChart"></canvas>
+            </div>
+          </div>
+          
+          <!-- Intervals Tab -->
+          <div id="intervalsTab" class="tab-content">
+            <div class="interval-planner">
+              <h4 data-i18n="interval_training">Interval Training Planner</h4>
+              <div class="interval-controls">
+                <div class="input-group">
+                  <label for="intervalDistance">Interval Distance (m)</label>
+                  <input type="number" id="intervalDistance" value="400" min="100" step="100">
+                </div>
+                <div class="input-group">
+                  <label for="intervalRest">Rest Time (s)</label>
+                  <input type="number" id="intervalRest" value="60" min="0" step="10">
+                </div>
+                <div class="input-group">
+                  <label for="intervalReps">Repetitions</label>
+                  <input type="number" id="intervalReps" value="8" min="1" max="20">
+                </div>
+                <button id="generateIntervalsBtn" class="btn-secondary">
+                  <i class="fas fa-plus"></i> Generate Intervals
+                </button>
+              </div>
+              <div id="intervalResults" class="interval-results"></div>
             </div>
           </div>
         </div>

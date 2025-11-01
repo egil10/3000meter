@@ -3,6 +3,9 @@ let currentPaceData = null;
 let currentLane = 1;
 let currentStrategy = 'even';
 let isNorwegian = false;
+let currentDistance = 3000; // Current race distance in meters
+let paceChart = null; // Chart.js instance
+let isDarkMode = false;
 
 // Translations
 const translations = {
@@ -41,7 +44,11 @@ const translations = {
         progress: "Progress",
         rounds: "Rounds",
         footer_text: "3k Run Tracker - Professional pace calculator for track athletes",
-    
+        race_distance: "Race Distance",
+        pace_chart: "Pace Chart",
+        intervals: "Intervals",
+        interval_training: "Interval Training Planner",
+        target_pace: "Target Pace (mm:ss/km)"
     },
     no: {
         title: "3000METER.com",
@@ -78,7 +85,12 @@ const translations = {
         progress: "Framgang",
         rounds: "Runder",
         save: "Lagre",
-        footer_text: "3k Løp Sporer - Profesjonell tempo kalkulator for baneløpere"
+        footer_text: "3k Løp Sporer - Profesjonell tempo kalkulator for baneløpere",
+        race_distance: "Løpsdistanse",
+        pace_chart: "Tempo Graf",
+        intervals: "Intervaller",
+        interval_training: "Intervall Treningsplanlegger",
+        target_pace: "Mål Tempo (mm:ss/km)"
     }
 };
 
@@ -104,8 +116,17 @@ const TRACK_CONSTANTS = {
     LANE_WIDTH: 1.22, // meters
     STRAIGHT_LENGTH: 84.39, // meters
     CURVE_RADIUS_LANE1: 36.5, // meters
-    TOTAL_DISTANCE: 3000, // meters
+    TOTAL_DISTANCE: 3000, // meters (default, will be updated)
     LAPS: 7.5
+};
+
+// Standard race distances
+const STANDARD_DISTANCES = {
+    800: 800,
+    1500: 1500,
+    3000: 3000,
+    5000: 5000,
+    10000: 10000
 };
 
 // Lane distances (precomputed)
@@ -142,8 +163,14 @@ document.addEventListener('DOMContentLoaded', function() {
     elements = {
         goalTime: document.getElementById('goalTime'),
         targetPace: document.getElementById('targetPace'),
+        raceDistance: document.getElementById('raceDistance'),
+        customDistance: document.getElementById('customDistance'),
+        customDistanceGroup: document.getElementById('customDistanceGroup'),
         strategyButtons: document.querySelectorAll('.strategy-btn'),
         calculateBtn: document.getElementById('calculateBtn'),
+        shareBtn: document.getElementById('shareBtn'),
+        exportBtn: document.getElementById('exportBtn'),
+        themeToggle: document.getElementById('themeToggle'),
         largeTargetTimeDisplay: document.getElementById('largeTargetTimeDisplay'),
         runnerDot: document.getElementById('runner-dot'),
         roundIndicators: document.getElementById('round-indicators'),
@@ -164,6 +191,12 @@ document.addEventListener('DOMContentLoaded', function() {
         cumulativeTimes200m: document.getElementById('cumulativeTimes200m'),
         cumulativeTimes400m: document.getElementById('cumulativeTimes400m'),
         cumulativeTimes1000m: document.getElementById('cumulativeTimes1000m'),
+        tabButtons: document.querySelectorAll('.tab-btn'),
+        generateIntervalsBtn: document.getElementById('generateIntervalsBtn'),
+        intervalDistance: document.getElementById('intervalDistance'),
+        intervalRest: document.getElementById('intervalRest'),
+        intervalReps: document.getElementById('intervalReps'),
+        intervalResults: document.getElementById('intervalResults'),
         toast: document.getElementById('toast')
     };
     
@@ -181,6 +214,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (navigator.language.startsWith('no')) {
         isNorwegian = true;
     }
+    
+    // Load dark mode preference
+    loadThemePreference();
     
     initializeApp();
     setupEventListeners();
@@ -214,6 +250,15 @@ function setupEventListeners() {
         updateTimeFromPace();
     });
     
+    // Distance selector
+    if (elements.raceDistance) {
+        elements.raceDistance.addEventListener('change', handleDistanceChange);
+    }
+    
+    if (elements.customDistance) {
+        elements.customDistance.addEventListener('input', handleCustomDistanceChange);
+    }
+    
     // Strategy buttons - only update strategy, don't trigger calculations
     elements.strategyButtons.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -225,6 +270,34 @@ function setupEventListeners() {
     
     // Action buttons
     elements.calculateBtn.addEventListener('click', handleCalculateButtonClick);
+    
+    if (elements.shareBtn) {
+        elements.shareBtn.addEventListener('click', handleShare);
+    }
+    
+    if (elements.exportBtn) {
+        elements.exportBtn.addEventListener('click', handleExport);
+    }
+    
+    // Theme toggle
+    if (elements.themeToggle) {
+        elements.themeToggle.addEventListener('click', toggleTheme);
+    }
+    
+    // Tab buttons
+    if (elements.tabButtons) {
+        elements.tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tab;
+                switchTab(tab);
+            });
+        });
+    }
+    
+    // Interval planner
+    if (elements.generateIntervalsBtn) {
+        elements.generateIntervalsBtn.addEventListener('click', generateIntervals);
+    }
     
     // UI toggles
     elements.languageToggle.addEventListener('click', toggleLanguage);
@@ -444,13 +517,17 @@ function calculatePace() {
         return;
     }
     
+    // Get current distance
+    const distance = getCurrentDistance();
+    TRACK_CONSTANTS.TOTAL_DISTANCE = distance;
+    
     const timeStr = elements.goalTime.value;
     const totalMs = parseTimeToMs(timeStr);
     const laneDistance = LANE_DISTANCES[currentLane];
     const totalLaps = Math.ceil(TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance);
     const basePacePerKm = (totalMs / 1000) / (TRACK_CONSTANTS.TOTAL_DISTANCE / 1000);
     
-    console.log('Pace calculation:', { timeStr, totalMs, laneDistance, totalLaps, basePacePerKm });
+    console.log('Pace calculation:', { timeStr, totalMs, laneDistance, totalLaps, basePacePerKm, distance });
     
     const data = generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm);
     currentPaceData = data;
@@ -460,6 +537,7 @@ function calculatePace() {
     updateResults(data);
     updateTrackVisualization(data);
     updateAnimationState(data);
+    updatePaceChart(data);
     
     console.log('Animation state after update:', animationState);
 }
@@ -477,6 +555,9 @@ function handleCalculateButtonClick() {
     
     // Calculate new pace data
     calculatePace();
+    
+    // Update URL with current settings
+    updateURL();
 }
 
 function generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm) {
@@ -486,12 +567,17 @@ function generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm) {
         totalLaps: totalLaps,
         basePacePerKm: basePacePerKm,
         strategy: currentStrategy, // Store the strategy used for this calculation
+        totalDistance: TRACK_CONSTANTS.TOTAL_DISTANCE,
         splits: [],
-        segments: []
+        segments: [],
+        paceData: [] // For chart visualization
     };
     
-    // Generate splits for different distances
-    const splitDistances = [100, 200, 400, 1000];
+    // Generate splits for different distances (adjust based on race distance)
+    let splitDistances = [100, 200, 400];
+    if (TRACK_CONSTANTS.TOTAL_DISTANCE >= 5000) {
+        splitDistances.push(1000);
+    }
     
     splitDistances.forEach(splitDist => {
         const splits = [];
@@ -520,6 +606,17 @@ function generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm) {
             expectedTime: expectedTime,
             segmentTime: expectedTime - prevExpectedTime,
             pace: ((expectedTime - prevExpectedTime) / 1000) / (laneDistance / 1000)
+        });
+    }
+    
+    // Generate pace data points for chart (every 100m)
+    for(let dist = 100; dist <= TRACK_CONSTANTS.TOTAL_DISTANCE; dist += 100) {
+        const expectedTime = calculateExpectedTime(dist, basePacePerKm);
+        const pace = (expectedTime / 1000) / (dist / 1000); // seconds per km
+        data.paceData.push({
+            distance: dist,
+            time: expectedTime / 1000,
+            pace: pace
         });
     }
     
@@ -747,7 +844,8 @@ function animationLoop() {
     const elapsed = ((now - animationState.startTime) / 1000) * animationState.speed;
     animationState.currentTime = Math.min(elapsed, animationState.totalTime / 1000);
     const progress = animationState.currentTime / (animationState.totalTime / 1000);
-    const distance = progress * TRACK_CONSTANTS.TOTAL_DISTANCE;
+    const totalDistance = currentPaceData?.totalDistance || TRACK_CONSTANTS.TOTAL_DISTANCE;
+    const distance = progress * totalDistance;
     animationState.currentDistance = distance;
     animationState.currentLap = Math.floor(distance / LANE_DISTANCES[currentLane]) + 1;
     animationState.lapProgress = 1 - ((distance % LANE_DISTANCES[currentLane]) / LANE_DISTANCES[currentLane]);
@@ -820,8 +918,9 @@ function updateTimeFromPace() {
     const paceMs = parseTimeToMs(paceValue);
     if (paceMs === 0) return;
     
-    // Calculate target time from pace (3000m = 3km)
-    const targetTimeMs = paceMs * 3;
+    // Calculate target time from pace based on current distance
+    const distanceKm = getCurrentDistance() / 1000;
+    const targetTimeMs = paceMs * distanceKm;
     const targetTimeStr = formatTimeFromMsSimple(targetTimeMs);
     
     elements.goalTime.value = targetTimeStr;
@@ -834,8 +933,9 @@ function updatePaceFromTime() {
     const timeMs = parseTimeToMs(timeValue);
     if (timeMs === 0) return;
     
-    // Calculate pace from target time (3000m = 3km)
-    const paceMs = timeMs / 3;
+    // Calculate pace from target time based on current distance
+    const distanceKm = getCurrentDistance() / 1000;
+    const paceMs = timeMs / distanceKm;
     const paceStr = formatTimeFromMsSimple(paceMs);
     
     elements.targetPace.value = paceStr;
@@ -917,7 +1017,8 @@ function updateRunnerPosition(lapProgress, distance) {
     elements.runnerDot.setAttribute('cy', position.y);
     
     // Update lap progress bar
-    const progressPercent = (distance / TRACK_CONSTANTS.TOTAL_DISTANCE) * 100;
+    const totalDistance = currentPaceData?.totalDistance || TRACK_CONSTANTS.TOTAL_DISTANCE;
+    const progressPercent = (distance / totalDistance) * 100;
     elements.lapProgressFill.style.width = `${Math.max(0, progressPercent)}%`;
 }
 
@@ -929,7 +1030,8 @@ function updateAnimationUI() {
     const currentPace = calculateCurrentPace();
     elements.currentPaceDisplay.textContent = currentPace;
     
-    const progressPercent = Math.round((animationState.currentDistance / TRACK_CONSTANTS.TOTAL_DISTANCE) * 100);
+    const totalDistance = currentPaceData?.totalDistance || TRACK_CONSTANTS.TOTAL_DISTANCE;
+    const progressPercent = Math.round((animationState.currentDistance / totalDistance) * 100);
     elements.progressPercentDisplay.textContent = `${progressPercent}%`;
     
     // Update the large target time display with current time / target time format
@@ -1000,7 +1102,7 @@ function updateCumulativeTimes(data) {
         
         container.innerHTML = '';
         
-        for (let distance = interval; distance <= TRACK_CONSTANTS.TOTAL_DISTANCE; distance += interval) {
+        for (let distance = interval; distance <= data.totalDistance; distance += interval) {
             const expectedTime = calculateExpectedTime(distance, data.basePacePerKm, data.strategy);
             const timeFormatted = formatTimeFromMsSimple(expectedTime);
             
@@ -1008,7 +1110,7 @@ function updateCumulativeTimes(data) {
             row.className = 'cumulative-time-row';
             
             // Determine row state
-            if (distance === currentDistance) {
+            if (Math.abs(distance - currentDistance) < 50) {
                 row.classList.add('current');
             } else if (distance < currentDistance) {
                 row.classList.add('completed');
@@ -1023,10 +1125,18 @@ function updateCumulativeTimes(data) {
         }
     }
     
-    // Populate all three tables
-    populateIntervalTable('cumulativeTimes200m', 200);
-    populateIntervalTable('cumulativeTimes400m', 400);
-    populateIntervalTable('cumulativeTimes1000m', 1000);
+    // Populate tables based on available splits
+    if (data.splits) {
+        data.splits.forEach(splitData => {
+            if (splitData.distance === 200) {
+                populateIntervalTable('cumulativeTimes200m', 200);
+            } else if (splitData.distance === 400) {
+                populateIntervalTable('cumulativeTimes400m', 400);
+            } else if (splitData.distance === 1000) {
+                populateIntervalTable('cumulativeTimes1000m', 1000);
+            }
+        });
+    }
 }
 
 
@@ -1067,6 +1177,7 @@ function loadFromURL() {
     const time = urlParams.get('time');
     const lane = urlParams.get('lane');
     const strategy = urlParams.get('strategy');
+    const distance = urlParams.get('distance');
     
     if (time) elements.goalTime.value = time;
     if (lane) {
@@ -1078,6 +1189,21 @@ function loadFromURL() {
             btn.classList.toggle('active', btn.dataset.strategy === strategy);
         });
     }
+    if (distance) {
+        const dist = parseInt(distance);
+        if (STANDARD_DISTANCES[dist]) {
+            elements.raceDistance.value = dist.toString();
+            currentDistance = dist;
+        } else {
+            elements.raceDistance.value = 'custom';
+            elements.customDistance.value = dist;
+            elements.customDistanceGroup.style.display = 'block';
+            currentDistance = dist;
+        }
+    }
+    
+    // Load from localStorage after URL params
+    loadFromLocalStorage();
     
     // Removed automatic calculation - user must click Calculate button
 }
@@ -1085,6 +1211,7 @@ function loadFromURL() {
 function updateURL() {
     const url = new URL(window.location);
     url.searchParams.set('time', elements.goalTime.value);
+    url.searchParams.set('distance', currentDistance);
     url.searchParams.set('lane', currentLane);
     url.searchParams.set('strategy', currentStrategy);
     window.history.replaceState({}, '', url);
@@ -1153,9 +1280,327 @@ function saveToLocalStorage() {
         goalTime: elements.goalTime.value,
         lane: currentLane,
         strategy: currentStrategy,
-        isNorwegian: isNorwegian
+        isNorwegian: isNorwegian,
+        distance: currentDistance,
+        isDarkMode: isDarkMode
     };
     localStorage.setItem('3000mRunner', JSON.stringify(data));
+}
+
+function loadFromLocalStorage() {
+    const saved = localStorage.getItem('3000mRunner');
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            if (data.goalTime) elements.goalTime.value = data.goalTime;
+            if (data.lane) currentLane = data.lane;
+            if (data.strategy) currentStrategy = data.strategy;
+            if (data.isNorwegian !== undefined) isNorwegian = data.isNorwegian;
+            if (data.distance) currentDistance = data.distance;
+            if (data.isDarkMode !== undefined) isDarkMode = data.isDarkMode;
+        } catch (e) {
+            console.error('Error loading from localStorage:', e);
+        }
+    }
+}
+
+// New feature functions
+
+function getCurrentDistance() {
+    if (!elements.raceDistance) return 3000;
+    
+    if (elements.raceDistance.value === 'custom') {
+        const custom = parseInt(elements.customDistance?.value) || 3000;
+        return custom >= 100 ? custom : 3000;
+    }
+    return STANDARD_DISTANCES[elements.raceDistance.value] || 3000;
+}
+
+function handleDistanceChange() {
+    if (!elements.raceDistance || !elements.customDistanceGroup) return;
+    
+    if (elements.raceDistance.value === 'custom') {
+        elements.customDistanceGroup.style.display = 'block';
+    } else {
+        elements.customDistanceGroup.style.display = 'none';
+        currentDistance = STANDARD_DISTANCES[elements.raceDistance.value] || 3000;
+        updatePaceFromTime(); // Update pace when distance changes
+    }
+}
+
+function handleCustomDistanceChange() {
+    if (!elements.customDistance) return;
+    
+    const custom = parseInt(elements.customDistance.value);
+    if (custom >= 100) {
+        currentDistance = custom;
+        updatePaceFromTime();
+    }
+}
+
+function toggleTheme() {
+    isDarkMode = !isDarkMode;
+    document.body.classList.toggle('dark-mode', isDarkMode);
+    elements.themeToggle.innerHTML = isDarkMode 
+        ? '<i class="fas fa-sun"></i>' 
+        : '<i class="fas fa-moon"></i>';
+    saveToLocalStorage();
+    updatePaceChart(currentPaceData); // Redraw chart with new theme
+}
+
+function loadThemePreference() {
+    loadFromLocalStorage();
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+        if (elements.themeToggle) {
+            elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+    }
+}
+
+function switchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all buttons
+    elements.tabButtons.forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected tab
+    const tabElement = document.getElementById(tabName + 'Tab');
+    if (tabElement) {
+        tabElement.classList.add('active');
+    }
+    
+    // Activate button
+    const btn = Array.from(elements.tabButtons).find(b => b.dataset.tab === tabName);
+    if (btn) {
+        btn.classList.add('active');
+    }
+    
+    // If switching to chart tab, update chart
+    if (tabName === 'chart' && currentPaceData) {
+        updatePaceChart(currentPaceData);
+    }
+}
+
+function updatePaceChart(data) {
+    if (!data || !data.paceData || data.paceData.length === 0) return;
+    
+    const canvas = document.getElementById('paceChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const isDark = document.body.classList.contains('dark-mode');
+    
+    // Destroy existing chart if it exists
+    if (paceChart) {
+        paceChart.destroy();
+    }
+    
+    const labels = data.paceData.map(d => `${(d.distance / 1000).toFixed(1)}km`);
+    const paceValues = data.paceData.map(d => d.pace / 60); // Convert to minutes per km
+    
+    paceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Pace (min/km)',
+                data: paceValues,
+                borderColor: isDark ? '#dc2626' : '#dc2626',
+                backgroundColor: isDark ? 'rgba(220, 38, 38, 0.1)' : 'rgba(220, 38, 38, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 2,
+                pointHoverRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        color: isDark ? '#e5e7eb' : '#374151'
+                    }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            const pace = context.parsed.y;
+                            const minutes = Math.floor(pace);
+                            const seconds = Math.round((pace - minutes) * 60);
+                            return `Pace: ${minutes}:${seconds.toString().padStart(2, '0')}/km`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Distance',
+                        color: isDark ? '#e5e7eb' : '#374151'
+                    },
+                    ticks: {
+                        color: isDark ? '#9ca3af' : '#6b7280'
+                    },
+                    grid: {
+                        color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Pace (min/km)',
+                        color: isDark ? '#e5e7eb' : '#374151'
+                    },
+                    ticks: {
+                        color: isDark ? '#9ca3af' : '#6b7280',
+                        callback: function(value) {
+                            const minutes = Math.floor(value);
+                            const seconds = Math.round((value - minutes) * 60);
+                            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                        }
+                    },
+                    grid: {
+                        color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function generateIntervals() {
+    if (!currentPaceData) {
+        showToast(isNorwegian ? 'Beregn først et løp' : 'Calculate a race first');
+        return;
+    }
+    
+    const intervalDist = parseInt(elements.intervalDistance.value) || 400;
+    const restTime = parseInt(elements.intervalRest.value) || 60;
+    const reps = parseInt(elements.intervalReps.value) || 8;
+    
+    const basePace = currentPaceData.basePacePerKm;
+    const intervalTime = calculateExpectedTime(intervalDist, basePace) / 1000;
+    
+    let html = '<div class="interval-list">';
+    let totalTime = 0;
+    let totalRest = 0;
+    
+    for (let i = 1; i <= reps; i++) {
+        totalTime += intervalTime;
+        totalRest += (i < reps ? restTime : 0);
+        const paceStr = formatTimeSimple(intervalTime);
+        const restStr = i < reps ? `${restTime}s` : 'Finish';
+        
+        html += `
+            <div class="interval-item">
+                <span class="interval-rep">Rep ${i}</span>
+                <span class="interval-time">${paceStr}</span>
+                <span class="interval-rest">${restStr}</span>
+            </div>
+        `;
+    }
+    
+    html += `
+        <div class="interval-summary">
+            <div class="summary-item">
+                <span>Total Work Time:</span>
+                <span>${formatTimeSimple(totalTime)}</span>
+            </div>
+            <div class="summary-item">
+                <span>Total Rest Time:</span>
+                <span>${formatTimeSimple(totalRest)}</span>
+            </div>
+            <div class="summary-item">
+                <span>Total Time:</span>
+                <span>${formatTimeSimple(totalTime + totalRest)}</span>
+            </div>
+            <div class="summary-item">
+                <span>Total Distance:</span>
+                <span>${intervalDist * reps}m</span>
+            </div>
+        </div>
+    `;
+    
+    html += '</div>';
+    elements.intervalResults.innerHTML = html;
+}
+
+function handleShare() {
+    if (!currentPaceData) {
+        showToast(isNorwegian ? 'Beregn først et løp' : 'Calculate a race first');
+        return;
+    }
+    
+    const url = new URL(window.location);
+    url.searchParams.set('time', elements.goalTime.value);
+    url.searchParams.set('distance', currentDistance);
+    url.searchParams.set('strategy', currentStrategy);
+    
+    const shareData = {
+        title: `${currentDistance}m Race Plan - ${elements.goalTime.value}`,
+        text: `Check out my ${currentDistance}m race plan targeting ${elements.goalTime.value}`,
+        url: url.toString()
+    };
+    
+    if (navigator.share) {
+        navigator.share(shareData).catch(() => {
+            copyToClipboard(url.toString());
+        });
+    } else {
+        copyToClipboard(url.toString());
+    }
+}
+
+function handleExport() {
+    if (!currentPaceData) {
+        showToast(isNorwegian ? 'Beregn først et løp' : 'Calculate a race first');
+        return;
+    }
+    
+    // Create export data
+    let exportText = `Race Plan Export\n`;
+    exportText += `================\n\n`;
+    exportText += `Distance: ${currentDistance}m\n`;
+    exportText += `Target Time: ${elements.goalTime.value}\n`;
+    exportText += `Strategy: ${currentStrategy}\n`;
+    exportText += `Pace: ${elements.targetPace.value}/km\n\n`;
+    exportText += `Splits:\n`;
+    exportText += `-------\n\n`;
+    
+    // Add 400m splits
+    const splits400 = currentPaceData.splits.find(s => s.distance === 400);
+    if (splits400) {
+        exportText += `400m Intervals:\n`;
+        splits400.splits.forEach(split => {
+            exportText += `${split.distance}m: ${formatTimeFromMsSimple(split.expectedTime)}\n`;
+        });
+        exportText += `\n`;
+    }
+    
+    // Download as text file
+    const blob = new Blob([exportText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `race-plan-${currentDistance}m-${elements.goalTime.value.replace(/:/g, '-')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast(isNorwegian ? 'Eksportert!' : 'Exported!');
 }
 
 
