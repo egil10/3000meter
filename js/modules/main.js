@@ -116,19 +116,8 @@ function setupEventListeners() {
     
     initializeCustomSplits();
     
-    // Split management
-    document.querySelectorAll('.split-preset-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const distance = parseInt(btn.dataset.distance);
-            if (distance) {
-                if (activeSplitDistances.includes(distance)) {
-                    removeSplitDistance(distance);
-                } else {
-                    addSplitDistance(distance);
-                }
-            }
-        });
-    });
+    // Split management buttons are handled dynamically in updateSplitPresetButtons()
+    // No need to attach listeners here as buttons are created dynamically
     
     const customSplitInput = document.getElementById('customSplitDistance');
     const addCustomSplitBtn = document.getElementById('addCustomSplitBtn');
@@ -265,9 +254,6 @@ function setupEventListeners() {
         elements.speedSlider.addEventListener('input', (e) => {
             const speed = parseFloat(e.target.value);
             updateAnimationSpeed(speed);
-            if (elements.speedDisplay) {
-                elements.speedDisplay.textContent = `${speed.toFixed(1)}x`;
-            }
             if (elements.speedInput) {
                 elements.speedInput.value = speed.toFixed(1);
             }
@@ -283,9 +269,6 @@ function setupEventListeners() {
             if (elements.speedSlider) {
                 elements.speedSlider.value = speed;
             }
-            if (elements.speedDisplay) {
-                elements.speedDisplay.textContent = `${speed.toFixed(1)}x`;
-            }
             e.target.value = speed.toFixed(1);
         });
         
@@ -296,9 +279,6 @@ function setupEventListeners() {
             updateAnimationSpeed(speed);
             if (elements.speedSlider) {
                 elements.speedSlider.value = speed;
-            }
-            if (elements.speedDisplay) {
-                elements.speedDisplay.textContent = `${speed.toFixed(1)}x`;
             }
             e.target.value = speed.toFixed(1);
         });
@@ -311,7 +291,6 @@ function setupEventListeners() {
             updateAnimationSpeed(newSpeed);
             if (elements.speedSlider) elements.speedSlider.value = newSpeed;
             if (elements.speedInput) elements.speedInput.value = newSpeed.toFixed(1);
-            if (elements.speedDisplay) elements.speedDisplay.textContent = `${newSpeed.toFixed(1)}x`;
         });
     }
     
@@ -322,7 +301,6 @@ function setupEventListeners() {
             updateAnimationSpeed(newSpeed);
             if (elements.speedSlider) elements.speedSlider.value = newSpeed;
             if (elements.speedInput) elements.speedInput.value = newSpeed.toFixed(1);
-            if (elements.speedDisplay) elements.speedDisplay.textContent = `${newSpeed.toFixed(1)}x`;
         });
     }
     
@@ -358,7 +336,6 @@ document.addEventListener('DOMContentLoaded', function() {
         currentPaceDisplay: document.getElementById('currentPaceDisplay'),
         progressPercentDisplay: document.getElementById('progressPercentDisplay'),
         speedSlider: document.getElementById('speedSlider'),
-        speedDisplay: document.getElementById('speedDisplay'),
         speedInput: document.getElementById('speedInput'),
         speedDownBtn: document.getElementById('speedDownBtn'),
         speedUpBtn: document.getElementById('speedUpBtn'),
@@ -406,9 +383,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Initialize speed display
-    if (elements.speedDisplay) {
-        elements.speedDisplay.textContent = `${animationState.speed.toFixed(1)}x`;
-    }
     if (elements.speedInput) {
         elements.speedInput.value = animationState.speed.toFixed(1);
     }

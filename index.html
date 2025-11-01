@@ -316,7 +316,6 @@
               <i data-lucide="plus"></i>
             </button>
             <input type="number" id="speedInput" min="0.1" max="100" step="0.1" value="1" class="speed-input" placeholder="1.0">
-            <span id="speedDisplay" class="speed-display">1.0x</span>
           </div>
           <div class="status-display">
             <div class="status-item-simple">
@@ -344,6 +343,16 @@
 
       <!-- Results -->
       <section class="results-section">
+        <!-- Download Buttons -->
+        <div class="download-buttons-container">
+          <button id="downloadStrategyBtn" class="download-strategy-btn">
+            <i data-lucide="download"></i> Download Strategy
+          </button>
+          <button id="downloadStrategyPDFBtn" class="download-strategy-btn">
+            <i data-lucide="file-text"></i> Download PDF
+          </button>
+        </div>
+        
         <div class="results-tabs">
           <button class="tab-btn active" data-tab="splits">Splits</button>
           <button class="tab-btn" data-tab="chart">Chart</button>
@@ -406,12 +415,6 @@
         <a href="https://3000meter.com/" class="footer-title" onclick="window.location.replace('https://3000meter.com/'); return false;">3000METER.com</a>
         <p class="footer-description">Professional pace calculator for track athletes. Plan your perfect race strategy with advanced pacing options and detailed visualizations.</p>
         <div class="footer-links">
-          <button id="downloadStrategyBtn" class="download-strategy-btn">
-            <i data-lucide="download"></i> Download Strategy
-          </button>
-          <button id="downloadStrategyPDFBtn" class="download-strategy-btn" style="margin-top: 0.5rem;">
-            <i data-lucide="file-text"></i> Download PDF
-          </button>
           <a href="https://github.com/egil10/3000meter" target="_blank" rel="noopener noreferrer">
             <i data-lucide="github"></i> GitHub
           </a>

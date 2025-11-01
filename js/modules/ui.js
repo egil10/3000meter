@@ -4,6 +4,18 @@ function updateResults(data) {
     elements.largeTargetTimeDisplay.textContent = `00:00.00 / ${formatTimeFromMs(data.totalTime)}`;
     document.title = `3000METER.com – ${elements.goalTime.value}`;
     updateCumulativeTimes(data);
+    updateDownloadButtonsVisibility();
+}
+
+function updateDownloadButtonsVisibility() {
+    const downloadContainer = document.querySelector('.download-buttons-container');
+    if (downloadContainer) {
+        if (currentPaceData) {
+            downloadContainer.classList.add('visible');
+        } else {
+            downloadContainer.classList.remove('visible');
+        }
+    }
 }
 
 function updateTrackVisualization(data) {
@@ -310,7 +322,11 @@ function updateSplitPresetButtons() {
         
         // Add click handler
         btn.addEventListener('click', () => {
-            addCustomSplit(dist);
+            if (activeSplitDistances.includes(dist)) {
+                removeSplitDistance(dist);
+            } else {
+                addSplitDistance(dist);
+            }
         });
         
         presetContainer.appendChild(btn);
@@ -1560,29 +1576,99 @@ function downloadStrategyPDF() {
 </body>
 </html>`;
     
-    // Create a temporary element to hold the HTML
+    // Create a temporary element to hold the HTML content
+    // We need to extract just the body content, not the full HTML document
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
-    const tempElement = tempDiv.firstElementChild;
+    
+    // Find the container div inside the body
+    let contentElement = tempDiv.querySelector('.container');
+    
+    // If not found, try to get body content
+    if (!contentElement) {
+        const bodyContent = tempDiv.querySelector('body');
+        if (bodyContent) {
+            // Create a wrapper div with the container's content
+            contentElement = document.createElement('div');
+            contentElement.className = 'container';
+            contentElement.style.width = '210mm';
+            contentElement.style.maxWidth = '210mm';
+            contentElement.style.margin = '0 auto';
+            contentElement.style.padding = '2.5rem';
+            contentElement.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+            
+            // Copy all body children
+            Array.from(bodyContent.children).forEach(child => {
+                contentElement.appendChild(child.cloneNode(true));
+            });
+        }
+    }
+    
+    // If still no content, create from the HTML string directly
+    if (!contentElement) {
+        // Extract just the body content from the HTML string
+        const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+        if (bodyMatch) {
+            contentElement = document.createElement('div');
+            contentElement.style.width = '210mm';
+            contentElement.style.maxWidth = '210mm';
+            contentElement.style.margin = '0 auto';
+            contentElement.style.padding = '2.5rem';
+            contentElement.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+            contentElement.innerHTML = bodyMatch[1];
+        } else {
+            // Fallback: create a simple container
+            contentElement = document.createElement('div');
+            contentElement.style.width = '210mm';
+            contentElement.style.maxWidth = '210mm';
+            contentElement.style.margin = '0 auto';
+            contentElement.style.padding = '2.5rem';
+            contentElement.innerHTML = html.replace(/<!DOCTYPE[^>]*>/i, '').replace(/<html[^>]*>/i, '').replace(/<\/html>/i, '').replace(/<head[^>]*>[\s\S]*<\/head>/i, '').replace(/<body[^>]*>/i, '').replace(/<\/body>/i, '');
+        }
+    }
+    
+    // Temporarily append to body so html2pdf can render it
+    contentElement.style.position = 'absolute';
+    contentElement.style.left = '-9999px';
+    contentElement.style.top = '0';
+    document.body.appendChild(contentElement);
     
     // Configure html2pdf options
     const opt = {
         margin: [10, 10, 10, 10],
         filename: `race-strategy-${distanceDisplay.replace(/[^a-zA-Z0-9]/g, '-')}-${elements.goalTime.value.replace(/:/g, '-')}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            logging: false,
+            windowWidth: 794, // A4 width in pixels at 96 DPI
+            windowHeight: 1123 // A4 height in pixels at 96 DPI
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     
     // Generate PDF
     if (typeof html2pdf !== 'undefined') {
-        html2pdf().set(opt).from(tempElement).save().then(() => {
+        html2pdf().set(opt).from(contentElement).save().then(() => {
+            // Remove temporary element
+            if (contentElement && contentElement.parentNode) {
+                contentElement.parentNode.removeChild(contentElement);
+            }
             showToast(isNorwegian ? 'PDF lastet ned!' : 'PDF downloaded!');
         }).catch((err) => {
+            // Remove temporary element even on error
+            if (contentElement && contentElement.parentNode) {
+                contentElement.parentNode.removeChild(contentElement);
+            }
             console.error('Error generating PDF:', err);
             showToast(isNorwegian ? 'Feil ved nedlasting av PDF' : 'Error downloading PDF');
         });
     } else {
+        // Remove temporary element if library not loaded
+        if (contentElement && contentElement.parentNode) {
+            contentElement.parentNode.removeChild(contentElement);
+        }
         showToast(isNorwegian ? 'PDF-bibliotek ikke lastet' : 'PDF library not loaded');
     }
 }

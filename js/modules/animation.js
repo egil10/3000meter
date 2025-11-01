@@ -53,7 +53,6 @@ function updateAnimationSpeed(newSpeed) {
     animationState.speed = newSpeed;
     if (elements.speedInput) elements.speedInput.value = newSpeed.toFixed(1);
     if (elements.speedSlider) elements.speedSlider.value = newSpeed;
-    if (elements.speedDisplay) elements.speedDisplay.textContent = `${newSpeed.toFixed(1)}x`;
 }
 
 function animationLoop() {
