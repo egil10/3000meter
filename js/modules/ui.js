@@ -224,7 +224,7 @@ function updateTimeSuggestions() {
 }
 
 function getSplitSuggestions(raceDistance) {
-    // Always return the same 10 standard split options, but filter by race distance
+    // Always return exactly 10 standard split options
     // These are common split distances used in track and road running
     const allSuggestions = [
         200,   // 200m - Common track split
@@ -239,8 +239,9 @@ function getSplitSuggestions(raceDistance) {
         10000  // 10km - Ten kilometers
     ];
     
-    // Filter out splits longer than the race distance
-    return allSuggestions.filter(split => split <= raceDistance);
+    // Always return all 10 suggestions regardless of race distance
+    // The UI will handle disabling buttons that exceed race distance
+    return allSuggestions;
 }
 
 function updateSplitPresetButtons() {
@@ -250,8 +251,9 @@ function updateSplitPresetButtons() {
     // Clear existing buttons
     presetContainer.innerHTML = '';
     
-    // Get suggestions based on current distance
+    // Get suggestions (always 10)
     const suggestions = getSplitSuggestions(currentDistance || 3000);
+    const raceDistance = currentDistance || 3000;
     
     // Create buttons for each suggestion
     suggestions.forEach(dist => {
@@ -272,8 +274,16 @@ function updateSplitPresetButtons() {
             btn.classList.add('active');
         }
         
+        // Disable if split exceeds race distance
+        if (dist > raceDistance) {
+            btn.disabled = true;
+            btn.classList.add('disabled');
+            btn.title = `Split cannot be longer than race distance (${raceDistance}m)`;
+        }
+        
         // Add click handler
         btn.addEventListener('click', () => {
+            if (dist > raceDistance) return; // Prevent adding if disabled
             if (activeSplitDistances.includes(dist)) {
                 removeSplitDistance(dist);
             } else {
@@ -927,6 +937,13 @@ function handleDistanceInput() {
         updateTimeSuggestions();
         updateSplitPresetButtons();
         
+        // Automatically set Target Time to the 5th suggested value (index 4)
+        const timeSuggestions = getTimeSuggestions(distance);
+        if (timeSuggestions.length >= 5 && elements.goalTime) {
+            elements.goalTime.value = timeSuggestions[4]; // 5th value (index 4)
+            updatePaceFromTime();
+        }
+        
         // Filter custom splits if any exceed race distance
         const raceDistance = currentDistance || 3000;
         if (customSplits.some(s => s.distance > raceDistance)) {
@@ -943,12 +960,8 @@ function handleDistanceInput() {
             }
         }
         
-        // Update pace if time is set, or update time if pace is set
-        if (elements.goalTime && elements.goalTime.value) {
-            updatePaceFromTime();
-        } else if (elements.targetPace && elements.targetPace.value) {
-            updateTimeFromPace();
-        }
+        // Note: Pace is already updated above when we set the 5th suggested time
+        // So we don't need to update pace again here
     }
 }
 

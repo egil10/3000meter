@@ -40,11 +40,11 @@ function setupEventListeners() {
                 updateTimeSuggestions();
                 updateSplitPresetButtons();
                 
-                // Update pace if time is set, or update time if pace is set
-                if (elements.goalTime && elements.goalTime.value) {
+                // Automatically set Target Time to the 5th suggested value (index 4)
+                const timeSuggestions = getTimeSuggestions(distance);
+                if (timeSuggestions.length >= 5 && elements.goalTime) {
+                    elements.goalTime.value = timeSuggestions[4]; // 5th value (index 4)
                     updatePaceFromTime();
-                } else if (elements.targetPace && elements.targetPace.value) {
-                    updateTimeFromPace();
                 }
                 
                 document.querySelectorAll('.preset-btn-compact').forEach(b => b.classList.remove('active'));

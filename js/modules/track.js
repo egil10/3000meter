@@ -27,7 +27,7 @@ function pathAtInset(inset) {
 function getTrackColors() {
     const colors = {
         outdoor: {
-            track: '#1f2937', // Black/dark tarmac for city road
+            track: '#dc2626', // Red tarmac (standard outdoor track)
             apron: '#e5e7eb', // Light gray
             field: '#bfe7a7', // Green field
             bg: '#f0f8ff', // Light blue sky
@@ -44,11 +44,11 @@ function getTrackColors() {
             markers: '#ffffff'
         },
         road: {
-            track: '#1f2937', // Black tarmac
+            track: '#1f2937', // Dark gray/black road tarmac
             apron: '#374151', // Dark gray
             field: '#6b7280', // Medium gray
             bg: '#f0f8ff', // Light blue sky
-            laneBoundary: '#ffffff', // White lane lines
+            laneBoundary: '#ffffff', // Not used for road (no lane lines)
             centerLine: '#ffd700', // Yellow center line
             markers: '#ffffff'
         }
@@ -142,15 +142,17 @@ function drawTrack() {
         lanePaths[i] = p;
     }
     
-    // Lane boundaries (white lines between lanes)
-    for(let j=0; j<=8; j++) {
-        const inset = (j - 0.5) * LANE_W;
-        const b = document.createElementNS('http://www.w3.org/2000/svg','path');
-        b.setAttribute('d', pathAtInset(inset));
-        b.setAttribute('fill','none');
-        b.setAttribute('stroke', colors.laneBoundary);
-        b.setAttribute('stroke-width','3');
-        boundariesG.appendChild(b);
+    // Lane boundaries (white lines between lanes) - only for outdoor and indoor tracks
+    if (trackType !== 'road') {
+        for(let j=0; j<=8; j++) {
+            const inset = (j - 0.5) * LANE_W;
+            const b = document.createElementNS('http://www.w3.org/2000/svg','path');
+            b.setAttribute('d', pathAtInset(inset));
+            b.setAttribute('fill','none');
+            b.setAttribute('stroke', colors.laneBoundary);
+            b.setAttribute('stroke-width','3');
+            boundariesG.appendChild(b);
+        }
     }
     
     // Yellow center line (between lanes 4 and 5) for outdoor and road tracks
