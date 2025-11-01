@@ -371,8 +371,12 @@ function updateAnimationInfoOverlay() {
         const milliseconds = Math.floor((currentTimeMs % 1000) / 10);
         timingTime.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
         
-        // Update lap
-        timingLap.textContent = animationState.currentLap;
+        // Calculate total laps
+        const laneDistance = getLaneDistance(currentLane);
+        const totalLaps = trackType === 'road' ? 1 : Math.ceil(TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance);
+        
+        // Update lap (format: current/total)
+        timingLap.textContent = `${animationState.currentLap}/${totalLaps}`;
         
         // Update distance
         timingDistance.textContent = `${Math.round(animationState.currentDistance)}m`;

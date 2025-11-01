@@ -189,7 +189,7 @@ function setupEventListeners() {
     
     const downloadStrategyPDFBtn = document.getElementById('downloadStrategyPDFBtn');
     if (downloadStrategyPDFBtn) {
-        downloadStrategyPDFBtn.addEventListener('click', downloadStrategyPDF);
+        downloadStrategyPDFBtn.addEventListener('click', downloadStrategyTXT);
     }
     
     if (elements.themeToggle) {
@@ -286,8 +286,15 @@ function setupEventListeners() {
     
     if (elements.speedDownBtn) {
         elements.speedDownBtn.addEventListener('click', () => {
-            const currentSpeed = animationState.speed;
-            const newSpeed = Math.max(0.1, currentSpeed - 0.25);
+            let currentSpeed = animationState.speed;
+            // Round to nearest 0.5 if not already a multiple of 0.5
+            const rounded = Math.round(currentSpeed * 2) / 2;
+            // If current speed is not a multiple of 0.5, round first
+            if (Math.abs(currentSpeed - rounded) > 0.01) {
+                currentSpeed = rounded;
+            }
+            // Then decrement by 0.5
+            const newSpeed = Math.max(0.1, currentSpeed - 0.5);
             updateAnimationSpeed(newSpeed);
             if (elements.speedSlider) elements.speedSlider.value = newSpeed;
             if (elements.speedInput) elements.speedInput.value = newSpeed.toFixed(1);
@@ -296,8 +303,15 @@ function setupEventListeners() {
     
     if (elements.speedUpBtn) {
         elements.speedUpBtn.addEventListener('click', () => {
-            const currentSpeed = animationState.speed;
-            const newSpeed = Math.min(100, currentSpeed + 0.25);
+            let currentSpeed = animationState.speed;
+            // Round to nearest 0.5 if not already a multiple of 0.5
+            const rounded = Math.round(currentSpeed * 2) / 2;
+            // If current speed is not a multiple of 0.5, round first
+            if (Math.abs(currentSpeed - rounded) > 0.01) {
+                currentSpeed = rounded;
+            }
+            // Then increment by 0.5
+            const newSpeed = Math.min(100, currentSpeed + 0.5);
             updateAnimationSpeed(newSpeed);
             if (elements.speedSlider) elements.speedSlider.value = newSpeed;
             if (elements.speedInput) elements.speedInput.value = newSpeed.toFixed(1);
