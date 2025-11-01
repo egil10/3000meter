@@ -220,6 +220,24 @@ function updateTrackBackground() {
     }
 }
 
+function calculateTrackPosition(progress) {
+    // progress is 0-1, where 0 is start and 1 is end of lap
+    if (!lane1 || totalLen === 0) {
+        return { x: 0, y: 0 };
+    }
+    
+    // Normalize progress to be within 0-1
+    const normalizedProgress = Math.max(0, Math.min(1, progress));
+    
+    // Calculate the distance along the path
+    const distance = normalizedProgress * totalLen;
+    
+    // Get the point at that distance
+    const point = lane1.getPointAtLength(distance);
+    
+    return { x: point.x, y: point.y };
+}
+
 function updateRoundIndicators() {
     const currentLap = animationState.currentLap;
     const currentDistance = animationState.currentDistance;
