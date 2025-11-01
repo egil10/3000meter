@@ -57,7 +57,7 @@ Du kan også åpne `index.html` direkte i nettleseren, men noen funksjoner kan i
 ### Nye Funksjoner
 Når du legger til nye funksjoner:
 
-1. **Legg til i riktig seksjon** i `script.js`
+1. **Legg til i riktig modul** i `js/modules/` (eller opprett ny modul hvis nødvendig)
 2. **Oppdater CSS** hvis nødvendig
 3. **Legg til HTML** strukturen
 4. **Oppdater dokumentasjon** i `docs/` mappen

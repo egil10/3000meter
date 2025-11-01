@@ -22,7 +22,16 @@
 ## Viktige Filer
 
 - `index.html` - Hoved HTML struktur
-- `js/script.js` - All JavaScript logikk
+- `js/config.js` - Konstanter og oversettelser
+- `js/utils.js` - Hjelpefunksjoner
+- `js/modules/` - Modulær JavaScript struktur
+  - `state.js` - State management
+  - `track.js` - Bane visualisering
+  - `pace-calculator.js` - Tempo kalkulasjoner
+  - `animation.js` - Animasjonsfunksjoner
+  - `ui.js` - UI oppdateringer
+  - `storage.js` - Lagring og URL håndtering
+  - `main.js` - Initialisering
 - `css/styles.css` - Alle stiler
 - `pwa/manifest.json` - PWA konfigurasjon
 - `pwa/sw.js` - Service Worker
@@ -43,8 +52,8 @@ Prosjektet er organisert i logiske mapper:
 
 ## Underhåll
 
-- Koden er organisert i logiske seksjoner i `script.js`
-- CSS følger BEM metodikk hvor mulig
+- Koden er organisert i modulær struktur i `js/modules/`
+- CSS følger CSS Custom Properties for theming
 - Kommentarer dokumenterer komplekse funksjoner
 - Ingen build tools nødvendig - ren HTML/CSS/JS
 

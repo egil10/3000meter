@@ -8,7 +8,16 @@
 ├── css/
 │   └── styles.css          # Alle stilark
 ├── js/
-│   └── script.js           # Hoved JavaScript fil (modulær struktur)
+│   ├── config.js           # Konstantar og oversettelser
+│   ├── utils.js            # Hjelpefunksjoner
+│   └── modules/
+│       ├── state.js        # State management
+│       ├── track.js        # Bane visualisering
+│       ├── pace-calculator.js  # Tempo kalkulasjoner
+│       ├── animation.js    # Animasjonsfunksjoner
+│       ├── ui.js           # UI oppdateringer
+│       ├── storage.js      # Lagring og URL håndtering
+│       └── main.js         # Initialisering
 ├── assets/
 │   └── stadium.svg         # Bane SVG ikon
 ├── pwa/
@@ -18,7 +27,8 @@
 │   ├── FEATURES.md        # Funksjonsdokumentasjon
 │   ├── ARCHITECTURE.md    # Arkitektur dokumentasjon
 │   ├── DEVELOPMENT.md     # Utviklingsguide
-│   └── API.md            # API dokumentasjon
+│   ├── API.md            # API dokumentasjon
+│   └── BLOAT_ANALYSIS.md # Repositorie analyse
 ├── README.md              # Prosjekt oversikt
 └── CNAME                  # GitHub Pages konfigurasjon
 ```
@@ -40,64 +50,80 @@
 
 ## Kode Organisering
 
-### JavaScript Struktur (`js/script.js`)
+### JavaScript Struktur (Modulær)
 
-Filen er organisert i logiske seksjoner:
+Koden er organisert i separate moduler for bedre vedlikehold og lesbarhet:
 
-#### 1. Globale Variabler og State
-```javascript
-// State management
-let currentPaceData = null;
-let currentLane = 1;
-let currentStrategy = 'even';
-let isNorwegian = true;
-let currentDistance = 3000;
-let paceChart = null;
-let isDarkMode = false;
-```
-
-#### 2. Konfigurasjon
+#### 1. `js/config.js` - Konfigurasjon
 - `TRACK_CONSTANTS`: Bane geometri konstanter
 - `STANDARD_DISTANCES`: Standard løpsdistanser
 - `LANE_DISTANCES`: Pre-beregnet lane distanser
-- `translations`: Språk oversettelser
+- `translations`: Språk oversettelser (norsk/engelsk)
 
-#### 3. Initialisering
-- `DOMContentLoaded`: App initialisering
-- `initializeApp()`: Setup funksjoner
-- `setupEventListeners()`: Event handlers
+#### 2. `js/utils.js` - Hjelpefunksjoner
+- `parseTimeToMs()`: Parse tid til millisekunder
+- `formatTimeFromMs()`: Format millisekunder til tid
+- `formatTimeFromMsSimple()`: Enkel tidsformatering
+- `formatTimeSimple()`: Format tid streng
+- `showToast()`: Vis toast melding
 
-#### 4. Bane Visualisering
+#### 3. `js/modules/state.js` - State Management
+- `currentPaceData`: Nåværende pace data objekt
+- `currentLane`: Nåværende lane (1-8)
+- `currentStrategy`: Valgt tempo strategi
+- `currentDistance`: Nåværende løpsdistanse
+- `isNorwegian`: Språk setting
+- `isDarkMode`: Tema setting
+- `paceChart`: Chart.js instans
+- `customSplits`: Custom split definisjoner
+- `animationState`: Animasjonsstate objekt
+- `elements`: DOM element referanser
+
+#### 4. `js/modules/track.js` - Bane Visualisering
+- `roundedRectPath()`: Generer avrundet rektangel path
+- `pathAtInset()`: Beregn posisjon langs path
 - `drawTrack()`: Tegn bane SVG
 - `drawMarkers()`: Tegn markører
 - `addRoundIndicators()`: Legg til runde indikatorer
 - `calculateTrackPosition()`: Beregn posisjon på banen
 
-#### 5. Tempo Kalkulasjoner
+#### 5. `js/modules/pace-calculator.js` - Tempo Kalkulasjoner
 - `calculatePace()`: Hovedkalkulasjonsfunksjon
 - `generatePaceData()`: Generer pace data struktur
 - `calculateExpectedTime()`: Beregn forventet tid med strategi
 
-#### 6. Animasjon
-- `animationLoop()`: Hovedanimasjonsloop
+#### 6. `js/modules/animation.js` - Animasjon
+- `updateAnimationState()`: Oppdater animasjonsstate
+- `toggleAnimation()`: Toggle play/pause
 - `startAnimation()`: Start animasjon
 - `pauseAnimation()`: Pause animasjon
 - `resetAnimation()`: Reset animasjon
-- `updateRunnerPosition()`: Oppdater løperposisjon
-- `updateAnimationUI()`: Oppdater UI elementer
+- `updateAnimationSpeed()`: Oppdater animasjonshastighet
+- `animationLoop()`: Hovedanimasjonsloop
 
-#### 7. UI Funksjoner
-- `setupEventListeners()`: Event handlers
-- `toggleTheme()`: Toggle mørk modus
-- `switchTab()`: Bytt mellom faner
+#### 7. `js/modules/ui.js` - UI Funksjoner
+- `updateResults()`: Oppdater resultater
+- `updateTrackVisualization()`: Oppdater bane visualisering
+- `updateAnimationUI()`: Oppdater animasjons UI
+- `updateCumulativeTimes()`: Oppdater kumulative tider
 - `updatePaceChart()`: Oppdater graf
 - `generateIntervals()`: Generer intervall trening
+- `initializeCustomSplits()`: Initialiser custom splits
+- `addCustomSplit()`: Legg til custom split
+- `renderCustomSplits()`: Render custom splits
+- `handleExport()`: Håndter eksport
 
-#### 8. Hjelpefunksjoner
-- `parseTimeToMs()`: Parse tid til millisekunder
-- `formatTimeFromMs()`: Format millisekunder til tid
-- `showToast()`: Vis toast melding
+#### 8. `js/modules/storage.js` - Lagring og URL
 - `copyToClipboard()`: Kopier til utklippstavle
+- `loadFromURL()`: Last fra URL parametere
+- `updateURL()`: Oppdater URL parametere
+- `saveToLocalStorage()`: Lagre til localStorage
+- `loadFromLocalStorage()`: Last fra localStorage
+
+#### 9. `js/modules/main.js` - Initialisering
+- `initializeApp()`: App initialisering
+- `initializeDistanceButtons()`: Initialiser distanseknapper
+- `setupEventListeners()`: Event handlers
 
 ## CSS Struktur (`css/styles.css`)
 

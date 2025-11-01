@@ -2,13 +2,15 @@
 let currentPaceData = null;
 let currentLane = 1;
 let currentStrategy = 'even';
-let isNorwegian = true; // Default to Norwegian
+let isNorwegian = false; // Default to English
 let currentDistance = 3000; // Current race distance in meters
 let paceChart = null; // Chart.js instance
+let currentChartType = 'pace'; // Current chart type: pace, speed, time, split-pace
 let isDarkMode = false;
 let customSplits = []; // Custom split definitions
 let progressionType = 'linear'; // linear, exponential, sigmoid
 let paceChangePer400m = -2; // seconds per 400m for progressive/degressive
+let activeSplitDistances = [200, 400]; // Active split distances to display
 
 // Animation state
 let animationState = {

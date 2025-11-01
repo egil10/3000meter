@@ -66,7 +66,16 @@ const translations = {
         pace_chart: "Pace Chart",
         intervals: "Intervals",
         interval_training: "Interval Training Planner",
-        target_pace: "Target Pace (mm:ss/km)"
+        target_pace: "Target Pace (mm:ss/km)",
+        progression_type: "Progression Type",
+        linear: "Linear",
+        exponential: "Exponential",
+        sigmoid: "Sigmoid",
+        pace_change: "Pace Change per 400m (seconds)",
+        start_pace: "Start Pace",
+        end_pace: "End Pace",
+        chart: "Chart",
+        progressive: "Progressive"
     },
     no: {
         title: "3000METER.com",
@@ -88,7 +97,16 @@ const translations = {
         pace_chart: "Tempo Graf",
         intervals: "Intervaller",
         interval_training: "Intervall Treningsplanlegger",
-        target_pace: "Mål Tempo (mm:ss/km)"
+        target_pace: "Mål Tempo (mm:ss/km)",
+        progression_type: "Progresjonstype",
+        linear: "Lineær",
+        exponential: "Eksponentiell",
+        sigmoid: "Sigmoid",
+        pace_change: "Tempoendring per 400m (sekunder)",
+        start_pace: "Start Tempo",
+        end_pace: "Slutt Tempo",
+        chart: "Graf",
+        progressive: "Progresiv"
     }
 };
 

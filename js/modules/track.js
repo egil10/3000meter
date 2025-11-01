@@ -35,7 +35,7 @@ function drawTrack() {
     
     // Build stadium apron
     const outerBoundaryInset = 7.5 * LANE_W;
-    const pad = 42;
+    const pad = 15; // Reduced padding for tighter fit
     const inner = {
         x: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--inner-x')),
         y: parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--inner-y')),
@@ -49,6 +49,26 @@ function drawTrack() {
     const w = inner.w + 2*(outerBoundaryInset + pad);
     const h = inner.h + 2*(outerBoundaryInset + pad);
     const r = inner.r + (outerBoundaryInset + pad);
+    
+    // Update SVG viewBox to fit tighter around the track
+    const padding = 20; // Small padding for viewBox
+    const viewBoxX = x - padding;
+    const viewBoxY = y - padding;
+    const viewBoxW = w + padding * 2;
+    const viewBoxH = h + padding * 2;
+    svg.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxW} ${viewBoxH}`);
+    
+    // Update background rect to match new viewBox and use CSS variable
+    const bgRect = svg.querySelector('rect');
+    if (bgRect) {
+        bgRect.setAttribute('x', viewBoxX);
+        bgRect.setAttribute('y', viewBoxY);
+        bgRect.setAttribute('width', viewBoxW);
+        bgRect.setAttribute('height', viewBoxH);
+        // Get CSS variable value for track background
+        const trackBg = getComputedStyle(document.documentElement).getPropertyValue('--track-bg').trim();
+        bgRect.setAttribute('fill', trackBg || '#f8fafc');
+    }
     
     const apron = document.createElementNS('http://www.w3.org/2000/svg','path');
     apron.setAttribute('d', roundedRectPath(x, y, w, h, r));
@@ -181,10 +201,23 @@ function addRoundIndicators() {
     }
 }
 
-function calculateTrackPosition(lapProgress) {
-    const s = lapProgress * totalLen;
-    const point = lane1.getPointAtLength(s);
-    return { x: point.x, y: point.y };
+function updateTrackBackground() {
+    const svg = document.querySelector('svg');
+    if (!svg) return;
+    
+    const bgRect = svg.querySelector('rect');
+    if (bgRect) {
+        // Get CSS variable value for track background
+        const trackBg = getComputedStyle(document.documentElement).getPropertyValue('--track-bg').trim();
+        bgRect.setAttribute('fill', trackBg || '#f8fafc');
+    }
+    
+    // Also update apron color
+    const apron = document.querySelector('#stadium path');
+    if (apron) {
+        const apronColor = getComputedStyle(document.documentElement).getPropertyValue('--apron').trim();
+        apron.setAttribute('fill', apronColor || '#e5e7eb');
+    }
 }
 
 function updateRoundIndicators() {
@@ -214,5 +247,72 @@ function updateRunnerPosition(lapProgress, distance) {
     if (elements.lapProgressFill) {
         elements.lapProgressFill.style.width = `${Math.max(0, progressPercent)}%`;
     }
+    
+    // Update animation info overlay
+    updateAnimationInfoOverlay(position.x, position.y);
+}
+
+function updateAnimationInfoOverlay(runnerX, runnerY) {
+    const infoGroup = document.getElementById('animation-info');
+    if (!infoGroup) return;
+    
+    const infoBg = document.getElementById('info-bg');
+    const infoTime = document.getElementById('info-time');
+    const infoDistance = document.getElementById('info-distance');
+    const infoPace = document.getElementById('info-pace');
+    
+    if (!infoBg || !infoTime || !infoDistance || !infoPace) return;
+    
+    // Show/hide overlay based on animation state
+    if (!animationState.isPlaying && animationState.currentDistance === 0) {
+        infoGroup.style.display = 'none';
+        return;
+    }
+    infoGroup.style.display = 'block';
+    
+    // Format time
+    const currentTimeMs = animationState.currentTime * 1000;
+    const timeFormatted = formatTimeFromMs(currentTimeMs);
+    infoTime.textContent = timeFormatted.split('.')[0]; // Remove milliseconds
+    
+    // Format distance
+    const distance = Math.round(animationState.currentDistance);
+    infoDistance.textContent = `${distance}m`;
+    
+    // Format pace
+    const currentPace = calculateCurrentPace();
+    infoPace.textContent = currentPace !== '--:--' ? `${currentPace} /km` : '--:-- /km';
+    
+    // Position overlay near runner (top-right relative to runner)
+    const svg = document.querySelector('svg');
+    if (!svg) return;
+    
+    const viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+    const overlayWidth = 200;
+    const overlayHeight = 80;
+    const offsetX = 20;
+    const offsetY = -overlayHeight - 20;
+    
+    // Position relative to viewBox coordinates
+    let overlayX = runnerX + offsetX;
+    let overlayY = runnerY + offsetY;
+    
+    // Keep overlay within viewBox bounds
+    if (overlayX + overlayWidth > viewBox[0] + viewBox[2]) {
+        overlayX = runnerX - overlayWidth - offsetX;
+    }
+    if (overlayY < viewBox[1]) {
+        overlayY = runnerY + 30;
+    }
+    
+    infoBg.setAttribute('x', overlayX);
+    infoBg.setAttribute('y', overlayY);
+    
+    infoTime.setAttribute('x', overlayX + overlayWidth / 2);
+    infoTime.setAttribute('y', overlayY + 25);
+    infoDistance.setAttribute('x', overlayX + overlayWidth / 2);
+    infoDistance.setAttribute('y', overlayY + 45);
+    infoPace.setAttribute('x', overlayX + overlayWidth / 2);
+    infoPace.setAttribute('y', overlayY + 65);
 }
 

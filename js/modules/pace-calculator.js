@@ -8,8 +8,34 @@ function calculatePace() {
     const distance = getCurrentDistance();
     TRACK_CONSTANTS.TOTAL_DISTANCE = distance;
     
+    // Get time - either directly from goalTime or calculate from pace
+    let totalMs;
     const timeStr = elements.goalTime.value;
-    const totalMs = parseTimeToMs(timeStr);
+    const timeMs = parseTimeToMs(timeStr);
+    
+    // If pace is provided and valid, use it to calculate time
+    if (elements.targetPace && elements.targetPace.value) {
+        const paceStr = elements.targetPace.value;
+        const paceMs = parseTimeToMs(paceStr);
+        if (paceMs > 0) {
+            const distanceKm = distance / 1000;
+            totalMs = paceMs * distanceKm;
+            // Update time field to reflect calculated time
+            if (!timeMs || Math.abs(timeMs - totalMs) > 100) {
+                elements.goalTime.value = formatTimeFromMsSimple(totalMs);
+            }
+        } else {
+            totalMs = timeMs;
+        }
+    } else {
+        totalMs = timeMs;
+    }
+    
+    if (!totalMs || totalMs <= 0) {
+        showToast(isNorwegian ? 'Vennligst skriv inn en gyldig tid eller tempo' : 'Please enter a valid time or pace');
+        return;
+    }
+    
     const laneDistance = LANE_DISTANCES[currentLane];
     const totalLaps = Math.ceil(TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance);
     const basePacePerKm = (totalMs / 1000) / (TRACK_CONSTANTS.TOTAL_DISTANCE / 1000);
@@ -102,12 +128,33 @@ function calculateExpectedTime(distance, basePacePerKmParam = null, strategyPara
         case 'even':
             paceMultiplier = 1.0;
             break;
+        case 'neg10p':
+            const progress10neg = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            const secondsPer400m10neg = -10;
+            const totalSecondsAdjustment10neg = (distance / 400) * secondsPer400m10neg;
+            const baseTimeForDistance10neg = (distance / 1000) * basePacePerKm;
+            paceMultiplier = (baseTimeForDistance10neg + totalSecondsAdjustment10neg) / baseTimeForDistance10neg;
+            break;
         case 'neg5p':
             const progress4 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
             const secondsPer400m4 = -5;
             const totalSecondsAdjustment4 = (distance / 400) * secondsPer400m4;
             const baseTimeForDistance4 = (distance / 1000) * basePacePerKm;
             paceMultiplier = (baseTimeForDistance4 + totalSecondsAdjustment4) / baseTimeForDistance4;
+            break;
+        case 'neg3p':
+            const progress3neg = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            const secondsPer400m3neg = -3;
+            const totalSecondsAdjustment3neg = (distance / 400) * secondsPer400m3neg;
+            const baseTimeForDistance3neg = (distance / 1000) * basePacePerKm;
+            paceMultiplier = (baseTimeForDistance3neg + totalSecondsAdjustment3neg) / baseTimeForDistance3neg;
+            break;
+        case 'pos3p':
+            const progress3pos = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            const secondsPer400m3pos = 3;
+            const totalSecondsAdjustment3pos = (distance / 400) * secondsPer400m3pos;
+            const baseTimeForDistance3pos = (distance / 1000) * basePacePerKm;
+            paceMultiplier = (baseTimeForDistance3pos + totalSecondsAdjustment3pos) / baseTimeForDistance3pos;
             break;
         case 'pos5p':
             const progress5 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
@@ -116,11 +163,19 @@ function calculateExpectedTime(distance, basePacePerKmParam = null, strategyPara
             const baseTimeForDistance5 = (distance / 1000) * basePacePerKm;
             paceMultiplier = (baseTimeForDistance5 + totalSecondsAdjustment5) / baseTimeForDistance5;
             break;
+        case 'pos10p':
+            const progress10pos = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            const secondsPer400m10pos = 10;
+            const totalSecondsAdjustment10pos = (distance / 400) * secondsPer400m10pos;
+            const baseTimeForDistance10pos = (distance / 1000) * basePacePerKm;
+            paceMultiplier = (baseTimeForDistance10pos + totalSecondsAdjustment10pos) / baseTimeForDistance10pos;
+            break;
         case 'kick600':
-            if (distance <= 2400) {
+            const kickStartDistance = TRACK_CONSTANTS.TOTAL_DISTANCE - 600;
+            if (distance <= kickStartDistance) {
                 paceMultiplier = 1.0;
             } else {
-                const kickProgress = (distance - 2400) / 600;
+                const kickProgress = (distance - kickStartDistance) / 600;
                 paceMultiplier = 1.0 - (kickProgress * 0.05);
             }
             break;
@@ -216,10 +271,20 @@ function getCurrentDistance() {
 
 function validateInputs() {
     const timeStr = elements.goalTime.value;
-    const totalMs = parseTimeToMs(timeStr);
+    const timeMs = parseTimeToMs(timeStr);
     
-    if (!totalMs) {
-        showToast(isNorwegian ? 'Vennligst skriv inn en gyldig tid i mm:ss format' : 'Please enter a valid time in mm:ss format');
+    // Check if pace is provided instead
+    if (elements.targetPace && elements.targetPace.value) {
+        const paceStr = elements.targetPace.value;
+        const paceMs = parseTimeToMs(paceStr);
+        if (paceMs > 0) {
+            return true; // Valid pace input
+        }
+    }
+    
+    // Check if time is provided
+    if (!timeMs) {
+        showToast(isNorwegian ? 'Vennligst skriv inn en gyldig tid eller tempo i mm:ss format' : 'Please enter a valid time or pace in mm:ss format');
         return false;
     }
     

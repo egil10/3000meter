@@ -38,18 +38,129 @@ function updateAnimationUI() {
     }
 }
 
+function addSplitDistance(distance) {
+    distance = parseInt(distance);
+    if (isNaN(distance) || distance < 50) {
+        showToast(isNorwegian ? 'Ugyldig distanse' : 'Invalid distance');
+        return;
+    }
+    
+    // Round to nearest 50m
+    distance = Math.round(distance / 50) * 50;
+    
+    if (!activeSplitDistances.includes(distance)) {
+        activeSplitDistances.push(distance);
+        activeSplitDistances.sort((a, b) => a - b);
+        
+        // Update UI
+        updateSplitPresetButtons();
+        if (currentPaceData) {
+            updateCumulativeTimes(currentPaceData);
+        }
+        
+        // Save to localStorage
+        saveSplitDistances();
+        
+        showToast(isNorwegian ? `Deltid ${distance}m lagt til` : `Split ${distance}m added`);
+    }
+}
+
+function removeSplitDistance(distance) {
+    distance = parseInt(distance);
+    const index = activeSplitDistances.indexOf(distance);
+    if (index > -1) {
+        activeSplitDistances.splice(index, 1);
+        
+        // Update UI
+        updateSplitPresetButtons();
+        if (currentPaceData) {
+            updateCumulativeTimes(currentPaceData);
+        }
+        
+        // Save to localStorage
+        saveSplitDistances();
+        
+        showToast(isNorwegian ? `Deltid ${distance}m fjernet` : `Split ${distance}m removed`);
+    }
+}
+
+function updateSplitPresetButtons() {
+    document.querySelectorAll('.split-preset-btn').forEach(btn => {
+        const distance = parseInt(btn.dataset.distance);
+        if (activeSplitDistances.includes(distance)) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
+
+function saveSplitDistances() {
+    try {
+        localStorage.setItem('activeSplitDistances', JSON.stringify(activeSplitDistances));
+    } catch (e) {
+        console.error('Failed to save split distances:', e);
+    }
+}
+
+function loadSplitDistances() {
+    try {
+        const saved = localStorage.getItem('activeSplitDistances');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                activeSplitDistances = parsed.filter(d => typeof d === 'number' && d > 0);
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load split distances:', e);
+    }
+    
+    // Ensure at least one split is active
+    if (activeSplitDistances.length === 0) {
+        activeSplitDistances = [200, 400];
+    }
+    
+    updateSplitPresetButtons();
+}
+
 function updateCumulativeTimes(data) {
     if (!data) return;
     
+    const container = document.getElementById('cumulativeTimesContainer');
+    if (!container) return;
+    
+    // Sort active splits
+    const sortedSplits = [...activeSplitDistances].sort((a, b) => a - b);
+    
+    // Clear container
+    container.innerHTML = '';
+    
     const currentDistance = animationState.currentDistance;
     
-    function populateIntervalTable(containerId, interval) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
+    // Create a table for each active split distance
+    sortedSplits.forEach(splitDistance => {
+        // Skip if split distance is larger than total distance
+        if (splitDistance > data.totalDistance) return;
         
-        container.innerHTML = '';
+        const table = document.createElement('div');
+        table.className = 'splits-table';
         
-        for (let distance = interval; distance <= data.totalDistance; distance += interval) {
+        const header = document.createElement('div');
+        header.className = 'splits-table-header';
+        header.innerHTML = `
+            <span class="splits-table-title">${splitDistance}m</span>
+            <span style="font-size: 0.6875rem; color: var(--text-light);">Time</span>
+            <button type="button" class="remove-split-btn" data-distance="${splitDistance}" title="Remove split">
+                <i data-lucide="x"></i>
+            </button>
+        `;
+        
+        const body = document.createElement('div');
+        body.className = 'table-body';
+        
+        // Generate rows for this split interval
+        for (let distance = splitDistance; distance <= data.totalDistance; distance += splitDistance) {
             const expectedTime = calculateExpectedTime(distance, data.basePacePerKm, data.strategy);
             const timeFormatted = formatTimeFromMsSimple(expectedTime);
             
@@ -67,21 +178,18 @@ function updateCumulativeTimes(data) {
                 <span class="time">${timeFormatted}</span>
             `;
             
-            container.appendChild(row);
+            body.appendChild(row);
         }
-    }
-    
-    if (data.splits) {
-        data.splits.forEach(splitData => {
-            if (splitData.distance === 200) {
-                populateIntervalTable('cumulativeTimes200m', 200);
-            } else if (splitData.distance === 400) {
-                populateIntervalTable('cumulativeTimes400m', 400);
-            } else if (splitData.distance === 1000) {
-                populateIntervalTable('cumulativeTimes1000m', 1000);
-            }
-        });
-    }
+        
+        table.appendChild(header);
+        table.appendChild(body);
+        container.appendChild(table);
+        
+        // Initialize Lucide icons for the remove button
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
 }
 
 function updatePaceChart(data) {
@@ -98,9 +206,33 @@ function updatePaceChart(data) {
     }
     
     const labels = data.paceData.map(d => `${(d.distance / 1000).toFixed(1)}km`);
+    
+    let chartConfig = {};
+    
+    switch(currentChartType) {
+        case 'pace':
+            chartConfig = createPaceChart(data, labels, isDark);
+            break;
+        case 'speed':
+            chartConfig = createSpeedChart(data, labels, isDark);
+            break;
+        case 'time':
+            chartConfig = createTimeChart(data, labels, isDark);
+            break;
+        case 'split-pace':
+            chartConfig = createSplitPaceChart(data, labels, isDark);
+            break;
+        default:
+            chartConfig = createPaceChart(data, labels, isDark);
+    }
+    
+    paceChart = new Chart(ctx, chartConfig);
+}
+
+function createPaceChart(data, labels, isDark) {
     const paceValues = data.paceData.map(d => d.pace / 60);
     
-    paceChart = new Chart(ctx, {
+    return {
         type: 'line',
         data: {
             labels: labels,
@@ -116,64 +248,197 @@ function updatePaceChart(data) {
                 pointHoverRadius: 5
             }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true,
-                    labels: {
-                        color: isDark ? '#e5e7eb' : '#374151'
-                    }
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    callbacks: {
-                        label: function(context) {
-                            const pace = context.parsed.y;
-                            const minutes = Math.floor(pace);
-                            const seconds = Math.round((pace - minutes) * 60);
-                            return `Pace: ${minutes}:${seconds.toString().padStart(2, '0')}/km`;
-                        }
-                    }
+        options: getBaseChartOptions(isDark, 'Pace (min/km)', (value) => {
+            const minutes = Math.floor(value);
+            const seconds = Math.round((value - minutes) * 60);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }, (context) => {
+            const pace = context.parsed.y;
+            const minutes = Math.floor(pace);
+            const seconds = Math.round((pace - minutes) * 60);
+            return `Pace: ${minutes}:${seconds.toString().padStart(2, '0')}/km`;
+        })
+    };
+}
+
+function createSpeedChart(data, labels, isDark) {
+    const speedValues = data.paceData.map(d => {
+        // Convert pace (seconds per km) to speed (km/h)
+        const pacePerKm = d.pace;
+        return pacePerKm > 0 ? (3600 / pacePerKm) : 0;
+    });
+    
+    return {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Speed (km/h)',
+                data: speedValues,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 2,
+                pointHoverRadius: 5
+            }]
+        },
+        options: getBaseChartOptions(isDark, 'Speed (km/h)', (value) => {
+            return value.toFixed(1);
+        }, (context) => {
+            return `Speed: ${context.parsed.y.toFixed(1)} km/h`;
+        })
+    };
+}
+
+function createTimeChart(data, labels, isDark) {
+    const timeValues = data.paceData.map(d => d.time / 60); // Convert to minutes
+    
+    return {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Cumulative Time (min)',
+                data: timeValues,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 2,
+                pointHoverRadius: 5
+            }]
+        },
+        options: getBaseChartOptions(isDark, 'Time (minutes)', (value) => {
+            const minutes = Math.floor(value);
+            const seconds = Math.round((value - minutes) * 60);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }, (context) => {
+            const time = context.parsed.y;
+            const minutes = Math.floor(time);
+            const seconds = Math.round((time - minutes) * 60);
+            const totalSeconds = Math.round(time * 60);
+            const hours = Math.floor(totalSeconds / 3600);
+            const mins = Math.floor((totalSeconds % 3600) / 60);
+            const secs = totalSeconds % 60;
+            return `Time: ${hours > 0 ? `${hours}:` : ''}${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        })
+    };
+}
+
+function createSplitPaceChart(data, labels, isDark) {
+    if (!data.segments || data.segments.length === 0) {
+        return createPaceChart(data, labels, isDark);
+    }
+    
+    const segmentLabels = data.segments.map(s => `Lap ${s.lap}`);
+    const segmentPaceValues = data.segments.map(s => s.pace / 60);
+    
+    const options = getBaseChartOptions(isDark, 'Pace (min/km)', (value) => {
+        const minutes = Math.floor(value);
+        const seconds = Math.round((value - minutes) * 60);
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }, (context) => {
+        const pace = context.parsed.y;
+        const minutes = Math.floor(pace);
+        const seconds = Math.round((pace - minutes) * 60);
+        const lapNum = context.label.replace('Lap ', '');
+        return `Lap ${lapNum}: ${minutes}:${seconds.toString().padStart(2, '0')}/km`;
+    });
+    
+    // Override X-axis title for split pace chart
+    options.scales.x.title.text = 'Lap';
+    
+    return {
+        type: 'bar',
+        data: {
+            labels: segmentLabels,
+            datasets: [{
+                label: 'Pace per Lap (min/km)',
+                data: segmentPaceValues,
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                borderWidth: 2,
+                borderRadius: 4
+            }]
+        },
+        options: options
+    };
+}
+
+function getBaseChartOptions(isDark, yAxisLabel, yAxisFormatter, tooltipFormatter) {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                labels: {
+                    color: isDark ? '#e5e7eb' : '#374151'
                 }
             },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Distance',
-                        color: isDark ? '#e5e7eb' : '#374151'
-                    },
-                    ticks: {
-                        color: isDark ? '#9ca3af' : '#6b7280'
-                    },
-                    grid: {
-                        color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                    }
+            tooltip: {
+                mode: 'index',
+                intersect: false,
+                callbacks: {
+                    label: tooltipFormatter
+                }
+            }
+        },
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: 'Distance',
+                    color: isDark ? '#e5e7eb' : '#374151'
                 },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Pace (min/km)',
-                        color: isDark ? '#e5e7eb' : '#374151'
-                    },
-                    ticks: {
-                        color: isDark ? '#9ca3af' : '#6b7280',
-                        callback: function(value) {
-                            const minutes = Math.floor(value);
-                            const seconds = Math.round((value - minutes) * 60);
-                            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                        }
-                    },
-                    grid: {
-                        color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                    }
+                ticks: {
+                    color: isDark ? '#9ca3af' : '#6b7280'
+                },
+                grid: {
+                    color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: yAxisLabel,
+                    color: isDark ? '#e5e7eb' : '#374151'
+                },
+                ticks: {
+                    color: isDark ? '#9ca3af' : '#6b7280',
+                    callback: yAxisFormatter
+                },
+                grid: {
+                    color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
                 }
             }
         }
+    };
+}
+
+function switchChartType(chartType) {
+    currentChartType = chartType;
+    
+    // Update button states
+    document.querySelectorAll('.chart-type-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.chartType === chartType) {
+            btn.classList.add('active');
+        }
     });
+    
+    // Update chart
+    if (currentPaceData) {
+        updatePaceChart(currentPaceData);
+    }
+    
+    // Reinitialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 }
 
 function switchTab(tabName) {
@@ -200,34 +465,41 @@ function switchTab(tabName) {
     }
 }
 
+let isUpdatingTime = false;
+let isUpdatingPace = false;
+
 function updateTimeFromPace() {
-    if (!elements.targetPace) return;
+    if (isUpdatingTime || !elements.targetPace) return;
     const paceValue = elements.targetPace.value;
     if (!paceValue || paceValue === '') return;
     
     const paceMs = parseTimeToMs(paceValue);
     if (paceMs === 0) return;
     
+    isUpdatingTime = true;
     const distanceKm = getCurrentDistance() / 1000;
     const targetTimeMs = paceMs * distanceKm;
     const targetTimeStr = formatTimeFromMsSimple(targetTimeMs);
     
     elements.goalTime.value = targetTimeStr;
+    setTimeout(() => { isUpdatingTime = false; }, 100);
 }
 
 function updatePaceFromTime() {
-    if (!elements.targetPace) return;
+    if (isUpdatingPace || !elements.targetPace) return;
     const timeValue = elements.goalTime.value;
     if (!timeValue || timeValue === '') return;
     
     const timeMs = parseTimeToMs(timeValue);
     if (timeMs === 0) return;
     
+    isUpdatingPace = true;
     const distanceKm = getCurrentDistance() / 1000;
     const paceMs = timeMs / distanceKm;
     const paceStr = formatTimeFromMsSimple(paceMs);
     
     elements.targetPace.value = paceStr;
+    setTimeout(() => { isUpdatingPace = false; }, 100);
 }
 
 function adjustTime(seconds) {
@@ -268,8 +540,15 @@ function toggleTheme() {
     isDarkMode = !isDarkMode;
     document.body.classList.toggle('dark-mode', isDarkMode);
     elements.themeToggle.innerHTML = isDarkMode 
-        ? '<i class="fas fa-sun"></i>' 
-        : '<i class="fas fa-moon"></i>';
+        ? '<i data-lucide="sun"></i>' 
+        : '<i data-lucide="moon"></i>';
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    // Update track background for theme change
+    if (typeof updateTrackBackground === 'function') {
+        updateTrackBackground();
+    }
     saveToLocalStorage();
     updatePaceChart(currentPaceData);
 }
@@ -279,8 +558,15 @@ function loadThemePreference() {
     if (isDarkMode) {
         document.body.classList.add('dark-mode');
         if (elements.themeToggle) {
-            elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            elements.themeToggle.innerHTML = '<i data-lucide="sun"></i>';
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
         }
+    }
+    // Update track background when loading theme preference
+    if (typeof updateTrackBackground === 'function') {
+        updateTrackBackground();
     }
 }
 
@@ -311,7 +597,12 @@ function handleDistanceInput() {
             }
         });
         
-        updatePaceFromTime();
+        // Update pace if time is set, or update time if pace is set
+        if (elements.goalTime && elements.goalTime.value) {
+            updatePaceFromTime();
+        } else if (elements.targetPace && elements.targetPace.value) {
+            updateTimeFromPace();
+        }
     }
 }
 
@@ -319,7 +610,12 @@ function handleDistanceChange() {
     const distance = parseFloat(elements.raceDistance.value);
     if (distance && distance >= 100) {
         currentDistance = distance;
-        updatePaceFromTime();
+        // Update pace if time is set, or update time if pace is set
+        if (elements.goalTime && elements.goalTime.value) {
+            updatePaceFromTime();
+        } else if (elements.targetPace && elements.targetPace.value) {
+            updateTimeFromPace();
+        }
     }
 }
 
@@ -364,7 +660,7 @@ function renderCustomSplits() {
             <input type="number" class="split-distance-input" value="${split.distance}" min="100" step="100" data-index="${index}">
             <input type="text" class="split-pace-input" value="${formatTimeFromMsSimple(split.pace * 1000)}" placeholder="05:00" data-index="${index}">
             <button type="button" class="btn-remove-split" data-index="${index}">
-                <i class="fas fa-trash"></i>
+                <i data-lucide="trash-2"></i>
             </button>
         `;
         
@@ -400,6 +696,11 @@ function renderCustomSplits() {
             }
         });
     });
+    
+    // Reinitialize Lucide icons for dynamically created elements
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 }
 
 function handleShare() {

@@ -35,7 +35,12 @@ function setupEventListeners() {
             if (distance && distance >= 100) {
                 elements.raceDistance.value = distance;
                 currentDistance = distance;
-                updatePaceFromTime();
+                // Update pace if time is set, or update time if pace is set
+                if (elements.goalTime && elements.goalTime.value) {
+                    updatePaceFromTime();
+                } else if (elements.targetPace && elements.targetPace.value) {
+                    updateTimeFromPace();
+                }
                 
                 document.querySelectorAll('.preset-btn-compact').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
@@ -106,6 +111,54 @@ function setupEventListeners() {
     
     initializeCustomSplits();
     
+    // Split management
+    document.querySelectorAll('.split-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const distance = parseInt(btn.dataset.distance);
+            if (distance) {
+                if (activeSplitDistances.includes(distance)) {
+                    removeSplitDistance(distance);
+                } else {
+                    addSplitDistance(distance);
+                }
+            }
+        });
+    });
+    
+    const customSplitInput = document.getElementById('customSplitDistance');
+    const addCustomSplitBtn = document.getElementById('addCustomSplitBtn');
+    
+    if (addCustomSplitBtn) {
+        addCustomSplitBtn.addEventListener('click', () => {
+            if (customSplitInput && customSplitInput.value) {
+                addSplitDistance(customSplitInput.value);
+                customSplitInput.value = '';
+            }
+        });
+    }
+    
+    if (customSplitInput) {
+        customSplitInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if (customSplitInput.value) {
+                    addSplitDistance(customSplitInput.value);
+                    customSplitInput.value = '';
+                }
+            }
+        });
+    }
+    
+    // Handle remove split buttons (delegated event listener)
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.remove-split-btn')) {
+            const btn = e.target.closest('.remove-split-btn');
+            const distance = parseInt(btn.dataset.distance);
+            if (distance) {
+                removeSplitDistance(distance);
+            }
+        }
+    });
+    
     // Strategy buttons
     elements.strategyButtons.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -136,12 +189,53 @@ function setupEventListeners() {
         });
     }
     
+    // Chart type buttons
+    document.querySelectorAll('.chart-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const chartType = btn.dataset.chartType;
+            if (chartType) {
+                switchChartType(chartType);
+            }
+        });
+    });
+    
     // Animation controls
     if (elements.playPauseBtn) {
         elements.playPauseBtn.addEventListener('click', toggleAnimation);
     }
     if (elements.resetBtn) {
         elements.resetBtn.addEventListener('click', resetAnimation);
+    }
+    
+    // Speed controls
+    if (elements.speedSlider) {
+        elements.speedSlider.addEventListener('input', (e) => {
+            const speed = parseFloat(e.target.value);
+            updateAnimationSpeed(speed);
+            if (elements.speedDisplay) {
+                elements.speedDisplay.textContent = `${speed.toFixed(1)}x`;
+            }
+        });
+    }
+    
+    if (elements.speedDownBtn) {
+        elements.speedDownBtn.addEventListener('click', () => {
+            const currentSpeed = animationState.speed;
+            const newSpeed = Math.max(0.25, currentSpeed - 0.25);
+            updateAnimationSpeed(newSpeed);
+            if (elements.speedSlider) elements.speedSlider.value = newSpeed;
+            if (elements.speedDisplay) elements.speedDisplay.textContent = `${newSpeed.toFixed(1)}x`;
+        });
+    }
+    
+    if (elements.speedUpBtn) {
+        elements.speedUpBtn.addEventListener('click', () => {
+            const currentSpeed = animationState.speed;
+            const newSpeed = Math.min(5, currentSpeed + 0.25);
+            updateAnimationSpeed(newSpeed);
+            if (elements.speedSlider) elements.speedSlider.value = newSpeed;
+            if (elements.speedDisplay) elements.speedDisplay.textContent = `${newSpeed.toFixed(1)}x`;
+        });
     }
     
     // Keyboard shortcuts
@@ -156,6 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize DOM elements
     elements = {
         goalTime: document.getElementById('goalTime'),
+        targetPace: document.getElementById('targetPace'),
         raceDistance: document.getElementById('raceDistance'),
         strategyButtons: document.querySelectorAll('.strategy-btn'),
         calculateBtn: document.getElementById('calculateBtn'),
@@ -169,6 +264,10 @@ document.addEventListener('DOMContentLoaded', function() {
         currentDistanceDisplay: document.getElementById('currentDistanceDisplay'),
         currentPaceDisplay: document.getElementById('currentPaceDisplay'),
         progressPercentDisplay: document.getElementById('progressPercentDisplay'),
+        speedSlider: document.getElementById('speedSlider'),
+        speedDisplay: document.getElementById('speedDisplay'),
+        speedDownBtn: document.getElementById('speedDownBtn'),
+        speedUpBtn: document.getElementById('speedUpBtn'),
         cumulativeTimes200m: document.getElementById('cumulativeTimes200m'),
         cumulativeTimes400m: document.getElementById('cumulativeTimes400m'),
         cumulativeTimes1000m: document.getElementById('cumulativeTimes1000m'),
@@ -191,5 +290,52 @@ document.addEventListener('DOMContentLoaded', function() {
     updateLanguageUI();
     updateI18n();
     loadThemePreference();
+    loadSplitDistances(); // Load saved split distances
+    
+    // Initialize pace field from time
+    if (elements.targetPace && elements.goalTime) {
+        updatePaceFromTime();
+    }
+    
+    // Initialize speed display
+    if (elements.speedDisplay) {
+        elements.speedDisplay.textContent = `${animationState.speed.toFixed(1)}x`;
+    }
+    
+    // Initialize Lucide icons after everything is loaded
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    // Update loading screen runner color to match theme
+    updateLoadingRunnerColor();
+    
+    // Hide loading screen after everything is initialized
+    hideLoadingScreen();
 });
+
+function updateLoadingRunnerColor() {
+    const runnerCircle = document.querySelector('.loading-runner-circle');
+    if (runnerCircle) {
+        const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+        runnerCircle.setAttribute('fill', primaryColor || '#dc2626');
+    }
+}
+
+function hideLoadingScreen() {
+    // Wait a minimum time to show the loading animation
+    setTimeout(() => {
+        const loadingScreen = document.getElementById('loadingScreen');
+        if (loadingScreen) {
+            loadingScreen.classList.add('hidden');
+            document.body.classList.remove('loading');
+            // Remove from DOM after animation completes
+            setTimeout(() => {
+                if (loadingScreen.parentNode) {
+                    loadingScreen.remove();
+                }
+            }, 500);
+        }
+    }, 800); // Show for at least 800ms
+}
 

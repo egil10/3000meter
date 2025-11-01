@@ -15,13 +15,19 @@ function startAnimation() {
     
     animationState.isPlaying = true;
     animationState.startTime = Date.now() - (animationState.currentTime * 1000);
-    elements.playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+    elements.playPauseBtn.innerHTML = '<i data-lucide="pause"></i>';
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
     animationLoop();
 }
 
 function pauseAnimation() {
     animationState.isPlaying = false;
-    elements.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+    elements.playPauseBtn.innerHTML = '<i data-lucide="play"></i>';
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
     if (animationState.animationId) {
         cancelAnimationFrame(animationState.animationId);
         animationState.animationId = null;
@@ -47,6 +53,7 @@ function updateAnimationSpeed(newSpeed) {
     animationState.speed = newSpeed;
     if (elements.speedInput) elements.speedInput.value = newSpeed;
     if (elements.speedSlider) elements.speedSlider.value = newSpeed;
+    if (elements.speedDisplay) elements.speedDisplay.textContent = `${newSpeed.toFixed(1)}x`;
 }
 
 function animationLoop() {
