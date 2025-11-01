@@ -30,26 +30,38 @@ function getTrackColors() {
             track: '#dc2626', // Red tarmac
             apron: '#e5e7eb', // Light gray
             field: '#bfe7a7', // Green field
-            bg: getComputedStyle(document.documentElement).getPropertyValue('--track-bg').trim() || '#f8fafc',
+            bg: '#87ceeb', // Sky blue
             laneBoundary: '#ffffff', // White lane lines
-            markers: '#ffffff'
+            markers: '#ffffff',
+            tree: '#228b22', // Forest green
+            treeTrunk: '#8b4513', // Brown
+            stand: '#808080', // Gray stands
+            cloud: '#ffffff' // White clouds
         },
         indoor: {
             track: '#6366f1', // Purple/blue tarmac
             apron: '#c7d2fe', // Light purple/blue
             field: '#e0e7ff', // Very light purple
-            bg: getComputedStyle(document.documentElement).getPropertyValue('--track-bg').trim() || '#f8fafc',
+            bg: '#4b5563', // Dark gray/indoor
             laneBoundary: '#ffffff',
-            markers: '#ffffff'
+            markers: '#ffffff',
+            wall: '#64748b', // Slate gray walls
+            ceiling: '#1e293b', // Dark ceiling
+            light: '#ffd700', // Yellow lights
+            beam: '#334155' // Dark beams
         },
         road: {
             track: '#1f2937', // Black tarmac
             apron: '#374151', // Dark gray
             field: '#6b7280', // Medium gray
-            bg: getComputedStyle(document.documentElement).getPropertyValue('--track-bg').trim() || '#f8fafc',
+            bg: '#f0f8ff', // Light blue sky
             laneBoundary: '#ffffff', // White lane lines
             centerLine: '#ffd700', // Yellow center line
-            markers: '#ffffff'
+            markers: '#ffffff',
+            tree: '#228b22', // Forest green
+            treeTrunk: '#8b4513', // Brown
+            building: '#9ca3af', // Gray buildings
+            roadSign: '#ffd700' // Yellow signs
         }
     };
     return colors[trackType] || colors.outdoor;
@@ -62,6 +74,7 @@ function drawTrack() {
     const boundariesG = document.getElementById('lane-boundaries');
     const infieldG = document.getElementById('infield');
     const roadCenterLineG = document.getElementById('road-center-line');
+    const backgroundElementsG = document.getElementById('background-elements');
     
     // Clear existing elements
     stadiumG.innerHTML = '';
@@ -69,6 +82,7 @@ function drawTrack() {
     boundariesG.innerHTML = '';
     infieldG.innerHTML = '';
     roadCenterLineG.innerHTML = '';
+    if (backgroundElementsG) backgroundElementsG.innerHTML = '';
     
     const colors = getTrackColors();
     const LANE_W = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-w'));
@@ -106,6 +120,12 @@ function drawTrack() {
         bgRect.setAttribute('width', viewBoxW);
         bgRect.setAttribute('height', viewBoxH);
         bgRect.setAttribute('fill', colors.bg);
+    }
+    
+    // Draw background elements based on track type
+    // Note: For road type, we need to draw trees after track is created
+    if (trackType !== 'road') {
+        drawBackgroundElements(backgroundElementsG, viewBoxX, viewBoxY, viewBoxW, viewBoxH, colors);
     }
     
     // Stadium apron (only for track types, not road)
@@ -166,6 +186,264 @@ function drawTrack() {
     
     lane1 = lanePaths[1];
     totalLen = lane1.getTotalLength();
+    
+    // Draw road background elements after track is initialized
+    if (trackType === 'road') {
+        drawBackgroundElements(backgroundElementsG, viewBoxX, viewBoxY, viewBoxW, viewBoxH, colors);
+    }
+}
+
+function drawBackgroundElements(container, x, y, w, h, colors) {
+    if (!container) return;
+    
+    if (trackType === 'outdoor') {
+        // Outdoor: Trees, stadium stands, clouds
+        drawOutdoorElements(container, x, y, w, h, colors);
+    } else if (trackType === 'indoor') {
+        // Indoor: Building structure, lights, beams
+        drawIndoorElements(container, x, y, w, h, colors);
+    } else if (trackType === 'road') {
+        // Road: Trees, buildings, road signs
+        drawRoadElements(container, x, y, w, h, colors);
+    }
+}
+
+function drawOutdoorElements(container, x, y, w, h, colors) {
+    // Draw clouds
+    for(let i = 0; i < 5; i++) {
+        const cloudX = x + (w / 6) * (i + 1) + (i * 20);
+        const cloudY = y + 30;
+        const cloud = document.createElementNS('http://www.w3.org/2000/svg','g');
+        cloud.setAttribute('opacity', '0.8');
+        
+        // Cloud shape made of circles
+        for(let j = 0; j < 3; j++) {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+            circle.setAttribute('cx', cloudX + (j * 15));
+            circle.setAttribute('cy', cloudY);
+            circle.setAttribute('r', 12 + (j % 2) * 3);
+            circle.setAttribute('fill', colors.cloud);
+            cloud.appendChild(circle);
+        }
+        container.appendChild(cloud);
+    }
+    
+    // Draw stadium stands (bleachers)
+    const standHeight = 40;
+    const standY = y + h - standHeight;
+    
+    // Left stands
+    const leftStand = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    leftStand.setAttribute('x', x);
+    leftStand.setAttribute('y', standY);
+    leftStand.setAttribute('width', 60);
+    leftStand.setAttribute('height', standHeight);
+    leftStand.setAttribute('fill', colors.stand);
+    leftStand.setAttribute('opacity', '0.7');
+    container.appendChild(leftStand);
+    
+    // Right stands
+    const rightStand = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rightStand.setAttribute('x', x + w - 60);
+    rightStand.setAttribute('y', standY);
+    rightStand.setAttribute('width', 60);
+    rightStand.setAttribute('height', standHeight);
+    rightStand.setAttribute('fill', colors.stand);
+    rightStand.setAttribute('opacity', '0.7');
+    container.appendChild(rightStand);
+    
+    // Draw trees around the track
+    const treePositions = [
+        {x: x + 20, y: y + h - 25},
+        {x: x + w - 40, y: y + h - 25},
+        {x: x + w/2 - 30, y: y + 20},
+        {x: x + w/2 + 30, y: y + 20}
+    ];
+    
+    treePositions.forEach(pos => {
+        drawTree(container, pos.x, pos.y, colors);
+    });
+}
+
+function drawIndoorElements(container, x, y, w, h, colors) {
+    // Draw ceiling
+    const ceiling = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    ceiling.setAttribute('x', x);
+    ceiling.setAttribute('y', y);
+    ceiling.setAttribute('width', w);
+    ceiling.setAttribute('height', 50);
+    ceiling.setAttribute('fill', colors.ceiling);
+    container.appendChild(ceiling);
+    
+    // Draw walls on sides
+    const leftWall = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    leftWall.setAttribute('x', x);
+    leftWall.setAttribute('y', y);
+    leftWall.setAttribute('width', 40);
+    leftWall.setAttribute('height', h);
+    leftWall.setAttribute('fill', colors.wall);
+    leftWall.setAttribute('opacity', '0.8');
+    container.appendChild(leftWall);
+    
+    const rightWall = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rightWall.setAttribute('x', x + w - 40);
+    rightWall.setAttribute('y', y);
+    rightWall.setAttribute('width', 40);
+    rightWall.setAttribute('height', h);
+    rightWall.setAttribute('fill', colors.wall);
+    rightWall.setAttribute('opacity', '0.8');
+    container.appendChild(rightWall);
+    
+    // Draw ceiling beams
+    for(let i = 0; i < 4; i++) {
+        const beamX = x + (w / 5) * (i + 1);
+        const beam = document.createElementNS('http://www.w3.org/2000/svg','line');
+        beam.setAttribute('x1', beamX);
+        beam.setAttribute('y1', y);
+        beam.setAttribute('x2', beamX);
+        beam.setAttribute('y2', y + h);
+        beam.setAttribute('stroke', colors.beam);
+        beam.setAttribute('stroke-width', '3');
+        beam.setAttribute('opacity', '0.6');
+        container.appendChild(beam);
+    }
+    
+    // Draw lights
+    for(let i = 0; i < 6; i++) {
+        const lightX = x + (w / 7) * (i + 1);
+        const lightY = y + 25;
+        const light = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        light.setAttribute('cx', lightX);
+        light.setAttribute('cy', lightY);
+        light.setAttribute('r', '8');
+        light.setAttribute('fill', colors.light);
+        light.setAttribute('opacity', '0.9');
+        container.appendChild(light);
+        
+        // Light beam
+        const beam = document.createElementNS('http://www.w3.org/2000/svg','line');
+        beam.setAttribute('x1', lightX);
+        beam.setAttribute('y1', lightY + 8);
+        beam.setAttribute('x2', lightX);
+        beam.setAttribute('y2', y + h - 50);
+        beam.setAttribute('stroke', colors.light);
+        beam.setAttribute('stroke-width', '2');
+        beam.setAttribute('opacity', '0.2');
+        container.appendChild(beam);
+    }
+}
+
+function drawRoadElements(container, x, y, w, h, colors) {
+    // Draw trees along the road
+    const treeCount = 12;
+    for(let i = 0; i < treeCount; i++) {
+        const progress = i / (treeCount - 1);
+        const trackPoint = lane1.getPointAtLength(progress * totalLen);
+        const perpAngle = Math.atan2(
+            lane1.getPointAtLength(Math.min(progress * totalLen + 1, totalLen)).y - trackPoint.y,
+            lane1.getPointAtLength(Math.min(progress * totalLen + 1, totalLen)).x - trackPoint.x
+        );
+        
+        // Trees on both sides
+        const offsetLeft = 60;
+        const offsetRight = -60;
+        
+        const treeLeftX = trackPoint.x + Math.cos(perpAngle + Math.PI/2) * offsetLeft;
+        const treeLeftY = trackPoint.y + Math.sin(perpAngle + Math.PI/2) * offsetLeft;
+        drawTree(container, treeLeftX, treeLeftY, colors);
+        
+        const treeRightX = trackPoint.x + Math.cos(perpAngle - Math.PI/2) * offsetRight;
+        const treeRightY = trackPoint.y + Math.sin(perpAngle - Math.PI/2) * offsetRight;
+        drawTree(container, treeRightX, treeRightY, colors);
+    }
+    
+    // Draw buildings in background
+    const buildingCount = 4;
+    for(let i = 0; i < buildingCount; i++) {
+        const buildingX = x + (w / (buildingCount + 1)) * (i + 1);
+        const buildingHeight = 40 + Math.random() * 30;
+        const building = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        building.setAttribute('x', buildingX - 15);
+        building.setAttribute('y', y + h - buildingHeight);
+        building.setAttribute('width', 30);
+        building.setAttribute('height', buildingHeight);
+        building.setAttribute('fill', colors.building);
+        building.setAttribute('opacity', '0.6');
+        container.appendChild(building);
+        
+        // Windows
+        for(let win = 0; win < 3; win++) {
+            const window = document.createElementNS('http://www.w3.org/2000/svg','rect');
+            window.setAttribute('x', buildingX - 10);
+            window.setAttribute('y', y + h - buildingHeight + 10 + (win * 12));
+            window.setAttribute('width', '8');
+            window.setAttribute('height', '6');
+            window.setAttribute('fill', colors.light);
+            window.setAttribute('opacity', '0.8');
+            container.appendChild(window);
+        }
+    }
+    
+    // Draw road signs
+    const signPositions = [
+        {x: x + w/4, y: y + h - 80},
+        {x: x + 3*w/4, y: y + h - 80}
+    ];
+    
+    signPositions.forEach(pos => {
+        const sign = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        sign.setAttribute('x', pos.x - 8);
+        sign.setAttribute('y', pos.y - 12);
+        sign.setAttribute('width', '16');
+        sign.setAttribute('height', '16');
+        sign.setAttribute('fill', colors.roadSign);
+        sign.setAttribute('opacity', '0.9');
+        container.appendChild(sign);
+        
+        const pole = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        pole.setAttribute('x', pos.x - 1);
+        pole.setAttribute('y', pos.y + 4);
+        pole.setAttribute('width', '2');
+        pole.setAttribute('height', '20');
+        pole.setAttribute('fill', '#374151');
+        container.appendChild(pole);
+    });
+}
+
+function drawTree(container, treeX, treeY, colors) {
+    // Tree trunk
+    const trunk = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    trunk.setAttribute('x', treeX - 2);
+    trunk.setAttribute('y', treeY);
+    trunk.setAttribute('width', '4');
+    trunk.setAttribute('height', '12');
+    trunk.setAttribute('fill', colors.treeTrunk);
+    container.appendChild(trunk);
+    
+    // Tree foliage (circles)
+    const foliage = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    foliage.setAttribute('cx', treeX);
+    foliage.setAttribute('cy', treeY - 5);
+    foliage.setAttribute('r', '10');
+    foliage.setAttribute('fill', colors.tree);
+    foliage.setAttribute('opacity', '0.8');
+    container.appendChild(foliage);
+    
+    const foliage2 = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    foliage2.setAttribute('cx', treeX - 5);
+    foliage2.setAttribute('cy', treeY - 3);
+    foliage2.setAttribute('r', '8');
+    foliage2.setAttribute('fill', colors.tree);
+    foliage2.setAttribute('opacity', '0.7');
+    container.appendChild(foliage2);
+    
+    const foliage3 = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    foliage3.setAttribute('cx', treeX + 5);
+    foliage3.setAttribute('cy', treeY - 3);
+    foliage3.setAttribute('r', '8');
+    foliage3.setAttribute('fill', colors.tree);
+    foliage3.setAttribute('opacity', '0.7');
+    container.appendChild(foliage3);
 }
 
 function drawMarkers() {
@@ -346,70 +624,35 @@ function updateRunnerPosition(lapProgress, distance) {
     }
     
     // Update animation info overlay
-    updateAnimationInfoOverlay(position.x, position.y);
+    updateAnimationInfoOverlay();
 }
 
-function updateAnimationInfoOverlay(runnerX, runnerY) {
-    const infoGroup = document.getElementById('animation-info');
-    if (!infoGroup) return;
+function updateAnimationInfoOverlay() {
+    const timingBoard = document.getElementById('timingBoard');
+    const timingTime = document.getElementById('timingTime');
+    const timingLap = document.getElementById('timingLap');
+    const timingDistance = document.getElementById('timingDistance');
     
-    const infoBg = document.getElementById('info-bg');
-    const infoTime = document.getElementById('info-time');
-    const infoDistance = document.getElementById('info-distance');
-    const infoPace = document.getElementById('info-pace');
+    if (!timingBoard || !timingTime || !timingLap || !timingDistance) return;
     
-    if (!infoBg || !infoTime || !infoDistance || !infoPace) return;
-    
-    // Show/hide overlay based on animation state
-    if (!animationState.isPlaying && animationState.currentDistance === 0) {
-        infoGroup.style.display = 'none';
-        return;
+    // Show board only when animation is active
+    if (animationState.isPlaying && animationState.currentDistance > 0) {
+        timingBoard.classList.remove('hidden');
+        
+        // Update time (format: MM:SS.mm)
+        const currentTimeMs = animationState.currentTime * 1000;
+        const minutes = Math.floor(currentTimeMs / 60000);
+        const seconds = Math.floor((currentTimeMs % 60000) / 1000);
+        const milliseconds = Math.floor((currentTimeMs % 1000) / 10);
+        timingTime.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
+        
+        // Update lap
+        timingLap.textContent = animationState.currentLap;
+        
+        // Update distance
+        timingDistance.textContent = `${Math.round(animationState.currentDistance)}m`;
+    } else {
+        timingBoard.classList.add('hidden');
     }
-    infoGroup.style.display = 'block';
-    
-    // Format time
-    const currentTimeMs = animationState.currentTime * 1000;
-    const timeFormatted = formatTimeFromMs(currentTimeMs);
-    infoTime.textContent = timeFormatted.split('.')[0]; // Remove milliseconds
-    
-    // Format distance
-    const distance = Math.round(animationState.currentDistance);
-    infoDistance.textContent = `${distance}m`;
-    
-    // Format pace
-    const currentPace = calculateCurrentPace();
-    infoPace.textContent = currentPace !== '--:--' ? `${currentPace} /km` : '--:-- /km';
-    
-    // Position overlay near runner (top-right relative to runner)
-    const svg = document.querySelector('svg');
-    if (!svg) return;
-    
-    const viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
-    const overlayWidth = 200;
-    const overlayHeight = 80;
-    const offsetX = 20;
-    const offsetY = -overlayHeight - 20;
-    
-    // Position relative to viewBox coordinates
-    let overlayX = runnerX + offsetX;
-    let overlayY = runnerY + offsetY;
-    
-    // Keep overlay within viewBox bounds
-    if (overlayX + overlayWidth > viewBox[0] + viewBox[2]) {
-        overlayX = runnerX - overlayWidth - offsetX;
-    }
-    if (overlayY < viewBox[1]) {
-        overlayY = runnerY + 30;
-    }
-    
-    infoBg.setAttribute('x', overlayX);
-    infoBg.setAttribute('y', overlayY);
-    
-    infoTime.setAttribute('x', overlayX + overlayWidth / 2);
-    infoTime.setAttribute('y', overlayY + 25);
-    infoDistance.setAttribute('x', overlayX + overlayWidth / 2);
-    infoDistance.setAttribute('y', overlayY + 45);
-    infoPace.setAttribute('x', overlayX + overlayWidth / 2);
-    infoPace.setAttribute('y', overlayY + 65);
 }
 

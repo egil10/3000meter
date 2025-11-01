@@ -43,10 +43,16 @@ function calculatePace() {
     const data = generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm);
     currentPaceData = data;
     
+    // Update all UI elements
     updateResults(data);
     updateTrackVisualization(data);
     updateAnimationState(data);
     updatePaceChart(data);
+    
+    // Ensure track is redrawn with correct type
+    drawTrack();
+    drawMarkers();
+    addRoundIndicators();
 }
 
 function generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm) {
@@ -299,7 +305,112 @@ function handleCalculateButtonClick() {
     }, 1500);
     
     resetAnimation();
-    calculatePace();
-    updateURL();
+    
+    // Show calculation loading
+    showCalculationLoading();
+    
+    // Use setTimeout to allow UI to update before starting heavy calculations
+    setTimeout(() => {
+        calculatePace();
+        updateURL();
+        
+        // Hide loading and collapse inputs after calculation
+        setTimeout(() => {
+            hideCalculationLoading();
+            collapseInputArea();
+            updateRaceSummary();
+        }, 300);
+    }, 50);
+}
+
+function collapseInputArea() {
+    const inputArea = document.getElementById('inputArea');
+    const summaryCard = document.getElementById('raceSummary');
+    
+    if (inputArea) {
+        inputArea.classList.add('collapsed');
+    }
+    
+    if (summaryCard) {
+        summaryCard.classList.remove('hidden');
+    }
+}
+
+function expandInputArea() {
+    const inputArea = document.getElementById('inputArea');
+    const summaryCard = document.getElementById('raceSummary');
+    
+    if (inputArea) {
+        inputArea.classList.remove('collapsed');
+    }
+    
+    if (summaryCard) {
+        summaryCard.classList.add('hidden');
+    }
+}
+
+function updateRaceSummary() {
+    const summaryDistance = document.getElementById('summaryDistance');
+    const summaryTime = document.getElementById('summaryTime');
+    const summaryPace = document.getElementById('summaryPace');
+    const summaryStrategy = document.getElementById('summaryStrategy');
+    const summaryTrackType = document.getElementById('summaryTrackType');
+    
+    if (summaryDistance) {
+        const distance = currentDistance || 3000;
+        if (distance >= 1000) {
+            summaryDistance.textContent = `${(distance / 1000).toFixed(2)}km`;
+        } else {
+            summaryDistance.textContent = `${distance}m`;
+        }
+    }
+    
+    if (summaryTime && elements.goalTime) {
+        summaryTime.textContent = elements.goalTime.value || '--:--';
+    }
+    
+    if (summaryPace && elements.targetPace) {
+        summaryPace.textContent = `${elements.targetPace.value || '--:--'}/km`;
+    }
+    
+    if (summaryStrategy) {
+        const strategyNames = {
+            'even': 'Even',
+            'neg10p': '-10%',
+            'neg5p': '-5%',
+            'neg3p': '-3%',
+            'pos3p': '+3%',
+            'pos5p': '+5%',
+            'pos10p': '+10%',
+            'kick600': 'Kick 600m',
+            'progressive': 'Progressive',
+            'degressive': 'Degressive',
+            'custom': 'Custom'
+        };
+        summaryStrategy.textContent = strategyNames[currentStrategy] || currentStrategy;
+    }
+    
+    if (summaryTrackType) {
+        const trackTypeNames = {
+            'outdoor': 'Outdoor',
+            'indoor': 'Indoor',
+            'road': 'Road'
+        };
+        summaryTrackType.textContent = trackTypeNames[trackType] || 'Outdoor';
+    }
+}
+
+function showCalculationLoading() {
+    const loadingEl = document.getElementById('calculationLoading');
+    if (loadingEl) {
+        loadingEl.classList.remove('hidden');
+    }
+}
+
+function hideCalculationLoading() {
+    const loadingEl = document.getElementById('calculationLoading');
+    if (loadingEl) {
+        loadingEl.classList.add('hidden');
+    }
 }
 

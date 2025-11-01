@@ -35,6 +35,11 @@ function setupEventListeners() {
             if (distance && distance >= 100) {
                 elements.raceDistance.value = distance;
                 currentDistance = distance;
+                
+                // Update time suggestions for the new distance
+                updateTimeSuggestions();
+                updateSplitPresetButtons();
+                
                 // Update pace if time is set, or update time if pace is set
                 if (elements.goalTime && elements.goalTime.value) {
                     updatePaceFromTime();
@@ -175,8 +180,27 @@ function setupEventListeners() {
     // Action buttons
     elements.calculateBtn.addEventListener('click', handleCalculateButtonClick);
     
+    // Edit button (to reopen inputs)
+    const editBtn = document.getElementById('editBtn');
+    if (editBtn) {
+        editBtn.addEventListener('click', () => {
+            expandInputArea();
+            // Reinitialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            // Scroll to top to show inputs
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+    
     if (elements.downloadStrategyBtn) {
         elements.downloadStrategyBtn.addEventListener('click', downloadStrategyHTML);
+    }
+    
+    const downloadStrategyPDFBtn = document.getElementById('downloadStrategyPDFBtn');
+    if (downloadStrategyPDFBtn) {
+        downloadStrategyPDFBtn.addEventListener('click', downloadStrategyPDF);
     }
     
     if (elements.themeToggle) {
@@ -244,15 +268,49 @@ function setupEventListeners() {
             if (elements.speedDisplay) {
                 elements.speedDisplay.textContent = `${speed.toFixed(1)}x`;
             }
+            if (elements.speedInput) {
+                elements.speedInput.value = speed.toFixed(1);
+            }
+        });
+    }
+    
+    if (elements.speedInput) {
+        elements.speedInput.addEventListener('input', (e) => {
+            let speed = parseFloat(e.target.value);
+            if (isNaN(speed) || speed < 0.1) speed = 0.1;
+            if (speed > 100) speed = 100;
+            updateAnimationSpeed(speed);
+            if (elements.speedSlider) {
+                elements.speedSlider.value = speed;
+            }
+            if (elements.speedDisplay) {
+                elements.speedDisplay.textContent = `${speed.toFixed(1)}x`;
+            }
+            e.target.value = speed.toFixed(1);
+        });
+        
+        elements.speedInput.addEventListener('blur', (e) => {
+            let speed = parseFloat(e.target.value);
+            if (isNaN(speed) || speed < 0.1) speed = 0.1;
+            if (speed > 100) speed = 100;
+            updateAnimationSpeed(speed);
+            if (elements.speedSlider) {
+                elements.speedSlider.value = speed;
+            }
+            if (elements.speedDisplay) {
+                elements.speedDisplay.textContent = `${speed.toFixed(1)}x`;
+            }
+            e.target.value = speed.toFixed(1);
         });
     }
     
     if (elements.speedDownBtn) {
         elements.speedDownBtn.addEventListener('click', () => {
             const currentSpeed = animationState.speed;
-            const newSpeed = Math.max(0.25, currentSpeed - 0.25);
+            const newSpeed = Math.max(0.1, currentSpeed - 0.25);
             updateAnimationSpeed(newSpeed);
             if (elements.speedSlider) elements.speedSlider.value = newSpeed;
+            if (elements.speedInput) elements.speedInput.value = newSpeed.toFixed(1);
             if (elements.speedDisplay) elements.speedDisplay.textContent = `${newSpeed.toFixed(1)}x`;
         });
     }
@@ -260,9 +318,10 @@ function setupEventListeners() {
     if (elements.speedUpBtn) {
         elements.speedUpBtn.addEventListener('click', () => {
             const currentSpeed = animationState.speed;
-            const newSpeed = Math.min(5, currentSpeed + 0.25);
+            const newSpeed = Math.min(100, currentSpeed + 0.25);
             updateAnimationSpeed(newSpeed);
             if (elements.speedSlider) elements.speedSlider.value = newSpeed;
+            if (elements.speedInput) elements.speedInput.value = newSpeed.toFixed(1);
             if (elements.speedDisplay) elements.speedDisplay.textContent = `${newSpeed.toFixed(1)}x`;
         });
     }
@@ -276,6 +335,11 @@ function setupEventListeners() {
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
+    // Scroll to top on page load/reload
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
     // Initialize DOM elements
     elements = {
         goalTime: document.getElementById('goalTime'),
@@ -295,6 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
         progressPercentDisplay: document.getElementById('progressPercentDisplay'),
         speedSlider: document.getElementById('speedSlider'),
         speedDisplay: document.getElementById('speedDisplay'),
+        speedInput: document.getElementById('speedInput'),
         speedDownBtn: document.getElementById('speedDownBtn'),
         speedUpBtn: document.getElementById('speedUpBtn'),
         cumulativeTimes200m: document.getElementById('cumulativeTimes200m'),
@@ -344,6 +409,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (elements.speedDisplay) {
         elements.speedDisplay.textContent = `${animationState.speed.toFixed(1)}x`;
     }
+    if (elements.speedInput) {
+        elements.speedInput.value = animationState.speed.toFixed(1);
+    }
+    if (elements.speedSlider) {
+        elements.speedSlider.value = animationState.speed;
+    }
     
     // Initialize Lucide icons after everything is loaded
     if (typeof lucide !== 'undefined') {
@@ -355,6 +426,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Hide loading screen after everything is initialized
     hideLoadingScreen();
+});
+
+// Also scroll to top on window load (handles cases where page loads with scroll position)
+window.addEventListener('load', function() {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
 });
 
 function updateLoadingRunnerColor() {

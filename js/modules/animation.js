@@ -51,7 +51,7 @@ function updateAnimationSpeed(newSpeed) {
         animationState.startTime = now - (animationState.currentTime / newSpeed * 1000);
     }
     animationState.speed = newSpeed;
-    if (elements.speedInput) elements.speedInput.value = newSpeed;
+    if (elements.speedInput) elements.speedInput.value = newSpeed.toFixed(1);
     if (elements.speedSlider) elements.speedSlider.value = newSpeed;
     if (elements.speedDisplay) elements.speedDisplay.textContent = `${newSpeed.toFixed(1)}x`;
 }
