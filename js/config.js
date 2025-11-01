@@ -32,8 +32,8 @@ const STANDARD_DISTANCES = {
     42195: 42195             // Marathon
 };
 
-// Lane distances (precomputed)
-const LANE_DISTANCES = {
+// Lane distances (precomputed) - Outdoor track (400m)
+const LANE_DISTANCES_OUTDOOR = {
     1: 400.0,
     2: 407.04,
     3: 414.08,
@@ -43,6 +43,21 @@ const LANE_DISTANCES = {
     7: 442.24,
     8: 449.28
 };
+
+// Lane distances - Indoor track (200m)
+const LANE_DISTANCES_INDOOR = {
+    1: 200.0,
+    2: 203.52,
+    3: 207.04,
+    4: 210.56,
+    5: 214.08,
+    6: 217.60,
+    7: 221.12,
+    8: 224.64
+};
+
+// For backward compatibility
+const LANE_DISTANCES = LANE_DISTANCES_OUTDOOR;
 
 // Translations
 const translations = {

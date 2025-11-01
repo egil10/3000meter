@@ -68,8 +68,9 @@ function animationLoop() {
     const totalDistance = currentPaceData?.totalDistance || TRACK_CONSTANTS.TOTAL_DISTANCE;
     const distance = progress * totalDistance;
     animationState.currentDistance = distance;
-    animationState.currentLap = Math.floor(distance / LANE_DISTANCES[currentLane]) + 1;
-    animationState.lapProgress = 1 - ((distance % LANE_DISTANCES[currentLane]) / LANE_DISTANCES[currentLane]);
+    const laneDistance = getLaneDistance(currentLane);
+    animationState.currentLap = Math.floor(distance / laneDistance) + 1;
+    animationState.lapProgress = 1 - ((distance % laneDistance) / laneDistance);
     
     updateRunnerPosition(animationState.lapProgress, distance);
     updateAnimationUI();

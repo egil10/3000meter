@@ -24,13 +24,53 @@ function pathAtInset(inset) {
     return roundedRectPath(inner.x - inset, inner.y - inset, inner.w + inset*2, inner.h + inset*2, inner.r + inset);
 }
 
+function getTrackColors() {
+    const colors = {
+        outdoor: {
+            track: '#dc2626', // Red tarmac
+            apron: '#e5e7eb', // Light gray
+            field: '#bfe7a7', // Green field
+            bg: getComputedStyle(document.documentElement).getPropertyValue('--track-bg').trim() || '#f8fafc',
+            laneBoundary: '#ffffff', // White lane lines
+            markers: '#ffffff'
+        },
+        indoor: {
+            track: '#6366f1', // Purple/blue tarmac
+            apron: '#c7d2fe', // Light purple/blue
+            field: '#e0e7ff', // Very light purple
+            bg: getComputedStyle(document.documentElement).getPropertyValue('--track-bg').trim() || '#f8fafc',
+            laneBoundary: '#ffffff',
+            markers: '#ffffff'
+        },
+        road: {
+            track: '#1f2937', // Black tarmac
+            apron: '#374151', // Dark gray
+            field: '#6b7280', // Medium gray
+            bg: getComputedStyle(document.documentElement).getPropertyValue('--track-bg').trim() || '#f8fafc',
+            laneBoundary: '#ffffff', // White lane lines
+            centerLine: '#ffd700', // Yellow center line
+            markers: '#ffffff'
+        }
+    };
+    return colors[trackType] || colors.outdoor;
+}
+
 function drawTrack() {
     const svg = document.querySelector('svg');
     const stadiumG = document.getElementById('stadium');
     const trackBaseG = document.getElementById('track-base');
     const boundariesG = document.getElementById('lane-boundaries');
     const infieldG = document.getElementById('infield');
+    const roadCenterLineG = document.getElementById('road-center-line');
     
+    // Clear existing elements
+    stadiumG.innerHTML = '';
+    trackBaseG.innerHTML = '';
+    boundariesG.innerHTML = '';
+    infieldG.innerHTML = '';
+    roadCenterLineG.innerHTML = '';
+    
+    const colors = getTrackColors();
     const LANE_W = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-w'));
     
     // Build stadium apron
@@ -58,29 +98,32 @@ function drawTrack() {
     const viewBoxH = h + padding * 2;
     svg.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxW} ${viewBoxH}`);
     
-    // Update background rect to match new viewBox and use CSS variable
+    // Update background rect to match new viewBox
     const bgRect = svg.querySelector('rect');
     if (bgRect) {
         bgRect.setAttribute('x', viewBoxX);
         bgRect.setAttribute('y', viewBoxY);
         bgRect.setAttribute('width', viewBoxW);
         bgRect.setAttribute('height', viewBoxH);
-        // Get CSS variable value for track background
-        const trackBg = getComputedStyle(document.documentElement).getPropertyValue('--track-bg').trim();
-        bgRect.setAttribute('fill', trackBg || '#f8fafc');
+        bgRect.setAttribute('fill', colors.bg);
     }
     
-    const apron = document.createElementNS('http://www.w3.org/2000/svg','path');
-    apron.setAttribute('d', roundedRectPath(x, y, w, h, r));
-    apron.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue('--apron'));
-    stadiumG.appendChild(apron);
+    // Stadium apron (only for track types, not road)
+    if (trackType !== 'road') {
+        const apron = document.createElementNS('http://www.w3.org/2000/svg','path');
+        apron.setAttribute('d', roundedRectPath(x, y, w, h, r));
+        apron.setAttribute('fill', colors.apron);
+        stadiumG.appendChild(apron);
+    }
     
-    // Infield fill
-    const infieldInset = -LANE_W/2 - 1;
-    const infieldPath = document.createElementNS('http://www.w3.org/2000/svg','path');
-    infieldPath.setAttribute('d', pathAtInset(infieldInset));
-    infieldPath.setAttribute('fill', getComputedStyle(document.documentElement).getPropertyValue('--field'));
-    infieldG.appendChild(infieldPath);
+    // Infield fill (only for track types, not road)
+    if (trackType !== 'road') {
+        const infieldInset = -LANE_W/2 - 1;
+        const infieldPath = document.createElementNS('http://www.w3.org/2000/svg','path');
+        infieldPath.setAttribute('d', pathAtInset(infieldInset));
+        infieldPath.setAttribute('fill', colors.field);
+        infieldG.appendChild(infieldPath);
+    }
     
     // Track lanes
     for(let i=1; i<=8; i++) {
@@ -88,7 +131,7 @@ function drawTrack() {
         const p = document.createElementNS('http://www.w3.org/2000/svg','path');
         p.setAttribute('d', pathAtInset(inset));
         p.setAttribute('fill','none');
-        p.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--track'));
+        p.setAttribute('stroke', colors.track);
         p.setAttribute('stroke-width', LANE_W);
         p.setAttribute('opacity', 0.98);
         p.setAttribute('id', `lane-${i}`);
@@ -96,15 +139,29 @@ function drawTrack() {
         lanePaths[i] = p;
     }
     
-    // White lane boundaries
+    // Lane boundaries (white lines between lanes)
     for(let j=0; j<=8; j++) {
         const inset = (j - 0.5) * LANE_W;
         const b = document.createElementNS('http://www.w3.org/2000/svg','path');
         b.setAttribute('d', pathAtInset(inset));
         b.setAttribute('fill','none');
-        b.setAttribute('stroke','#ffffff');
+        b.setAttribute('stroke', colors.laneBoundary);
         b.setAttribute('stroke-width','3');
         boundariesG.appendChild(b);
+    }
+    
+    // Road center line (yellow dashed line for road type)
+    if (trackType === 'road') {
+        const centerInset = 3.5 * LANE_W; // Center of track (between lanes 4 and 5)
+        const centerPath = pathAtInset(centerInset);
+        const centerLine = document.createElementNS('http://www.w3.org/2000/svg','path');
+        centerLine.setAttribute('d', centerPath);
+        centerLine.setAttribute('fill','none');
+        centerLine.setAttribute('stroke', colors.centerLine);
+        centerLine.setAttribute('stroke-width','4');
+        centerLine.setAttribute('stroke-dasharray','20 20');
+        centerLine.setAttribute('opacity','0.9');
+        roadCenterLineG.appendChild(centerLine);
     }
     
     lane1 = lanePaths[1];
@@ -112,6 +169,14 @@ function drawTrack() {
 }
 
 function drawMarkers() {
+    const colors = getTrackColors();
+    
+    // Clear existing markers
+    const markersG = document.getElementById('markers');
+    const numbersG = document.getElementById('lane-numbers');
+    if (markersG) markersG.innerHTML = '';
+    if (numbersG) numbersG.innerHTML = '';
+    
     function drawPerpMarker(s, label, opts={}) {
         const sNorm = (s % totalLen + totalLen) % totalLen;
         const p0 = lane1.getPointAtLength(sNorm);
@@ -139,7 +204,7 @@ function drawMarkers() {
             line.setAttribute('y1', y1 + oy);
             line.setAttribute('x2', x2 + ox);
             line.setAttribute('y2', y2 + oy);
-            line.setAttribute('stroke', '#ffffff');
+            line.setAttribute('stroke', colors.markers);
             line.setAttribute('stroke-width', 3);
             markersG.appendChild(line);
         };
@@ -158,7 +223,7 @@ function drawMarkers() {
                 t.textContent = i;
                 t.setAttribute('x', cx);
                 t.setAttribute('y', cy);
-                t.setAttribute('fill', '#ffffff');
+                t.setAttribute('fill', colors.markers);
                 t.setAttribute('font-size', '14');
                 t.setAttribute('font-weight', '800');
                 t.setAttribute('text-anchor', 'middle');
@@ -180,8 +245,8 @@ function drawMarkers() {
 function addRoundIndicators() {
     const roundIndicatorsG = document.getElementById('round-indicators');
     roundIndicatorsG.replaceChildren();
-    const laneDistance = LANE_DISTANCES[currentLane];
-    const totalLaps = Math.ceil(TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance);
+    const laneDistance = getLaneDistance(currentLane);
+    const totalLaps = trackType === 'road' ? 1 : Math.ceil(TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance);
     
     for(let lap = 1; lap <= totalLaps; lap++) {
         const distance = lap * laneDistance;
@@ -205,18 +270,32 @@ function updateTrackBackground() {
     const svg = document.querySelector('svg');
     if (!svg) return;
     
+    const colors = getTrackColors();
+    
     const bgRect = svg.querySelector('rect');
     if (bgRect) {
-        // Get CSS variable value for track background
-        const trackBg = getComputedStyle(document.documentElement).getPropertyValue('--track-bg').trim();
-        bgRect.setAttribute('fill', trackBg || '#f8fafc');
+        bgRect.setAttribute('fill', colors.bg);
     }
     
-    // Also update apron color
-    const apron = document.querySelector('#stadium path');
-    if (apron) {
-        const apronColor = getComputedStyle(document.documentElement).getPropertyValue('--apron').trim();
-        apron.setAttribute('fill', apronColor || '#e5e7eb');
+    // Also update apron color for track types
+    if (trackType !== 'road') {
+        const apron = document.querySelector('#stadium path');
+        if (apron) {
+            apron.setAttribute('fill', colors.apron);
+        }
+        
+        const infield = document.querySelector('#infield path');
+        if (infield) {
+            infield.setAttribute('fill', colors.field);
+        }
+    }
+    
+    // Update track lane colors
+    for(let i=1; i<=8; i++) {
+        const lane = document.getElementById(`lane-${i}`);
+        if (lane) {
+            lane.setAttribute('stroke', colors.track);
+        }
     }
 }
 

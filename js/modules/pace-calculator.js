@@ -36,8 +36,8 @@ function calculatePace() {
         return;
     }
     
-    const laneDistance = LANE_DISTANCES[currentLane];
-    const totalLaps = Math.ceil(TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance);
+    const laneDistance = getLaneDistance(currentLane);
+    const totalLaps = trackType === 'road' ? 1 : Math.ceil(TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance);
     const basePacePerKm = (totalMs / 1000) / (TRACK_CONSTANTS.TOTAL_DISTANCE / 1000);
     
     const data = generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm);

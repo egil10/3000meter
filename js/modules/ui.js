@@ -84,14 +84,174 @@ function removeSplitDistance(distance) {
     }
 }
 
-function updateSplitPresetButtons() {
-    document.querySelectorAll('.split-preset-btn').forEach(btn => {
-        const distance = parseInt(btn.dataset.distance);
-        if (activeSplitDistances.includes(distance)) {
+function getTimeSuggestions(distance) {
+    // Generate 10 common times for the given distance
+    const suggestions = [];
+    
+    // Different pace ranges for different distances
+    if (distance <= 200) {
+        // Sprint distances - very fast times
+        const baseTimes = [10, 12, 15, 18, 20, 22, 25, 28, 30, 35];
+        baseTimes.forEach(sec => {
+            const minutes = Math.floor(sec / 60);
+            const seconds = sec % 60;
+            suggestions.push(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        });
+    } else if (distance <= 400) {
+        // 400m - 30s to 90s
+        const baseTimes = [30, 35, 40, 45, 50, 55, 60, 70, 80, 90];
+        baseTimes.forEach(sec => {
+            const minutes = Math.floor(sec / 60);
+            const seconds = sec % 60;
+            suggestions.push(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        });
+    } else if (distance <= 800) {
+        // 800m - 1:30 to 4:00
+        const times = [90, 110, 130, 150, 170, 190, 210, 230, 250, 240];
+        times.forEach(sec => {
+            const minutes = Math.floor(sec / 60);
+            const seconds = sec % 60;
+            suggestions.push(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        });
+    } else if (distance <= 1500) {
+        // 1500m - 3:30 to 8:00
+        const times = [210, 240, 270, 300, 330, 360, 390, 420, 450, 480];
+        times.forEach(sec => {
+            const minutes = Math.floor(sec / 60);
+            const seconds = sec % 60;
+            suggestions.push(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        });
+    } else if (distance <= 3000) {
+        // 3000m - 8:00 to 15:00
+        const times = [480, 540, 600, 660, 720, 780, 840, 900, 960, 900];
+        times.forEach(sec => {
+            const minutes = Math.floor(sec / 60);
+            const seconds = sec % 60;
+            suggestions.push(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        });
+    } else if (distance <= 5000) {
+        // 5000m - 12:00 to 25:00
+        const times = [720, 840, 960, 1080, 1200, 1320, 1440, 1560, 1680, 1500];
+        times.forEach(sec => {
+            const minutes = Math.floor(sec / 60);
+            const seconds = sec % 60;
+            suggestions.push(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        });
+    } else if (distance <= 10000) {
+        // 10000m - 25:00 to 50:00
+        const times = [1500, 1800, 2100, 2400, 2700, 3000, 3300, 3600, 3900, 4200];
+        times.forEach(sec => {
+            const minutes = Math.floor(sec / 60);
+            const seconds = sec % 60;
+            suggestions.push(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        });
+    } else if (distance <= 21097) {
+        // Half Marathon - 1:00:00 to 2:30:00
+        const times = [3600, 4200, 4800, 5400, 6000, 6600, 7200, 7800, 8400, 9000];
+        times.forEach(sec => {
+            const hours = Math.floor(sec / 3600);
+            const minutes = Math.floor((sec % 3600) / 60);
+            const seconds = sec % 60;
+            suggestions.push(`${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+        });
+    } else {
+        // Marathon - 2:00:00 to 5:00:00
+        const times = [7200, 8400, 9600, 10800, 12000, 13200, 14400, 15600, 16800, 18000];
+        times.forEach(sec => {
+            const hours = Math.floor(sec / 3600);
+            const minutes = Math.floor((sec % 3600) / 60);
+            const seconds = sec % 60;
+            suggestions.push(`${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+        });
+    }
+    
+    return suggestions.slice(0, 10); // Return max 10 suggestions
+}
+
+function updateTimeSuggestions() {
+    const suggestionsContainer = document.getElementById('timeSuggestions');
+    if (!suggestionsContainer) return;
+    
+    const distance = currentDistance || 3000;
+    const suggestions = getTimeSuggestions(distance);
+    
+    suggestionsContainer.innerHTML = '';
+    suggestions.forEach(time => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'time-suggestion-btn';
+        btn.textContent = time;
+        btn.addEventListener('click', () => {
+            elements.goalTime.value = time;
+            updatePaceFromTime();
+            // Highlight active button
+            suggestionsContainer.querySelectorAll('.time-suggestion-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+        });
+        suggestionsContainer.appendChild(btn);
+    });
+}
+
+function getSplitSuggestions(distance) {
+    // Generate split suggestions based on distance
+    const suggestions = [];
+    
+    if (distance <= 200) {
+        suggestions.push(50, 100);
+    } else if (distance <= 400) {
+        suggestions.push(50, 100, 200);
+    } else if (distance <= 800) {
+        suggestions.push(100, 200, 400);
+    } else if (distance <= 1500) {
+        suggestions.push(100, 200, 300, 400, 800);
+    } else if (distance <= 3000) {
+        suggestions.push(200, 400, 600, 800, 1000, 1500);
+    } else if (distance <= 5000) {
+        suggestions.push(400, 800, 1000, 1600, 2000);
+    } else if (distance <= 10000) {
+        suggestions.push(400, 800, 1000, 1600, 2000, 5000);
+    } else {
+        suggestions.push(1000, 2000, 5000, 10000);
+    }
+    
+    return suggestions;
+}
+
+function updateSplitPresetButtons() {
+    const presetContainer = document.querySelector('.split-preset-buttons');
+    if (!presetContainer) return;
+    
+    // Clear existing buttons
+    presetContainer.innerHTML = '';
+    
+    // Get suggestions based on current distance
+    const suggestions = getSplitSuggestions(currentDistance || 3000);
+    
+    // Create buttons for each suggestion
+    suggestions.forEach(dist => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'split-preset-btn';
+        btn.dataset.distance = dist;
+        
+        // Format label
+        if (dist >= 1000) {
+            btn.textContent = `${(dist / 1000).toFixed(1)}km`;
         } else {
-            btn.classList.remove('active');
+            btn.textContent = `${dist}m`;
         }
+        
+        // Check if active
+        if (activeSplitDistances.includes(dist)) {
+            btn.classList.add('active');
+        }
+        
+        // Add click handler
+        btn.addEventListener('click', () => {
+            addCustomSplit(dist);
+        });
+        
+        presetContainer.appendChild(btn);
     });
 }
 
@@ -222,8 +382,12 @@ function updatePaceChart(data) {
         case 'split-pace':
             chartConfig = createSplitPaceChart(data, labels, isDark);
             break;
-        default:
-            chartConfig = createPaceChart(data, labels, isDark);
+        case 'acceleration':
+            chartConfig = createAccelerationChart(data, labels, isDark);
+            break;
+        case 'effort':
+            chartConfig = createEffortChart(data, labels, isDark);
+            break;
     }
     
     paceChart = new Chart(ctx, chartConfig);
@@ -365,6 +529,89 @@ function createSplitPaceChart(data, labels, isDark) {
             }]
         },
         options: options
+    };
+}
+
+function createAccelerationChart(data, labels, isDark) {
+    // Calculate acceleration (change in pace)
+    const accelerationValues = [];
+    for (let i = 0; i < data.paceData.length; i++) {
+        if (i === 0) {
+            accelerationValues.push(0);
+        } else {
+            // Negative acceleration = getting faster (pace decreasing)
+            // Positive acceleration = getting slower (pace increasing)
+            const paceChange = data.paceData[i].pace - data.paceData[i - 1].pace;
+            accelerationValues.push(-paceChange); // Negative because lower pace = faster
+        }
+    }
+    
+    return {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Acceleration (pace change/sec)',
+                data: accelerationValues,
+                borderColor: '#8b5cf6',
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 2,
+                pointHoverRadius: 5
+            }]
+        },
+        options: getBaseChartOptions(isDark, 'Acceleration (s/km)', (value) => {
+            return value.toFixed(2);
+        }, (context) => {
+            const accel = context.parsed.y;
+            const direction = accel > 0 ? 'Faster' : accel < 0 ? 'Slower' : 'Even';
+            return `${direction}: ${Math.abs(accel).toFixed(2)} s/km change`;
+        })
+    };
+}
+
+function createEffortChart(data, labels, isDark) {
+    // Calculate effort level based on pace relative to average pace
+    const paces = data.paceData.map(d => d.pace);
+    const avgPace = paces.reduce((a, b) => a + b, 0) / paces.length;
+    
+    const effortValues = data.paceData.map(d => {
+        // Effort level: 0-100%
+        // Lower pace = higher effort
+        const effort = ((avgPace / d.pace) * 100);
+        return Math.max(0, Math.min(100, effort));
+    });
+    
+    return {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Effort Level (%)',
+                data: effortValues,
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 2,
+                pointHoverRadius: 5
+            }]
+        },
+        options: getBaseChartOptions(isDark, 'Effort Level (%)', (value) => {
+            return Math.round(value) + '%';
+        }, (context) => {
+            const effort = context.parsed.y;
+            let level = 'Moderate';
+            if (effort > 80) level = 'Very High';
+            else if (effort > 60) level = 'High';
+            else if (effort > 40) level = 'Moderate';
+            else if (effort > 20) level = 'Low';
+            else level = 'Very Low';
+            return `Effort: ${Math.round(effort)}% (${level})`;
+        })
     };
 }
 
@@ -582,6 +829,15 @@ function initializeDistanceButtons() {
     });
 }
 
+function handleDistanceChange() {
+    // Same as handleDistanceInput but called on blur/change event
+    handleDistanceInput();
+    // Recalculate if pace data exists
+    if (currentPaceData) {
+        calculatePace();
+    }
+}
+
 function handleDistanceInput() {
     const distance = parseFloat(elements.raceDistance.value);
     if (distance && distance >= 100) {
@@ -597,19 +853,19 @@ function handleDistanceInput() {
             }
         });
         
-        // Update pace if time is set, or update time if pace is set
-        if (elements.goalTime && elements.goalTime.value) {
-            updatePaceFromTime();
-        } else if (elements.targetPace && elements.targetPace.value) {
-            updateTimeFromPace();
+        // Update time suggestions and split buttons when distance changes
+        updateTimeSuggestions();
+        updateSplitPresetButtons();
+        
+        // If road track type, we need to recalculate since lap distance depends on total distance
+        if (trackType === 'road') {
+            // Update round indicators and recalculate if pace data exists
+            addRoundIndicators();
+            if (currentPaceData) {
+                calculatePace();
+            }
         }
-    }
-}
-
-function handleDistanceChange() {
-    const distance = parseFloat(elements.raceDistance.value);
-    if (distance && distance >= 100) {
-        currentDistance = distance;
+        
         // Update pace if time is set, or update time if pace is set
         if (elements.goalTime && elements.goalTime.value) {
             updatePaceFromTime();
@@ -727,6 +983,266 @@ function handleShare() {
     } else {
         copyToClipboard(url.toString());
     }
+}
+
+function downloadStrategyHTML() {
+    if (!currentPaceData) {
+        showToast(isNorwegian ? 'Beregn først et løp' : 'Calculate a race first');
+        return;
+    }
+    
+    // Format distance
+    let distanceDisplay = `${currentDistance}m`;
+    if (currentDistance >= 1000) {
+        distanceDisplay = `${(currentDistance / 1000).toFixed(2)}km`;
+    }
+    
+    // Format strategy name
+    const strategyNames = {
+        'even': 'Even Pace',
+        'neg10p': 'Negative Split (-10%)',
+        'neg5p': 'Negative Split (-5%)',
+        'neg3p': 'Negative Split (-3%)',
+        'pos3p': 'Positive Split (+3%)',
+        'pos5p': 'Positive Split (+5%)',
+        'pos10p': 'Positive Split (+10%)',
+        'kick600': 'Kick Last 600m',
+        'progressive': 'Progressive',
+        'degressive': 'Degressive',
+        'custom': 'Custom Strategy'
+    };
+    const strategyDisplay = strategyNames[currentStrategy] || currentStrategy;
+    
+    // Get all splits
+    const allSplits = [];
+    currentPaceData.splits.forEach(splitGroup => {
+        if (activeSplitDistances.includes(splitGroup.distance)) {
+            allSplits.push(splitGroup);
+        }
+    });
+    
+    // Build HTML
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Strategy - ${distanceDisplay} - ${elements.goalTime.value}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #171717;
+            background: #ffffff;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .header .subtitle {
+            font-size: 1.125rem;
+            opacity: 0.95;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .info-card {
+            background: #f9fafb;
+            padding: 1.25rem;
+            border-radius: 8px;
+            border-left: 4px solid #dc2626;
+        }
+        .info-card-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #737373;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .info-card-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #171717;
+            font-family: 'Courier New', monospace;
+        }
+        .splits-section {
+            margin-top: 2.5rem;
+        }
+        .splits-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #171717;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #e5e5e5;
+        }
+        .split-table {
+            margin-bottom: 2rem;
+        }
+        .split-table-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        th {
+            background: #f9fafb;
+            padding: 0.875rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #737373;
+            border-bottom: 2px solid #e5e5e5;
+        }
+        td {
+            padding: 0.875rem;
+            border-bottom: 1px solid #f3f4f6;
+            font-family: 'Courier New', monospace;
+        }
+        tr:hover {
+            background: #f9fafb;
+        }
+        .distance-cell {
+            font-weight: 600;
+            color: #171717;
+        }
+        .time-cell {
+            text-align: right;
+            color: #dc2626;
+            font-weight: 600;
+        }
+        .footer-note {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e5e5e5;
+            text-align: center;
+            color: #737373;
+            font-size: 0.875rem;
+        }
+        .footer-note a {
+            color: #dc2626;
+            text-decoration: none;
+        }
+        @media print {
+            body {
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Race Strategy</h1>
+            <div class="subtitle">${distanceDisplay} · Target Time: ${elements.goalTime.value}</div>
+        </div>
+        <div class="content">
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-card-label">Distance</div>
+                    <div class="info-card-value">${distanceDisplay}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">Target Time</div>
+                    <div class="info-card-value">${elements.goalTime.value}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">Target Pace</div>
+                    <div class="info-card-value">${elements.targetPace ? elements.targetPace.value : 'N/A'}/km</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card-label">Strategy</div>
+                    <div class="info-card-value">${strategyDisplay}</div>
+                </div>
+            </div>
+            
+            ${allSplits.length > 0 ? `
+            <div class="splits-section">
+                <h2>Splits</h2>
+                ${allSplits.map(splitGroup => `
+                <div class="split-table">
+                    <div class="split-table-title">${splitGroup.distance}m Intervals</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Distance</th>
+                                <th style="text-align: right;">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${splitGroup.splits.map(split => `
+                            <tr>
+                                <td class="distance-cell">${split.distance}m</td>
+                                <td class="time-cell">${formatTimeFromMsSimple(split.expectedTime)}</td>
+                            </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                `).join('')}
+            </div>
+            ` : ''}
+            
+            <div class="footer-note">
+                Generated by <a href="https://3000meter.com">3000METER.com</a> - Professional pace calculator for track athletes
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+    
+    // Create blob and download
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `race-strategy-${distanceDisplay.replace(/[^a-zA-Z0-9]/g, '-')}-${elements.goalTime.value.replace(/:/g, '-')}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast(isNorwegian ? 'Strategi lastet ned!' : 'Strategy downloaded!');
 }
 
 function handleExport() {

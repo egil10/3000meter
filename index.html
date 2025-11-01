@@ -112,6 +112,7 @@
           <div class="input-group-simple">
             <label>Target Time</label>
             <input type="text" id="goalTime" value="15:00" placeholder="15:00" maxlength="7" class="time-input-simple">
+            <div class="time-suggestions" id="timeSuggestions"></div>
             <div class="adjust-buttons">
               <button type="button" onclick="adjustTime(-10)">−10s</button>
               <button type="button" onclick="adjustTime(-5)">−5s</button>
@@ -187,16 +188,37 @@
       <!-- Track Visualization -->
       <section class="track-section">
         <div class="track-container">
+          <!-- Track Type Selector -->
+          <div class="track-type-selector">
+            <label>Track Type:</label>
+            <div class="track-type-buttons">
+              <button type="button" class="track-type-btn active" data-track-type="outdoor">
+                <i data-lucide="sun"></i> Outdoor
+              </button>
+              <button type="button" class="track-type-btn" data-track-type="indoor">
+                <i data-lucide="building"></i> Indoor
+              </button>
+              <button type="button" class="track-type-btn" data-track-type="road">
+                <i data-lucide="map-pin"></i> Road
+              </button>
+            </div>
+          </div>
+          
           <svg viewBox="0 0 1600 1000" role="img" aria-label="Track">
             <defs>
               <filter id="runner-glow">
                 <feGaussianBlur stdDeviation="4" result="blur"/>
                 <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
               </filter>
+              <pattern id="road-dash" x="0" y="0" width="40" height="6" patternUnits="userSpaceOnUse">
+                <rect x="0" y="0" width="20" height="3" fill="#ffd700"/>
+                <rect x="0" y="3" width="20" height="3" fill="none"/>
+              </pattern>
             </defs>
             <rect x="0" y="0" width="1600" height="1000" fill="var(--track-bg)"/>
             <g id="stadium"></g>
             <g id="infield"></g>
+            <g id="road-center-line"></g>
             <g id="track-base"></g>
             <g id="lane-boundaries" stroke="#ffffff" stroke-width="3"></g>
             <g id="markers"></g>
@@ -230,7 +252,7 @@
             <button id="speedDownBtn" class="speed-btn" title="Decrease speed">
               <i data-lucide="minus"></i>
             </button>
-            <input type="range" id="speedSlider" min="0.25" max="5" step="0.25" value="1" class="speed-slider">
+            <input type="range" id="speedSlider" min="0.1" max="10" step="0.1" value="1" class="speed-slider">
             <button id="speedUpBtn" class="speed-btn" title="Increase speed">
               <i data-lucide="plus"></i>
             </button>
@@ -273,12 +295,7 @@
             <div class="splits-presets">
               <label>Add Split:</label>
               <div class="split-preset-buttons">
-                <button type="button" class="split-preset-btn" data-distance="100">100m</button>
-                <button type="button" class="split-preset-btn" data-distance="200">200m</button>
-                <button type="button" class="split-preset-btn" data-distance="400">400m</button>
-                <button type="button" class="split-preset-btn" data-distance="800">800m</button>
-                <button type="button" class="split-preset-btn" data-distance="1000">1000m</button>
-                <button type="button" class="split-preset-btn" data-distance="1600">1600m</button>
+                <!-- Split buttons will be dynamically generated based on distance -->
               </div>
             </div>
             <div class="splits-custom">
@@ -308,6 +325,12 @@
             <button class="chart-type-btn" data-chart-type="split-pace">
               <i data-lucide="activity"></i> Split Pace
             </button>
+            <button class="chart-type-btn" data-chart-type="acceleration">
+              <i data-lucide="trending-up"></i> Acceleration
+            </button>
+            <button class="chart-type-btn" data-chart-type="effort">
+              <i data-lucide="target"></i> Effort Level
+            </button>
           </div>
           
           <div class="chart-container">
@@ -317,12 +340,20 @@
       </section>
     </main>
 
-    <!-- Minimal Footer -->
+    <!-- Footer -->
     <footer class="footer">
-      <a href="https://3000meter.com/" class="footer-title" onclick="window.location.replace('https://3000meter.com/'); return false;">3000METER.com</a>
-      <a href="https://github.com/egil10/3000meter" target="_blank" rel="noopener noreferrer">
-        <i data-lucide="github"></i> GitHub
-      </a>
+      <div class="footer-content">
+        <a href="https://3000meter.com/" class="footer-title" onclick="window.location.replace('https://3000meter.com/'); return false;">3000METER.com</a>
+        <p class="footer-description">Professional pace calculator for track athletes. Plan your perfect race strategy with advanced pacing options and detailed visualizations.</p>
+        <div class="footer-links">
+          <button id="downloadStrategyBtn" class="download-strategy-btn">
+            <i data-lucide="download"></i> Download Strategy
+          </button>
+          <a href="https://github.com/egil10/3000meter" target="_blank" rel="noopener noreferrer">
+            <i data-lucide="github"></i> GitHub
+          </a>
+        </div>
+      </div>
     </footer>
   </div>
 

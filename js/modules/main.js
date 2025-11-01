@@ -175,6 +175,10 @@ function setupEventListeners() {
     // Action buttons
     elements.calculateBtn.addEventListener('click', handleCalculateButtonClick);
     
+    if (elements.downloadStrategyBtn) {
+        elements.downloadStrategyBtn.addEventListener('click', downloadStrategyHTML);
+    }
+    
     if (elements.themeToggle) {
         elements.themeToggle.addEventListener('click', toggleTheme);
     }
@@ -188,6 +192,31 @@ function setupEventListeners() {
             });
         });
     }
+    
+    // Track type buttons
+    document.querySelectorAll('.track-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const type = btn.dataset.trackType;
+            if (type) {
+                trackType = type;
+                document.querySelectorAll('.track-type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // Redraw track with new type
+                drawTrack();
+                drawMarkers();
+                addRoundIndicators();
+                // Recalculate pace if data exists
+                if (currentPaceData) {
+                    calculatePace();
+                } else {
+                    // Update runner position if animation is active
+                    if (animationState.currentDistance > 0) {
+                        updateRunnerPosition(animationState.lapProgress, animationState.currentDistance);
+                    }
+                }
+            }
+        });
+    });
     
     // Chart type buttons
     document.querySelectorAll('.chart-type-btn').forEach(btn => {
@@ -279,7 +308,8 @@ document.addEventListener('DOMContentLoaded', function() {
         startPace: document.getElementById('startPace'),
         endPace: document.getElementById('endPace'),
         splitEditorList: document.getElementById('splitEditorList'),
-        addSplitBtn: document.getElementById('addSplitBtn')
+        addSplitBtn: document.getElementById('addSplitBtn'),
+        downloadStrategyBtn: document.getElementById('downloadStrategyBtn')
     };
     
     initializeDistanceButtons();
@@ -291,6 +321,19 @@ document.addEventListener('DOMContentLoaded', function() {
     updateI18n();
     loadThemePreference();
     loadSplitDistances(); // Load saved split distances
+    
+    // Initialize track type button states
+    document.querySelectorAll('.track-type-btn').forEach(btn => {
+        if (btn.dataset.trackType === trackType) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Initialize time suggestions and split buttons
+    updateTimeSuggestions();
+    updateSplitPresetButtons();
     
     // Initialize pace field from time
     if (elements.targetPace && elements.goalTime) {

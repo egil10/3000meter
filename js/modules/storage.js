@@ -22,7 +22,8 @@ function loadFromLocalStorage() {
             if (data.strategy) currentStrategy = data.strategy;
             if (data.isNorwegian !== undefined) isNorwegian = data.isNorwegian;
             if (data.distance) currentDistance = data.distance;
-            if (data.isDarkMode !== undefined) isDarkMode = data.isDarkMode;
+            // Don't load dark mode preference - always start with light theme
+            // if (data.isDarkMode !== undefined) isDarkMode = data.isDarkMode;
         } catch (e) {
             console.error('Error loading from localStorage:', e);
         }
