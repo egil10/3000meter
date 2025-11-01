@@ -1,36 +1,78 @@
 # 3000METER.com
 
-<div align="center">
+**Live Website:** [https://3000meter.com/](https://3000meter.com/)
 
-![3000METER.com](https://img.shields.io/badge/3000METER.com-Professional%20Track%20Running%20Pace%20Calculator-red?style=for-the-badge&logo=heart&logoColor=white)
-
-**Professional pace calculator for track athletes. Plan your perfect 3000m race with lane-aware splits, pacing strategies, and live track animation.**
-
-[![Website](https://img.shields.io/badge/Website-3000METER.com-red?style=flat-square&logo=globe)](https://3000meter.com)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
-[![Language](https://img.shields.io/badge/Language-JavaScript-yellow?style=flat-square&logo=javascript)](https://javascript.com)
-[![Platform](https://img.shields.io/badge/Platform-Web-blue?style=flat-square&logo=html5)](https://html5.org)
-
-</div>
+Professional pace calculator for track athletes. Plan your perfect race with lane-aware splits, pacing strategies, and live track animation.
 
 ---
 
-## 🏃‍♂️ Overview
+## Overview
 
-3000METER.com is a professional-grade web application designed specifically for track athletes and coaches. It provides comprehensive 3K race planning with advanced pacing strategies, real-time track visualization, and detailed split analysis.
+3000METER.com is a professional-grade web application designed specifically for track athletes and coaches. It provides comprehensive race planning with advanced pacing strategies, real-time track visualization, and detailed split analysis.
 
-### Key Features
-
-- **🎯 Lane-Aware Calculations**: Precise pace calculations accounting for lane differences
-- **📊 Multiple Pacing Strategies**: Even, negative split, positive split, and custom strategies
-- **🎬 Live Track Animation**: Real-time runner visualization on an 8-lane track
-- **⏱️ Comprehensive Splits**: 200m, 400m, and 1000m interval calculations
-- **📱 Responsive Design**: Works seamlessly on desktop, tablet, and mobile
-- **🌍 International Support**: English and Norwegian language support
+The application supports any race distance (from 100m to marathon) with precise lane-aware calculations, multiple pacing strategies, and an interactive track visualization showing your progress in real-time.
 
 ---
 
-## 🚀 Getting Started
+## Features
+
+### Core Functionality
+
+**Lane-Aware Calculations**
+- Precise pace calculations accounting for lane differences
+- Supports all 8 lanes with accurate distance measurements
+- Automatic lap calculation based on lane selection
+
+**Multiple Pacing Strategies**
+- Even: Consistent pace throughout the race
+- Negative Split (-5%): Start slower, finish faster
+- Positive Split (+5%): Start faster, finish slower
+- Progressive: Gradually get faster throughout the race
+- Degressive: Gradually get slower throughout the race
+- Custom: Define your own pace strategy with custom splits
+
+**Live Track Visualization**
+- Realistic 8-lane oval track with proper markings
+- Animated runner showing current position
+- Visual lap indicators showing progress
+- Real-time progress updates
+
+**Comprehensive Split Analysis**
+- 200m interval splits
+- 400m lap splits
+- 1000m kilometer markers (for longer races)
+- Real-time split updates during animation
+
+**Flexible Distance Selection**
+- Direct input for any distance
+- Quick preset buttons for common distances:
+  - Olympic distances: 100m, 200m, 400m, 800m, 1500m, 3000m, 5000m, 10000m
+  - British distances: 1 Mile, 2 Miles, 3 Miles, 5 Miles, 10 Miles, Marathon
+  - Other common distances: 1km, 2km, 5km, 10km, Half Marathon
+
+**Pace Visualization**
+- Interactive charts showing pace throughout the race
+- Chart.js integration for smooth data visualization
+- Dark mode support
+
+**Dark Mode**
+- Full dark mode support with smooth transitions
+- Automatic theme preference saving
+- Consistent theming across all UI elements
+
+**Language Support**
+- Norwegian (default)
+- English
+- Automatic language detection
+
+**Progressive Web App**
+- Offline support via Service Worker
+- Installable as native app
+- Fast loading and optimized performance
+
+---
+
+## Getting Started
 
 ### Quick Start
 
@@ -51,201 +93,206 @@
    # Or simply open index.html in your browser
    ```
 
-3. **Start planning your race!**
+3. **Start planning your race**
    - Visit `http://localhost:8000` in your browser
-   - Enter your target time (e.g., `15:30`)
+   - Enter your target time (e.g., `15:00`)
+   - Select your race distance
    - Choose your pacing strategy
    - Click "Calculate" to see your personalized plan
 
 ### Live Demo
 
-🌐 **Visit the live application**: [3000METER.com](https://3000meter.com)
+Visit the live application: [https://3000meter.com/](https://3000meter.com/)
 
 ---
 
-## 🎯 How It Works
+## How to Use
 
-### Race Setup
+### Basic Usage
 
-1. **Target Time**: Enter your desired finish time in `mm:ss` format
-2. **Pacing Strategy**: Choose from multiple strategies:
-   - **Even**: Consistent pace throughout
-   - **-5%**: Negative split (start slower, finish faster)
-   - **+5%**: Positive split (start faster, finish slower)
-   - **Kick 600m**: Even pace until 2400m, then accelerate
-3. **Calculate**: Generate your personalized race plan
+1. **Enter Race Distance**
+   - Type directly in the distance input field (in meters)
+   - Or click a preset button for common distances
 
-### Track Visualization
+2. **Enter Target Time**
+   - Enter your desired finish time in `mm:ss` format (e.g., `15:30`)
+   - Use the adjustment buttons (-10s, -5s, +5s, +10s) for quick changes
 
-- **8-Lane Track**: Realistic oval track with proper lane markings
-- **Animated Runner**: Blue dot showing your current position
-- **Lap Indicators**: Visual markers for each lap completion
-- **Progress Bar**: Real-time progress through the race
+3. **Select Pacing Strategy**
+   - Choose from available strategies:
+     - **Jevnt** (Even): Consistent pace throughout
+     - **-5%**: Negative split - start slower, finish faster
+     - **+5%**: Positive split - start faster, finish slower
+     - **Progresiv**: Gradually get faster
+     - **Custom**: Advanced custom strategy with split editor
 
-### Split Analysis
+4. **Calculate**
+   - Click the "Beregn" (Calculate) button
+   - View your splits, pace chart, and track visualization
 
-- **200m Intervals**: Detailed splits every 200 meters
-- **400m Intervals**: Standard lap splits
-- **1000m Intervals**: Kilometer markers
-- **Real-time Updates**: Splits update as the animation progresses
+### Advanced Features
+
+**Progressive/Degressive Strategies**
+- Select progression type: Linear, Exponential, or Sigmoid
+- Adjust pace change per 400m (negative = faster, positive = slower)
+
+**Custom Strategy**
+- Define start and end pace
+- Or use the split editor to add custom splits at specific distances
+- Each split can have its own target pace
+
+**Track Animation**
+- Click play to start the animation
+- Watch your runner progress around the track
+- Monitor real-time stats: lap, distance, pace, and progress
+- Click reset to restart the animation
+
+**Keyboard Shortcuts**
+- Space: Play/pause animation
+- R: Reset animation
+- +/-: Adjust time (Shift for larger increments)
+
+**View Results**
+- Switch between "Deltider" (Splits) and "Graf" (Chart) tabs
+- Splits tab shows 200m and 400m interval tables
+- Chart tab shows interactive pace visualization
 
 ---
 
-## 🛠️ Technical Architecture
-
-### Frontend Stack
-
-```javascript
-// Core Technologies
-- HTML5          // Semantic markup and structure
-- CSS3           // Modern styling with CSS Grid and Flexbox
-- Vanilla JS     // No frameworks - pure JavaScript for performance
-- SVG            // Scalable vector graphics for track visualization
-- Canvas API     // Smooth animations and real-time updates
-```
-
-### Key Components
-
-#### 1. Track Visualization Engine
-```javascript
-// Track geometry calculations
-const TRACK_CONSTANTS = {
-    LANE_WIDTH: 1.22,           // Standard lane width
-    STRAIGHT_LENGTH: 84.39,     // Straight section length
-    CURVE_RADIUS_LANE1: 36.5,   // Lane 1 curve radius
-    TOTAL_DISTANCE: 3000,       // Race distance
-    LAPS: 7.5                   // Total laps for 3000m
-};
-
-// Lane-specific distances
-const LANE_DISTANCES = {
-    1: 400.0,    // Lane 1: 400m per lap
-    2: 407.04,   // Lane 2: 407.04m per lap
-    3: 414.08,   // ... and so on
-    // Each lane adds 7.04m per lap
-};
-```
-
-#### 2. Pace Calculation Engine
-```javascript
-// Core pace calculation function
-function calculateExpectedTime(distance, basePacePerKm, strategy) {
-    // Apply pacing strategy multipliers
-    let paceMultiplier = 1.0;
-    
-    switch(strategy) {
-        case 'even':     // Consistent pace
-            paceMultiplier = 1.0;
-            break;
-        case 'neg5p':    // Negative split
-            // Calculate progressive speed increase
-            break;
-        case 'kick600':  // Final 600m acceleration
-            // Even pace until 2400m, then accelerate
-            break;
-    }
-    
-    return (distance / 1000) * basePacePerKm * paceMultiplier * 1000;
-}
-```
-
-#### 3. Animation System
-```javascript
-// Real-time animation loop
-function animationLoop() {
-    const now = Date.now();
-    const elapsed = ((now - animationState.startTime) / 1000) * animationState.speed;
-    
-    // Update runner position
-    animationState.currentTime = Math.min(elapsed, animationState.totalTime / 1000);
-    const progress = animationState.currentTime / (animationState.totalTime / 1000);
-    const distance = progress * TRACK_CONSTANTS.TOTAL_DISTANCE;
-    
-    // Update UI and continue animation
-    updateRunnerPosition(animationState.lapProgress, distance);
-    updateAnimationUI();
-    
-    if (progress < 1) {
-        animationState.animationId = requestAnimationFrame(animationLoop);
-    }
-}
-```
-
-### File Structure
+## Project Structure
 
 ```
 3000meter/
-├── index.html              # Main application entry point
+├── index.html              # Main HTML file
 ├── css/
-│   └── styles.css          # Modern CSS with CSS Grid and custom properties
+│   └── styles.css          # All stylesheets
 ├── js/
-│   └── script.js           # Core application logic (1,175 lines)
+│   ├── config.js           # Constants and translations
+│   ├── utils.js            # Utility functions
+│   └── modules/
+│       ├── state.js        # State management
+│       ├── track.js        # Track visualization
+│       ├── pace-calculator.js  # Pace calculations
+│       ├── animation.js    # Animation functions
+│       ├── ui.js           # UI updates
+│       ├── storage.js      # Storage and URL handling
+│       └── main.js         # Initialization
 ├── assets/
-│   └── stadium.svg         # Track visualization assets
+│   └── stadium.svg         # Stadium SVG icon
 ├── pwa/
-│   ├── manifest.json       # Progressive Web App configuration
-│   └── sw.js              # Service Worker for offline support
-└── README.md              # This file
+│   ├── manifest.json       # PWA manifest
+│   └── sw.js               # Service Worker
+├── docs/                   # Documentation
+│   ├── FEATURES.md         # Feature documentation
+│   ├── ARCHITECTURE.md     # Architecture documentation
+│   ├── DEVELOPMENT.md     # Development guide
+│   ├── API.md              # API documentation
+│   └── BLOAT_ANALYSIS.md   # Repository analysis
+├── README.md               # Project overview
+└── CNAME                   # GitHub Pages configuration
 ```
 
 ---
 
-## 🎨 Design Philosophy
+## Documentation
 
-### Modern & Professional
-- **Clean Interface**: Minimalist design focusing on functionality
-- **Professional Typography**: Inter font family for readability
-- **Consistent Color Scheme**: Red (#dc2626) primary with neutral grays
-- **Responsive Grid**: CSS Grid and Flexbox for perfect layouts
+Comprehensive documentation is available in the `docs/` folder:
 
-### User Experience
-- **Intuitive Controls**: Clear, accessible interface elements
-- **Real-time Feedback**: Immediate visual response to user actions
-- **Smooth Animations**: 60fps animations using requestAnimationFrame
-- **Keyboard Shortcuts**: Space (play/pause), R (reset), S (speed toggle)
-
-### Accessibility
-- **Semantic HTML**: Proper heading hierarchy and ARIA labels
-- **Keyboard Navigation**: Full keyboard support
-- **Screen Reader Friendly**: Descriptive alt text and labels
-- **High Contrast**: Clear visual hierarchy and contrast ratios
+- **[FEATURES.md](docs/FEATURES.md)** - Detailed feature documentation and usage guide
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Technical architecture and project structure
+- **[DEVELOPMENT.md](docs/DEVELOPMENT.md)** - Development guide and best practices
+- **[API.md](docs/API.md)** - JavaScript API documentation
+- **[BLOAT_ANALYSIS.md](docs/BLOAT_ANALYSIS.md)** - Repository size and quality analysis
 
 ---
 
-## 📊 Pacing Strategies
+## Technical Architecture
+
+### Frontend Stack
+
+- **HTML5**: Semantic markup and structure
+- **CSS3**: Modern styling with CSS Grid and Flexbox, CSS Custom Properties
+- **Vanilla JavaScript**: No frameworks - pure JavaScript for optimal performance
+- **SVG**: Scalable vector graphics for track visualization
+- **Chart.js**: Interactive data visualization
+
+### Code Organization
+
+The codebase is organized into modular JavaScript files:
+
+- **config.js**: Constants, track geometry, translations
+- **utils.js**: Utility functions (time parsing, formatting, toast notifications)
+- **modules/state.js**: Global state management
+- **modules/track.js**: Track drawing and visualization functions
+- **modules/pace-calculator.js**: Core pace calculation logic
+- **modules/animation.js**: Animation control and loop functions
+- **modules/ui.js**: UI update and rendering functions
+- **modules/storage.js**: LocalStorage and URL parameter handling
+- **modules/main.js**: Application initialization and event listeners
+
+### Key Technologies
+
+**Track Visualization**
+- SVG-based 8-lane track rendering
+- Real-time runner position calculation
+- Lane-aware distance calculations
+
+**Pace Calculation**
+- Multiple strategy implementations
+- Custom split support
+- Progressive/degressive algorithms with multiple curve types
+
+**Animation System**
+- requestAnimationFrame for smooth 60fps animations
+- Configurable playback speed
+- Real-time UI updates
+
+---
+
+## Pacing Strategies
 
 ### Even Pace
-- **Description**: Maintain consistent speed throughout the race
-- **Best For**: Beginners and time trials
-- **Formula**: `pace = total_time / total_distance`
+Maintain consistent speed throughout the race. Best for beginners and time trials.
+
+**Formula:** `pace = total_time / total_distance`
 
 ### Negative Split (-5%)
-- **Description**: Start 5% slower, finish 5% faster
-- **Best For**: Experienced runners with strong finishes
-- **Formula**: `pace_adjustment = -5% * (distance / total_distance)`
+Start 5% slower, finish 5% faster. Best for experienced runners with strong finishes.
+
+**Formula:** `pace_adjustment = -5% * (distance / total_distance)`
 
 ### Positive Split (+5%)
-- **Description**: Start 5% faster, finish 5% slower
-- **Best For**: Tactical racing and championship events
-- **Formula**: `pace_adjustment = +5% * (distance / total_distance)`
+Start 5% faster, finish 5% slower. Best for tactical racing and championship events.
 
-### Kick 600m
-- **Description**: Even pace until 2400m, then accelerate for final 600m
-- **Best For**: Competitive racing with strong finishes
-- **Formula**: 
-  - 0-2400m: Even pace
-  - 2400-3000m: Gradual 5% acceleration
+**Formula:** `pace_adjustment = +5% * (distance / total_distance)`
+
+### Progressive
+Gradually get faster throughout the race. Supports three progression types:
+- **Linear**: Constant acceleration rate
+- **Exponential**: Accelerating acceleration
+- **Sigmoid**: Smooth S-curve acceleration
+
+### Degressive
+Gradually get slower throughout the race. Supports the same progression types as Progressive.
+
+### Custom
+Define your own pace strategy:
+- Set start and end pace with interpolation
+- Or use the split editor to define custom splits at specific distances
+- Each segment can have its own target pace
 
 ---
 
-## 🔧 Development
+## Development
 
 ### Prerequisites
+
 - Modern web browser (Chrome, Firefox, Safari, Edge)
 - No build tools required - pure HTML/CSS/JS
 - Optional: Python or Node.js for local development server
 
 ### Local Development
+
 ```bash
 # Clone the repository
 git clone https://github.com/egil10/3000meter.git
@@ -262,72 +309,38 @@ open http://localhost:8000
 ```
 
 ### Code Style
-- **JavaScript**: ES6+ with modern syntax
-- **CSS**: BEM methodology with CSS custom properties
+
+- **JavaScript**: ES6+ with modern syntax, modular organization
+- **CSS**: CSS Custom Properties for theming, minimal and modern
 - **HTML**: Semantic markup with accessibility in mind
 - **Comments**: Comprehensive inline documentation
 
 ### Performance Optimizations
-- **SVG Optimization**: Efficient track rendering
-- **Animation Throttling**: 60fps animation loop
-- **Memory Management**: Proper cleanup of animation frames
-- **Lazy Loading**: On-demand resource loading
+
+- SVG optimization for efficient track rendering
+- Animation throttling for smooth 60fps animation loop
+- Memory management with proper cleanup of animation frames
+- Modular code organization for better loading and caching
 
 ---
 
-## 🌍 Internationalization
+## Browser Support
 
-### Supported Languages
-- **English**: Primary language
-- **Norwegian**: Full translation support
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
 
-### Translation System
-```javascript
-const translations = {
-    en: {
-        title: "3000METER.com",
-        race_setup: "Race Setup",
-        target_time: "Target Time (mm:ss)",
-        calculate: "Calculate",
-        // ... more translations
-    },
-    no: {
-        title: "3000METER.com",
-        race_setup: "Løps Oppsett",
-        target_time: "Måltid (mm:ss)",
-        calculate: "Beregn",
-        // ... more translations
-    }
-};
-```
-
-### Language Detection
-- Automatic detection based on browser language
-- Manual toggle with language button
-- Persistent language preference in localStorage
+The application uses modern web standards and should work in any modern browser. Older browsers may have limited functionality.
 
 ---
 
-## 📱 Progressive Web App
+## Contributing
 
-### PWA Features
-- **Offline Support**: Service Worker for offline functionality
-- **App Manifest**: Installable as native app
-- **Responsive Design**: Works on all screen sizes
-- **Fast Loading**: Optimized for performance
+We welcome contributions from the running community. Here's how you can help:
 
-### Installation
-1. Visit [3000METER.com](https://3000meter.com)
-2. Click "Install" in browser menu
-3. Access from home screen like a native app
+### Development Process
 
----
-
-## 🤝 Contributing
-
-We welcome contributions from the running community! Here's how you can help:
-
-### Development
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/amazing-feature`
 3. Commit your changes: `git commit -m 'Add amazing feature'`
@@ -335,13 +348,16 @@ We welcome contributions from the running community! Here's how you can help:
 5. Open a Pull Request
 
 ### Areas for Contribution
-- **New Pacing Strategies**: Add innovative race strategies
-- **UI/UX Improvements**: Enhance the user interface
-- **Performance Optimization**: Improve loading and animation speed
-- **Accessibility**: Enhance accessibility features
-- **Documentation**: Improve code documentation and guides
+
+- New pacing strategies
+- UI/UX improvements
+- Performance optimization
+- Accessibility enhancements
+- Documentation improvements
+- Bug fixes
 
 ### Code of Conduct
+
 - Be respectful and inclusive
 - Focus on the running community
 - Maintain professional standards
@@ -349,60 +365,58 @@ We welcome contributions from the running community! Here's how you can help:
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ### MIT License Summary
-- ✅ Commercial use allowed
-- ✅ Modification allowed
-- ✅ Distribution allowed
-- ✅ Private use allowed
-- ❌ No liability
-- ❌ No warranty
+
+- Commercial use allowed
+- Modification allowed
+- Distribution allowed
+- Private use allowed
+- No liability
+- No warranty
+
+See the [LICENSE](LICENSE) file for full details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 ### Running Community
-- **Athletes**: For feedback and testing
-- **Coaches**: For strategic insights
-- **Track Officials**: For technical accuracy
+- Athletes for feedback and testing
+- Coaches for strategic insights
+- Track officials for technical accuracy
 
 ### Open Source
-- **Font Awesome**: Professional icons
-- **Inter Font**: Modern typography
-- **Chart.js**: Data visualization (if used)
+- Font Awesome for professional icons
+- Space Grotesk Font for modern typography
+- Chart.js for data visualization
 
 ### Development
-- **Modern Web Standards**: HTML5, CSS3, ES6+
-- **Browser APIs**: SVG, Canvas, Service Workers
-- **Performance Tools**: Chrome DevTools, Lighthouse
+- Modern Web Standards: HTML5, CSS3, ES6+
+- Browser APIs: SVG, Canvas, Service Workers
+- Performance Tools: Chrome DevTools, Lighthouse
 
 ---
 
-## 📞 Support & Contact
+## Support & Contact
 
 ### Get Help
+
 - **Website**: [3000METER.com](https://3000meter.com)
 - **GitHub Issues**: [Report bugs or request features](https://github.com/egil10/3000meter/issues)
-- **Email**: Contact through GitHub profile
 
 ### Community
+
 - **GitHub Discussions**: Share ideas and get help
 - **Running Forums**: Spread the word to fellow runners
-- **Social Media**: Follow for updates and tips
 
 ---
 
-<div align="center">
-
-**Built with ❤️ for the running community**
+**Built with dedication for the running community**
 
 *Professional pace calculator for track athletes*
 
-[![Website](https://img.shields.io/badge/Visit-3000METER.com-red?style=for-the-badge&logo=globe)](https://3000meter.com)
-[![GitHub](https://img.shields.io/badge/Star-GitHub-yellow?style=for-the-badge&logo=github)](https://github.com/egil10/3000meter)
-
-</div>
+Visit [3000METER.com](https://3000meter.com) | [GitHub Repository](https://github.com/egil10/3000meter)

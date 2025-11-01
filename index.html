@@ -1,380 +1,222 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="no">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>3000METER.com - Professional Track Running Pace Calculator</title>
+  <title>3000METER.com - Tempo Kalkulator</title>
   
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- Styles and manifest -->
   <link rel="stylesheet" href="css/styles.css">
   <link rel="manifest" href="pwa/manifest.json">
   <link rel="icon" type="image/svg+xml" href="assets/stadium.svg">
   
-  <!-- Meta tags -->
   <meta name="theme-color" content="#dc2626">
-  <meta name="description" content="3000METER.com - Professional track running pace calculator with animated runner visualization">
-  <meta property="og:title" content="3000METER.com – Professional Track Running Pace Calculator">
-  <meta property="og:description" content="Plan perfect 3K pacing with lane-aware splits, surges, and live track animation.">
-  <meta property="og:type" content="website">
-  <meta property="og:image" content="assets/stadium.svg">
-  <meta name="twitter:card" content="summary_large_image">
+  <meta name="description" content="3000METER.com - Profesjonell tempo kalkulator for baneløpere">
   
-  <!-- Chart.js for pace visualization -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <div class="app-container">
-    <!-- Header -->
+    <!-- Minimal Header -->
     <header class="header">
-      <div class="header-content">
-        <h1 class="header-title" onclick="window.location.href='https://3000meter.com/'" style="cursor: pointer;">
-          <img src="assets/stadium.svg" alt="Stadium" width="24" height="24">
-          <span data-i18n="title">3000METER.com</span>
-        </h1>
-        <div class="header-controls">
-          <button id="themeToggle" class="theme-btn" title="Toggle dark mode" aria-label="Toggle theme">
-            <i class="fas fa-moon"></i>
-          </button>
-          <button id="languageToggle" class="lang-btn" title="Switch language">
-            <i class="fas fa-globe"></i> EN
-          </button>
-        </div>
-      </div>
+      <h1 class="header-title">3000METER</h1>
+      <button id="themeToggle" class="theme-btn" aria-label="Toggle tema">
+        <i class="fas fa-moon"></i>
+      </button>
     </header>
 
-    <!-- Track Visualization - Main Centerpiece -->
-    <section class="track-section">
-      <div class="track-container">
-        <div class="track-layout">
-          <div class="track-wrap">
-            <svg viewBox="0 0 1600 1000" role="img" aria-label="3000m oval track with eight lanes and animated runner">
-              <defs>
-                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="8" result="blur"/>
-                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-                <filter id="runner-glow" x="-100%" y="-100%" width="300%" height="300%">
-                  <feGaussianBlur stdDeviation="4" result="blur"/>
-                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-              </defs>
-
-              <!-- Background -->
-              <rect x="0" y="0" width="1600" height="1000" fill="#f8fafc"/>
-
-              <!-- Stadium apron (grey ring around the track) -->
-              <g id="stadium"></g>
-
-              <!-- Infield (inside inner boundary) -->
-              <g id="infield"></g>
-
-              <!-- Track base: red lanes as a continuous band -->
-              <g id="track-base" stroke-linecap="round" stroke-linejoin="round"></g>
-
-              <!-- White lane boundary lines (including inner & outer edges) -->
-              <g id="lane-boundaries" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></g>
-
-              <!-- Distance & start lines across all lanes -->
-              <g id="markers"></g>
-
-              <!-- Lane numbers at start line -->
-              <g id="lane-numbers"></g>
-
-              <!-- Runner -->
-              <g id="runner" class="runner-shadow">
-                <circle id="runner-dot" r="12" fill="#007AFF" stroke="#ffffff" stroke-width="4" filter="url(#runner-glow)"/>
-              </g>
-
-              <!-- Round indicators -->
-              <g id="round-indicators"></g>
-            </svg>
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Race Setup - Simplified -->
+      <section class="race-setup">
+        <div class="setup-grid-simple">
+          <!-- Distance -->
+          <div class="input-group-simple">
+            <label>Distanse</label>
+            <div class="distance-input-wrapper">
+              <input type="number" id="raceDistance" value="3000" min="100" step="any" class="distance-input">
+              <span class="unit-label">m</span>
+            </div>
+            <div class="preset-buttons-compact">
+              <button type="button" class="preset-btn-compact" data-distance="800">800m</button>
+              <button type="button" class="preset-btn-compact" data-distance="1500">1500m</button>
+              <button type="button" class="preset-btn-compact active" data-distance="3000">3000m</button>
+              <button type="button" class="preset-btn-compact" data-distance="5000">5000m</button>
+              <button type="button" class="preset-btn-compact" data-distance="10000">10000m</button>
+            </div>
           </div>
 
-          <!-- Track controls panel -->
-          <div class="track-controls-panel">
-            <!-- Target Time Display with Animation Controls -->
-            <div class="target-time-display">
-              <div class="target-time-label" data-i18n="target_time">Target Time</div>
-              <div class="target-time-controls">
-                <div class="animation-controls">
-                  <button id="playPauseBtn" class="anim-btn" title="Play/Pause" aria-label="Play/Pause">
-                    <i class="fas fa-play"></i>
-                  </button>
-                  <button id="resetBtn" class="anim-btn" title="Reset" aria-label="Reset">
-                    <i class="fas fa-undo"></i>
-                  </button>
-                </div>
-                <div class="target-time-value" id="largeTargetTimeDisplay">00:00.00 / 09:30</div>
-              </div>
+          <!-- Time -->
+          <div class="input-group-simple">
+            <label>Måltid</label>
+            <input type="text" id="goalTime" value="15:00" placeholder="15:00" maxlength="7" class="time-input-simple">
+            <div class="adjust-buttons">
+              <button type="button" onclick="adjustTime(-10)">−10s</button>
+              <button type="button" onclick="adjustTime(-5)">−5s</button>
+              <button type="button" onclick="adjustTime(5)">+5s</button>
+              <button type="button" onclick="adjustTime(10)">+10s</button>
             </div>
+          </div>
 
-            <!-- Current Status Grid - 1 row, 4 columns -->
-            <div class="current-status-grid">
-              <div class="status-item">
-                <span class="status-label" data-i18n="lap">Lap</span>
-                <span class="status-value" id="currentLapDisplay">1</span>
-              </div>
-              <div class="status-item">
-                <span class="status-label" data-i18n="distance">Distance</span>
-                <span class="status-value" id="currentDistanceDisplay">0m</span>
-              </div>
-              <div class="status-item">
-                <span class="status-label" data-i18n="progress">Progress</span>
-                <span class="status-value" id="progressPercentDisplay">0%</span>
-              </div>
-              <div class="status-item">
-                <span class="status-label" data-i18n="pace">Pace</span>
-                <span class="status-value" id="currentPaceDisplay">--:--</span>
-              </div>
+          <!-- Strategy -->
+          <div class="input-group-simple">
+            <label>Strategi</label>
+            <div class="strategy-buttons-simple">
+              <button class="strategy-btn-simple active" data-strategy="even">Jevnt</button>
+              <button class="strategy-btn-simple" data-strategy="neg5p">−5%</button>
+              <button class="strategy-btn-simple" data-strategy="pos5p">+5%</button>
+              <button class="strategy-btn-simple" data-strategy="progressive">Progresiv</button>
+              <button class="strategy-btn-simple" data-strategy="custom">Custom</button>
             </div>
+          </div>
 
-            <!-- Speed controls -->
-            <div class="speed-controls">
-              <div class="speed-slider-container">
-                <label for="speedSlider" class="speed-label">Speed</label>
-                <div class="speed-input-group">
-                                  <input type="range" id="speedSlider" min="1" max="10" step="1" value="1" class="speed-slider">
-                <button class="speed-btn" id="speedMinusBtn">-</button>
-                <input type="number" id="speedInput" min="1" max="10" step="1" value="1" class="speed-input" readonly>
-                  <button class="speed-btn" id="speedPlusBtn">+</button>
-                </div>
-              </div>
+          <!-- Calculate Button -->
+          <button id="calculateBtn" class="btn-calculate">Beregn</button>
+        </div>
+
+        <!-- Advanced Options (Collapsible) -->
+        <div id="advancedStrategyOptions" class="advanced-strategy-options" style="display: none;">
+          <div class="strategy-controls">
+            <div class="strategy-control">
+              <label>Progresjonstype</label>
+              <select id="progressionType" class="strategy-select">
+                <option value="linear">Lineær</option>
+                <option value="exponential">Eksponentiell</option>
+                <option value="sigmoid">Sigmoid</option>
+              </select>
             </div>
-
-            <!-- Lap progress bar -->
-            <div class="lap-progress-container">
-              <div class="lap-progress-bar">
-                <div class="lap-progress-fill" id="lapProgressFill"></div>
-              </div>
+            <div class="strategy-control">
+              <label>Tempoendring per 400m (sekunder)</label>
+              <input type="number" id="paceChange" value="-2" step="0.1" class="strategy-input">
+            </div>
+            <div class="strategy-control">
+              <label>Start Tempo</label>
+              <input type="text" id="startPace" value="05:00" placeholder="05:00" class="strategy-input">
+            </div>
+            <div class="strategy-control">
+              <label>Slutt Tempo</label>
+              <input type="text" id="endPace" value="05:00" placeholder="05:00" class="strategy-input">
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- Bottom Section - Contains Race Setup and Cumulative Times -->
-    <section class="bottom-section">
-      <!-- Race Setup Section -->
-      <div class="race-setup-section">
-        <h3 data-i18n="race_setup">Race Setup</h3>
-
-        <div class="input-group">
-          <label for="raceDistance" data-i18n="race_distance">Race Distance</label>
-          <select id="raceDistance" class="distance-select">
-            <option value="800">800m</option>
-            <option value="1500">1500m</option>
-            <option value="3000" selected>3000m</option>
-            <option value="5000">5000m</option>
-            <option value="10000">10000m</option>
-            <option value="custom">Custom Distance</option>
-          </select>
-          <div id="customDistanceGroup" class="input-group" style="display: none; margin-top: 0.5rem;">
-            <input type="number" id="customDistance" placeholder="Distance in meters" min="100" step="100" style="width: 100%;">
-          </div>
+      <!-- Track Visualization -->
+      <section class="track-section">
+        <div class="track-container">
+          <svg viewBox="0 0 1600 1000" role="img" aria-label="Bane">
+            <defs>
+              <filter id="runner-glow">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <rect x="0" y="0" width="1600" height="1000" fill="#f8fafc"/>
+            <g id="stadium"></g>
+            <g id="infield"></g>
+            <g id="track-base"></g>
+            <g id="lane-boundaries" stroke="#ffffff" stroke-width="3"></g>
+            <g id="markers"></g>
+            <g id="lane-numbers"></g>
+            <g id="runner">
+              <circle id="runner-dot" r="12" fill="#007AFF" stroke="#ffffff" stroke-width="4" filter="url(#runner-glow)"/>
+            </g>
+            <g id="round-indicators"></g>
+          </svg>
         </div>
 
-        <div class="input-group">
-          <label for="goalTime" data-i18n="target_time">Target Time (mm:ss)</label>
-          <div class="input-with-buttons">
-            <input type="text" id="goalTime" value="15:00" placeholder="15:00" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
-            <div class="adjustment-buttons">
-              <button type="button" class="adjust-btn" onclick="adjustTime(-10)">-10s</button>
-              <button type="button" class="adjust-btn" onclick="adjustTime(-5)">-5s</button>
-              <button type="button" class="adjust-btn" onclick="adjustTime(5)">+5s</button>
-              <button type="button" class="adjust-btn" onclick="adjustTime(10)">+10s</button>
+        <!-- Simple Controls -->
+        <div class="track-controls-simple">
+          <div class="control-group">
+            <button id="playPauseBtn" class="control-btn">
+              <i class="fas fa-play"></i>
+            </button>
+            <button id="resetBtn" class="control-btn">
+              <i class="fas fa-redo"></i>
+            </button>
+          </div>
+          <div class="status-display">
+            <div class="status-item-simple">
+              <span class="status-label">Runde</span>
+              <span id="currentLapDisplay">1</span>
+            </div>
+            <div class="status-item-simple">
+              <span class="status-label">Distanse</span>
+              <span id="currentDistanceDisplay">0m</span>
+            </div>
+            <div class="status-item-simple">
+              <span class="status-label">Tempo</span>
+              <span id="currentPaceDisplay">--:--</span>
+            </div>
+            <div class="status-item-simple">
+              <span class="status-label">Fremgang</span>
+              <span id="progressPercentDisplay">0%</span>
             </div>
           </div>
-          <div class="input-helper" id="timeHelper"></div>
-        </div>
-
-        <div class="input-group">
-          <label for="targetPace" data-i18n="target_pace">Target Pace (mm:ss/km)</label>
-          <div class="input-with-buttons">
-            <input type="text" id="targetPace" value="05:00" placeholder="05:00" maxlength="7" pattern="^\d{1,2}:\d{2}(\.\d{1,2})?$">
-            <div class="adjustment-buttons">
-              <button type="button" class="adjust-btn" onclick="adjustPace(-5)">-5s</button>
-              <button type="button" class="adjust-btn" onclick="adjustPace(-1)">-1s</button>
-              <button type="button" class="adjust-btn" onclick="adjustPace(1)">+1s</button>
-              <button type="button" class="adjust-btn" onclick="adjustPace(5)">+5s</button>
-            </div>
-          </div>
-          <div class="input-helper" id="paceHelper"></div>
-        </div>
-
-        <div class="input-group">
-          <label data-i18n="pacing_strategy">Pacing Strategy</label>
-          <div class="strategy-buttons">
-            <button class="strategy-btn active" data-strategy="even">
-              <i class="fas fa-equals"></i> <span data-i18n="even">Even</span>
-            </button>
-            <button class="strategy-btn" data-strategy="neg5p">
-              <i class="fas fa-arrow-down"></i> <span data-i18n="neg5p">-5%</span>
-            </button>
-            <button class="strategy-btn" data-strategy="pos5p">
-              <i class="fas fa-arrow-up"></i> <span data-i18n="pos5p">+5%</span>
-            </button>
-            <button class="strategy-btn" data-strategy="kick600">
-              <i class="fas fa-bolt"></i> <span data-i18n="kick600">Kick 600m</span>
-            </button>
+          <div class="time-display">
+            <span id="largeTargetTimeDisplay">00:00.00 / 15:00</span>
           </div>
         </div>
+      </section>
 
-        <div class="action-buttons">
-          <button id="calculateBtn" class="calculate-btn">
-            <i class="fas fa-calculator"></i> <span data-i18n="calculate">Calculate</span>
-          </button>
-          <button id="shareBtn" class="share-btn" title="Share">
-            <i class="fas fa-share-alt"></i>
-          </button>
-          <button id="exportBtn" class="export-btn" title="Export">
-            <i class="fas fa-download"></i>
-          </button>
+      <!-- Results -->
+      <section class="results-section">
+        <div class="results-tabs">
+          <button class="tab-btn active" data-tab="splits">Deltider</button>
+          <button class="tab-btn" data-tab="chart">Graf</button>
         </div>
-      </div>
 
-      <!-- Cumulative Times Panel -->
-      <div class="cumulative-times-panel">
-        <div class="cumulative-times-card">
-          <div class="card-tabs">
-            <button class="tab-btn active" data-tab="splits">
-              <i class="fas fa-list"></i> <span data-i18n="splits">Splits</span>
-            </button>
-            <button class="tab-btn" data-tab="chart">
-              <i class="fas fa-chart-line"></i> <span data-i18n="pace_chart">Pace Chart</span>
-            </button>
-            <button class="tab-btn" data-tab="intervals">
-              <i class="fas fa-stopwatch"></i> <span data-i18n="intervals">Intervals</span>
-            </button>
-          </div>
-          
-          <!-- Splits Tab -->
-          <div id="splitsTab" class="tab-content active">
-            <div id="cumulativeTimesContainer" class="cumulative-times-container">
-              <!-- Left side: 200m intervals table -->
-              <div class="cumulative-times-left">
-                <div class="cumulative-times-table">
-                  <div class="table-header">
-                    <span>200m Intervals</span>
-                    <span>Time</span>
-                  </div>
-                  <div id="cumulativeTimes200m" class="table-body">
-                    <!-- 200m cumulative times will be populated here -->
-                  </div>
-                </div>
+        <div id="splitsTab" class="tab-content active">
+          <div id="cumulativeTimesContainer" class="splits-container">
+            <div class="splits-table">
+              <div class="table-header">
+                <span>200m</span>
+                <span>Tid</span>
               </div>
-              
-              <!-- Right side: 400m and 1000m tables stacked -->
-              <div class="cumulative-times-right">
-                <!-- 400m intervals table -->
-                <div class="cumulative-times-table">
-                  <div class="table-header">
-                    <span>400m Intervals</span>
-                    <span>Time</span>
-                  </div>
-                  <div id="cumulativeTimes400m" class="table-body">
-                    <!-- 400m cumulative times will be populated here -->
-                  </div>
-                </div>
-                
-                <!-- 1000m intervals table -->
-                <div class="cumulative-times-table">
-                  <div class="table-header">
-                    <span>1000m Intervals</span>
-                    <span>Time</span>
-                  </div>
-                  <div id="cumulativeTimes1000m" class="table-body">
-                    <!-- 1000m cumulative times will be populated here -->
-                  </div>
-                </div>
-              </div>
+              <div id="cumulativeTimes200m" class="table-body"></div>
             </div>
-          </div>
-          
-          <!-- Chart Tab -->
-          <div id="chartTab" class="tab-content">
-            <div class="chart-container">
-              <canvas id="paceChart"></canvas>
-            </div>
-          </div>
-          
-          <!-- Intervals Tab -->
-          <div id="intervalsTab" class="tab-content">
-            <div class="interval-planner">
-              <h4 data-i18n="interval_training">Interval Training Planner</h4>
-              <div class="interval-controls">
-                <div class="input-group">
-                  <label for="intervalDistance">Interval Distance (m)</label>
-                  <input type="number" id="intervalDistance" value="400" min="100" step="100">
-                </div>
-                <div class="input-group">
-                  <label for="intervalRest">Rest Time (s)</label>
-                  <input type="number" id="intervalRest" value="60" min="0" step="10">
-                </div>
-                <div class="input-group">
-                  <label for="intervalReps">Repetitions</label>
-                  <input type="number" id="intervalReps" value="8" min="1" max="20">
-                </div>
-                <button id="generateIntervalsBtn" class="btn-secondary">
-                  <i class="fas fa-plus"></i> Generate Intervals
-                </button>
+            <div class="splits-table">
+              <div class="table-header">
+                <span>400m</span>
+                <span>Tid</span>
               </div>
-              <div id="intervalResults" class="interval-results"></div>
+              <div id="cumulativeTimes400m" class="table-body"></div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- Footer -->
+        <div id="chartTab" class="tab-content">
+          <div class="chart-container">
+            <canvas id="paceChart"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Minimal Footer -->
     <footer class="footer">
-      <div class="footer-content">
-        <div class="footer-description">
-          <h3 onclick="window.location.href='https://3000meter.com/'" style="cursor: pointer;">3000METER.com</h3>
-          <p>Professional pace calculator for track athletes. Plan your perfect 3000m race with lane-aware splits, pacing strategies, and live track animation.</p>
-        </div>
-        <div class="footer-links">
-          <div class="footer-links-column">
-            <a href="https://github.com/egil10/3000meter" target="_blank" rel="noopener noreferrer">
-              <i class="fab fa-github"></i> GitHub
-            </a>
-            <a href="https://twitter.com/3000meter" target="_blank" rel="noopener noreferrer">
-              <i class="fab fa-twitter"></i> Twitter
-            </a>
-            <a href="https://www.instagram.com/3000meter" target="_blank" rel="noopener noreferrer">
-              <i class="fab fa-instagram"></i> Instagram
-            </a>
-          </div>
-          <div class="footer-links-column">
-            <a href="https://www.facebook.com/3000meter" target="_blank" rel="noopener noreferrer">
-              <i class="fab fa-facebook"></i> Facebook
-            </a>
-            <a href="https://www.tiktok.com/@3000meter" target="_blank" rel="noopener noreferrer">
-              <i class="fab fa-tiktok"></i> TikTok
-            </a>
-            <a href="https://www.youtube.com/@3000meter" target="_blank" rel="noopener noreferrer">
-              <i class="fab fa-youtube"></i> YouTube
-            </a>
-          </div>
-        </div>
-        <div class="footer-copyright">
-          <p>&copy; 2025 3000METER.com. All rights reserved.</p>
-        </div>
-      </div>
+      <a href="https://github.com/egil10/3000meter" target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-github"></i> GitHub
+      </a>
     </footer>
   </div>
 
-
-
-  <!-- Toast container -->
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
 
   <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/modules/state.js"></script>
+  <script src="js/modules/track.js"></script>
+  <script src="js/modules/pace-calculator.js"></script>
+  <script src="js/modules/animation.js"></script>
+  <script src="js/modules/ui.js"></script>
+  <script src="js/modules/storage.js"></script>
+  <script src="js/modules/main.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js" defer></script>
-  <script src="js/script.js" defer></script>
 </body>
 </html>

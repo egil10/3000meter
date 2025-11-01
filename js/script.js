@@ -2,10 +2,13 @@
 let currentPaceData = null;
 let currentLane = 1;
 let currentStrategy = 'even';
-let isNorwegian = false;
+let isNorwegian = true; // Default to Norwegian
 let currentDistance = 3000; // Current race distance in meters
 let paceChart = null; // Chart.js instance
 let isDarkMode = false;
+let customSplits = []; // Custom split definitions
+let progressionType = 'linear'; // linear, exponential, sigmoid
+let paceChangePer400m = -2; // seconds per 400m for progressive/degressive
 
 // Translations
 const translations = {
@@ -120,13 +123,27 @@ const TRACK_CONSTANTS = {
     LAPS: 7.5
 };
 
-// Standard race distances
+// Standard race distances (for reference, but now using direct input)
 const STANDARD_DISTANCES = {
+    100: 100,
+    200: 200,
+    400: 400,
     800: 800,
     1500: 1500,
     3000: 3000,
     5000: 5000,
-    10000: 10000
+    10000: 10000,
+    // British/Imperial distances in meters
+    1609.344: 1609.344,      // 1 Mile
+    3218.688: 3218.688,      // 2 Miles
+    4828.032: 4828.032,      // 3 Miles
+    8046.72: 8046.72,        // 5 Miles
+    16093.44: 16093.44,      // 10 Miles
+    // Other common distances
+    1000: 1000,              // 1km
+    2000: 2000,              // 2km
+    21097.5: 21097.5,        // Half Marathon
+    42195: 42195             // Marathon
 };
 
 // Lane distances (precomputed)
@@ -162,61 +179,35 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize DOM elements
     elements = {
         goalTime: document.getElementById('goalTime'),
-        targetPace: document.getElementById('targetPace'),
         raceDistance: document.getElementById('raceDistance'),
-        customDistance: document.getElementById('customDistance'),
-        customDistanceGroup: document.getElementById('customDistanceGroup'),
         strategyButtons: document.querySelectorAll('.strategy-btn'),
         calculateBtn: document.getElementById('calculateBtn'),
-        shareBtn: document.getElementById('shareBtn'),
-        exportBtn: document.getElementById('exportBtn'),
         themeToggle: document.getElementById('themeToggle'),
         largeTargetTimeDisplay: document.getElementById('largeTargetTimeDisplay'),
         runnerDot: document.getElementById('runner-dot'),
         roundIndicators: document.getElementById('round-indicators'),
         playPauseBtn: document.getElementById('playPauseBtn'),
         resetBtn: document.getElementById('resetBtn'),
-        speedSlider: document.getElementById('speedSlider'),
-        speedInput: document.getElementById('speedInput'),
-        speedMinusBtn: document.getElementById('speedMinusBtn'),
-        speedPlusBtn: document.getElementById('speedPlusBtn'),
         currentLapDisplay: document.getElementById('currentLapDisplay'),
         currentDistanceDisplay: document.getElementById('currentDistanceDisplay'),
         currentPaceDisplay: document.getElementById('currentPaceDisplay'),
         progressPercentDisplay: document.getElementById('progressPercentDisplay'),
-        lapProgressFill: document.getElementById('lapProgressFill'),
-        languageToggle: document.getElementById('languageToggle'),
-        timeHelper: document.getElementById('timeHelper'),
-        paceHelper: document.getElementById('paceHelper'),
         cumulativeTimes200m: document.getElementById('cumulativeTimes200m'),
         cumulativeTimes400m: document.getElementById('cumulativeTimes400m'),
         cumulativeTimes1000m: document.getElementById('cumulativeTimes1000m'),
         tabButtons: document.querySelectorAll('.tab-btn'),
-        generateIntervalsBtn: document.getElementById('generateIntervalsBtn'),
-        intervalDistance: document.getElementById('intervalDistance'),
-        intervalRest: document.getElementById('intervalRest'),
-        intervalReps: document.getElementById('intervalReps'),
-        intervalResults: document.getElementById('intervalResults'),
-        toast: document.getElementById('toast')
+        toast: document.getElementById('toast'),
+        advancedStrategyOptions: document.getElementById('advancedStrategyOptions'),
+        progressionType: document.getElementById('progressionType'),
+        paceChange: document.getElementById('paceChange'),
+        startPace: document.getElementById('startPace'),
+        endPace: document.getElementById('endPace'),
+        splitEditorList: document.getElementById('splitEditorList'),
+        addSplitBtn: document.getElementById('addSplitBtn')
     };
     
-    // Debug: Check if critical elements are found
-    console.log('Critical elements check:');
-    console.log('goalTime:', elements.goalTime);
-    console.log('playPauseBtn:', elements.playPauseBtn);
-    console.log('resetBtn:', elements.resetBtn);
-    console.log('speedSlider:', elements.speedSlider);
-    console.log('speedInput:', elements.speedInput);
-    console.log('largeTargetTimeDisplay:', elements.largeTargetTimeDisplay);
-    console.log('runnerDot:', elements.runnerDot);
-    
-    // Set initial language based on browser
-    if (navigator.language.startsWith('no')) {
-        isNorwegian = true;
-    }
-    
-    // Load dark mode preference
-    loadThemePreference();
+    // Initialize distance button states
+    initializeDistanceButtons();
     
     initializeApp();
     setupEventListeners();
@@ -227,14 +218,25 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeApp() {
-    console.log('initializeApp called');
     drawTrack();
     drawMarkers();
     addRoundIndicators();
+    initializeDistanceButtons();
     // Ensure animation state is initialized
-    console.log('Calling calculatePace from initializeApp for initial display');
     calculatePace();
-    console.log('initializeApp completed');
+}
+
+function initializeDistanceButtons() {
+    // Set initial active state based on current distance
+    const currentDist = currentDistance || 3000;
+    document.querySelectorAll('.preset-btn-compact').forEach(btn => {
+        const btnDist = parseFloat(btn.dataset.distance);
+        if (Math.abs(btnDist - currentDist) < 0.1) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
 }
 
 function setupEventListeners() {
@@ -245,19 +247,101 @@ function setupEventListeners() {
     });
     
     // Target pace input listeners - only update time/pace conversion, don't trigger calculations
-    elements.targetPace.addEventListener('input', (e) => {
-        validateTimeInput(e);
-        updateTimeFromPace();
-    });
+    if (elements.targetPace) {
+        elements.targetPace.addEventListener('input', (e) => {
+            validateTimeInput(e);
+            updateTimeFromPace();
+        });
+    }
     
-    // Distance selector
+    // Distance input
     if (elements.raceDistance) {
+        elements.raceDistance.addEventListener('input', handleDistanceInput);
         elements.raceDistance.addEventListener('change', handleDistanceChange);
     }
     
-    if (elements.customDistance) {
-        elements.customDistance.addEventListener('input', handleCustomDistanceChange);
+    // Distance preset buttons
+    document.querySelectorAll('.preset-btn-compact').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const distance = parseFloat(btn.dataset.distance);
+            if (distance && distance >= 100) {
+                elements.raceDistance.value = distance;
+                currentDistance = distance;
+                updatePaceFromTime();
+                
+                // Update button states
+                document.querySelectorAll('.preset-btn-compact').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+        });
+    });
+    
+    // Strategy option buttons (new design)
+    document.querySelectorAll('.strategy-btn-simple').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.strategy-btn-simple').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentStrategy = btn.dataset.strategy;
+            
+            // Show/hide advanced options
+            if (currentStrategy === 'progressive' || currentStrategy === 'degressive' || currentStrategy === 'custom') {
+                if (elements.advancedStrategyOptions) {
+                    elements.advancedStrategyOptions.style.display = 'block';
+                }
+                
+                // Set default values
+                if (currentStrategy === 'progressive') {
+                    if (elements.paceChange) elements.paceChange.value = -2;
+                    paceChangePer400m = -2;
+                } else if (currentStrategy === 'degressive') {
+                    if (elements.paceChange) elements.paceChange.value = 2;
+                    paceChangePer400m = 2;
+                }
+            } else {
+                if (elements.advancedStrategyOptions) {
+                    elements.advancedStrategyOptions.style.display = 'none';
+                }
+            }
+            
+            // Update old strategy buttons for compatibility
+            elements.strategyButtons.forEach(b => {
+                b.classList.toggle('active', b.dataset.strategy === currentStrategy);
+            });
+        });
+    });
+    
+    // Advanced strategy controls
+    if (elements.progressionType) {
+        elements.progressionType.addEventListener('change', () => {
+            progressionType = elements.progressionType.value;
+        });
     }
+    
+    if (elements.paceChange) {
+        elements.paceChange.addEventListener('input', () => {
+            paceChangePer400m = parseFloat(elements.paceChange.value) || 0;
+        });
+    }
+    
+    if (elements.startPace) {
+        elements.startPace.addEventListener('input', () => {
+            updatePaceFromTime();
+        });
+    }
+    
+    if (elements.endPace) {
+        elements.endPace.addEventListener('input', () => {
+            updatePaceFromTime();
+        });
+    }
+    
+    // Custom split editor
+    if (elements.addSplitBtn) {
+        elements.addSplitBtn.addEventListener('click', addCustomSplit);
+    }
+    
+    // Initialize custom splits
+    initializeCustomSplits();
     
     // Strategy buttons - only update strategy, don't trigger calculations
     elements.strategyButtons.forEach(btn => {
@@ -265,6 +349,11 @@ function setupEventListeners() {
             elements.strategyButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentStrategy = btn.dataset.strategy;
+            
+            // Update new strategy options for compatibility
+            document.querySelectorAll('.strategy-option').forEach(b => {
+                b.classList.toggle('active', b.dataset.strategy === currentStrategy);
+            });
         });
     });
     
@@ -299,18 +388,13 @@ function setupEventListeners() {
         elements.generateIntervalsBtn.addEventListener('click', generateIntervals);
     }
     
-    // UI toggles
-    elements.languageToggle.addEventListener('click', toggleLanguage);
-    
     // Animation controls
-    elements.playPauseBtn.addEventListener('click', toggleAnimation);
-    elements.resetBtn.addEventListener('click', resetAnimation);
-    
-    // Speed controls
-    elements.speedSlider.addEventListener('input', updateSpeedFromSlider);
-    elements.speedInput.addEventListener('input', updateSpeedFromInput);
-    elements.speedMinusBtn.addEventListener('click', () => adjustSpeed(-1));
-    elements.speedPlusBtn.addEventListener('click', () => adjustSpeed(1));
+    if (elements.playPauseBtn) {
+        elements.playPauseBtn.addEventListener('click', toggleAnimation);
+    }
+    if (elements.resetBtn) {
+        elements.resetBtn.addEventListener('click', resetAnimation);
+    }
     
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboardShortcuts);
@@ -511,8 +595,6 @@ function calculateTrackPosition(lapProgress) {
 
 // Core calculation functions
 function calculatePace() {
-    console.log('calculatePace called');
-    
     if (!validateInputs()) {
         return;
     }
@@ -527,19 +609,13 @@ function calculatePace() {
     const totalLaps = Math.ceil(TRACK_CONSTANTS.TOTAL_DISTANCE / laneDistance);
     const basePacePerKm = (totalMs / 1000) / (TRACK_CONSTANTS.TOTAL_DISTANCE / 1000);
     
-    console.log('Pace calculation:', { timeStr, totalMs, laneDistance, totalLaps, basePacePerKm, distance });
-    
     const data = generatePaceData(totalMs, laneDistance, totalLaps, basePacePerKm);
     currentPaceData = data;
-    
-    console.log('Generated pace data:', data);
     
     updateResults(data);
     updateTrackVisualization(data);
     updateAnimationState(data);
     updatePaceChart(data);
-    
-    console.log('Animation state after update:', animationState);
 }
 
 function handleCalculateButtonClick() {
@@ -698,13 +774,87 @@ function calculateExpectedTime(distance, basePacePerKmParam = null, strategyPara
                 paceMultiplier = 1.0 - (kickProgress * 0.05); // 5% faster at finish
             }
             break;
+        case 'progressive':
+            // Progressive: Get faster throughout the race
+            const progressProg = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            const secondsPer400mProg = paceChangePer400m || -2;
+            let adjustmentProg;
+            
+            if (progressionType === 'linear') {
+                adjustmentProg = (distance / 400) * secondsPer400mProg * progressProg;
+            } else if (progressionType === 'exponential') {
+                adjustmentProg = (distance / 400) * secondsPer400mProg * (Math.pow(progressProg, 2));
+            } else if (progressionType === 'sigmoid') {
+                // Sigmoid curve for smooth acceleration
+                const sigmoid = 1 / (1 + Math.exp(-10 * (progressProg - 0.5)));
+                adjustmentProg = (distance / 400) * secondsPer400mProg * sigmoid;
+            } else {
+                adjustmentProg = (distance / 400) * secondsPer400mProg * progressProg;
+            }
+            
+            const baseTimeProg = (distance / 1000) * basePacePerKm;
+            paceMultiplier = (baseTimeProg + adjustmentProg) / baseTimeProg;
+            break;
+        case 'degressive':
+            // Degressive: Get slower throughout the race
+            const progressDeg = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+            const secondsPer400mDeg = paceChangePer400m || 2;
+            let adjustmentDeg;
+            
+            if (progressionType === 'linear') {
+                adjustmentDeg = (distance / 400) * secondsPer400mDeg * progressDeg;
+            } else if (progressionType === 'exponential') {
+                adjustmentDeg = (distance / 400) * secondsPer400mDeg * (Math.pow(progressDeg, 2));
+            } else if (progressionType === 'sigmoid') {
+                const sigmoid = 1 / (1 + Math.exp(-10 * (progressDeg - 0.5)));
+                adjustmentDeg = (distance / 400) * secondsPer400mDeg * sigmoid;
+            } else {
+                adjustmentDeg = (distance / 400) * secondsPer400mDeg * progressDeg;
+            }
+            
+            const baseTimeDeg = (distance / 1000) * basePacePerKm;
+            paceMultiplier = (baseTimeDeg + adjustmentDeg) / baseTimeDeg;
+            break;
         case 'custom':
-            // Use progressive inputs if available
-            if (elements.startPace.value && elements.endPace.value) {
-                const startPace = parseTimeToMs(elements.startPace.value) / 1000;
-                const endPace = parseTimeToMs(elements.endPace.value) / 1000;
-                const progress6 = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
-                paceMultiplier = startPace + (endPace - startPace) * progress6;
+            // Custom strategy with multiple options
+            if (customSplits.length > 0) {
+                // Use custom splits if defined
+                let prevSplit = { distance: 0, pace: basePacePerKm };
+                for (const split of customSplits) {
+                    if (distance <= split.distance) {
+                        // Interpolate between previous split and current split
+                        const segmentProgress = (distance - prevSplit.distance) / (split.distance - prevSplit.distance);
+                        const interpolatedPace = prevSplit.pace + (split.pace - prevSplit.pace) * segmentProgress;
+                        paceMultiplier = interpolatedPace / basePacePerKm;
+                        break;
+                    }
+                    prevSplit = split;
+                }
+                // If beyond all splits, use last split pace
+                if (distance > customSplits[customSplits.length - 1].distance) {
+                    paceMultiplier = customSplits[customSplits.length - 1].pace / basePacePerKm;
+                }
+            } else if (elements.startPace && elements.endPace && elements.startPace.value && elements.endPace.value) {
+                // Use start/end pace if custom splits not defined
+                const startPaceSec = parseTimeToMs(elements.startPace.value) / 1000;
+                const endPaceSec = parseTimeToMs(elements.endPace.value) / 1000;
+                const progressCustom = distance / TRACK_CONSTANTS.TOTAL_DISTANCE;
+                
+                let interpolatedPace;
+                if (progressionType === 'linear') {
+                    interpolatedPace = startPaceSec + (endPaceSec - startPaceSec) * progressCustom;
+                } else if (progressionType === 'exponential') {
+                    interpolatedPace = startPaceSec + (endPaceSec - startPaceSec) * Math.pow(progressCustom, 2);
+                } else if (progressionType === 'sigmoid') {
+                    const sigmoid = 1 / (1 + Math.exp(-10 * (progressCustom - 0.5)));
+                    interpolatedPace = startPaceSec + (endPaceSec - startPaceSec) * sigmoid;
+                } else {
+                    interpolatedPace = startPaceSec + (endPaceSec - startPaceSec) * progressCustom;
+                }
+                
+                paceMultiplier = interpolatedPace / basePacePerKm;
+            } else {
+                paceMultiplier = 1.0;
             }
             break;
     }
@@ -751,14 +901,11 @@ function updateTrackVisualization(data) {
 
 
 function updateAnimationState(data) {
-    console.log('updateAnimationState called with data:', data);
     animationState.totalTime = data.totalTime;
     animationState.currentTime = 0;
     animationState.currentDistance = 0;
     animationState.currentLap = 1;
     animationState.lapProgress = 0;
-    
-    console.log('Animation state updated:', animationState);
     
     updateRunnerPosition(0, 0);
     updateAnimationUI();
@@ -775,19 +922,13 @@ function toggleAnimation() {
 }
 
 function startAnimation() {
-    console.log('startAnimation called');
-    console.log('currentPaceData:', currentPaceData);
-    console.log('animationState:', animationState);
-    
     if (!currentPaceData) {
-        console.log('No currentPaceData, returning');
         return;
     }
     
     animationState.isPlaying = true;
     animationState.startTime = Date.now() - (animationState.currentTime * 1000);
     elements.playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-    console.log('Starting animation loop');
     animationLoop();
 }
 
@@ -812,15 +953,17 @@ function resetAnimation() {
 }
 
 function updateSpeedFromSlider() {
+    if (!elements.speedSlider) return;
     const newSpeed = parseFloat(elements.speedSlider.value);
     updateAnimationSpeed(newSpeed);
 }
 
 function updateSpeedFromInput() {
+    if (!elements.speedInput) return;
     const newSpeed = parseInt(elements.speedInput.value);
     if (newSpeed >= 1 && newSpeed <= 10) {
         updateAnimationSpeed(newSpeed);
-        elements.speedSlider.value = newSpeed;
+        if (elements.speedSlider) elements.speedSlider.value = newSpeed;
     }
 }
 
@@ -830,13 +973,12 @@ function updateAnimationSpeed(newSpeed) {
         animationState.startTime = now - (animationState.currentTime / newSpeed * 1000);
     }
     animationState.speed = newSpeed;
-    elements.speedInput.value = newSpeed;
-    elements.speedSlider.value = newSpeed;
+    if (elements.speedInput) elements.speedInput.value = newSpeed;
+    if (elements.speedSlider) elements.speedSlider.value = newSpeed;
 }
 
 function animationLoop() {
     if (!animationState.isPlaying) {
-        console.log('Animation not playing, returning');
         return;
     }
     
@@ -857,7 +999,6 @@ function animationLoop() {
     if (progress < 1) {
         animationState.animationId = requestAnimationFrame(animationLoop);
     } else {
-        console.log('Animation completed');
         pauseAnimation();
     }
 }
@@ -912,6 +1053,7 @@ function validateTimeInput(e) {
 }
 
 function updateTimeFromPace() {
+    if (!elements.targetPace) return;
     const paceValue = elements.targetPace.value;
     if (!paceValue || paceValue === '') return;
     
@@ -927,6 +1069,7 @@ function updateTimeFromPace() {
 }
 
 function updatePaceFromTime() {
+    if (!elements.targetPace) return;
     const timeValue = elements.goalTime.value;
     if (!timeValue || timeValue === '') return;
     
@@ -946,10 +1089,11 @@ function adjustTime(seconds) {
     const currentMs = parseTimeToMs(currentValue) || 0;
     const newMs = currentMs + (seconds * 1000);
     elements.goalTime.value = formatTimeFromMsSimple(newMs);
-    updatePaceFromTime();
+    if (elements.targetPace) updatePaceFromTime();
 }
 
 function adjustPace(seconds) {
+    if (!elements.targetPace) return;
     const currentValue = elements.targetPace.value;
     const currentMs = parseTimeToMs(currentValue) || 0;
     const newMs = currentMs + (seconds * 1000);
@@ -1019,7 +1163,9 @@ function updateRunnerPosition(lapProgress, distance) {
     // Update lap progress bar
     const totalDistance = currentPaceData?.totalDistance || TRACK_CONSTANTS.TOTAL_DISTANCE;
     const progressPercent = (distance / totalDistance) * 100;
-    elements.lapProgressFill.style.width = `${Math.max(0, progressPercent)}%`;
+    if (elements.lapProgressFill) {
+        elements.lapProgressFill.style.width = `${Math.max(0, progressPercent)}%`;
+    }
 }
 
 function updateAnimationUI() {
@@ -1062,7 +1208,8 @@ function calculateCurrentPace() {
 }
 
 function adjustSpeed(delta) {
-    const currentSpeed = parseInt(elements.speedInput.value);
+    if (!elements.speedInput) return;
+    const currentSpeed = parseInt(elements.speedInput.value) || 1;
     const newSpeed = Math.max(1, Math.min(10, currentSpeed + delta));
     updateAnimationSpeed(newSpeed);
 }
@@ -1190,14 +1337,9 @@ function loadFromURL() {
         });
     }
     if (distance) {
-        const dist = parseInt(distance);
-        if (STANDARD_DISTANCES[dist]) {
+        const dist = parseFloat(distance);
+        if (dist && dist >= 100) {
             elements.raceDistance.value = dist.toString();
-            currentDistance = dist;
-        } else {
-            elements.raceDistance.value = 'custom';
-            elements.customDistance.value = dist;
-            elements.customDistanceGroup.style.display = 'block';
             currentDistance = dist;
         }
     }
@@ -1235,7 +1377,7 @@ function updateI18n() {
 }
 
 function updateLanguageUI() {
-    elements.languageToggle.innerHTML = `<i class="fas fa-globe"></i> ${isNorwegian ? 'NO' : 'EN'}`;
+    // Language is fixed to Norwegian - no UI update needed
 }
 
 
@@ -1260,9 +1402,11 @@ function handleKeyboardShortcuts(e) {
     } else if (e.key === 's' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         // Toggle speed between 1x and 2x
-        const currentSpeed = parseFloat(elements.speedInput.value);
-        const newSpeed = currentSpeed === 1 ? 2 : 1;
-        updateAnimationSpeed(newSpeed);
+        if (elements.speedInput) {
+            const currentSpeed = parseFloat(elements.speedInput.value) || 1;
+            const newSpeed = currentSpeed === 1 ? 2 : 1;
+            updateAnimationSpeed(newSpeed);
+        }
     }
     
     // Time adjustments
@@ -1309,31 +1453,35 @@ function loadFromLocalStorage() {
 function getCurrentDistance() {
     if (!elements.raceDistance) return 3000;
     
-    if (elements.raceDistance.value === 'custom') {
-        const custom = parseInt(elements.customDistance?.value) || 3000;
-        return custom >= 100 ? custom : 3000;
+    const distance = parseFloat(elements.raceDistance.value);
+    return distance && distance >= 100 ? distance : 3000;
+}
+
+function handleDistanceInput() {
+    const distance = parseFloat(elements.raceDistance.value);
+    if (distance && distance >= 100) {
+        currentDistance = distance;
+        
+        // Update active preset button if matches
+        document.querySelectorAll('.preset-btn-compact').forEach(btn => {
+            const btnDist = parseFloat(btn.dataset.distance);
+            if (Math.abs(btnDist - distance) < 0.1) {
+                document.querySelectorAll('.preset-btn-compact').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            } else if (!document.querySelector('.preset-btn-compact.active')) {
+                // If no exact match, remove all active states
+                btn.classList.remove('active');
+            }
+        });
+        
+        updatePaceFromTime();
     }
-    return STANDARD_DISTANCES[elements.raceDistance.value] || 3000;
 }
 
 function handleDistanceChange() {
-    if (!elements.raceDistance || !elements.customDistanceGroup) return;
-    
-    if (elements.raceDistance.value === 'custom') {
-        elements.customDistanceGroup.style.display = 'block';
-    } else {
-        elements.customDistanceGroup.style.display = 'none';
-        currentDistance = STANDARD_DISTANCES[elements.raceDistance.value] || 3000;
-        updatePaceFromTime(); // Update pace when distance changes
-    }
-}
-
-function handleCustomDistanceChange() {
-    if (!elements.customDistance) return;
-    
-    const custom = parseInt(elements.customDistance.value);
-    if (custom >= 100) {
-        currentDistance = custom;
+    const distance = parseFloat(elements.raceDistance.value);
+    if (distance && distance >= 100) {
+        currentDistance = distance;
         updatePaceFromTime();
     }
 }
@@ -1563,6 +1711,91 @@ function handleShare() {
     }
 }
 
+function initializeCustomSplits() {
+    // Initialize with empty splits array
+    customSplits = [];
+    renderCustomSplits();
+}
+
+function addCustomSplit() {
+    const distance = currentDistance || 3000;
+    const basePace = parseTimeToMs(elements.targetPace?.value || '05:00') / 1000;
+    
+    // Add split at 25%, 50%, 75% of race distance
+    const splitDistances = [
+        Math.floor(distance * 0.25),
+        Math.floor(distance * 0.5),
+        Math.floor(distance * 0.75)
+    ];
+    
+    splitDistances.forEach(dist => {
+        if (!customSplits.find(s => s.distance === dist)) {
+            customSplits.push({
+                distance: dist,
+                pace: basePace
+            });
+        }
+    });
+    
+    // Sort by distance
+    customSplits.sort((a, b) => a.distance - b.distance);
+    renderCustomSplits();
+}
+
+function renderCustomSplits() {
+    if (!elements.splitEditorList) return;
+    
+    elements.splitEditorList.innerHTML = '';
+    
+    // Ensure splits are sorted by distance
+    customSplits.sort((a, b) => a.distance - b.distance);
+    
+    customSplits.forEach((split, index) => {
+        const splitRow = document.createElement('div');
+        splitRow.className = 'split-editor-row';
+        splitRow.innerHTML = `
+            <input type="number" class="split-distance-input" value="${split.distance}" min="100" step="100" data-index="${index}">
+            <input type="text" class="split-pace-input" value="${formatTimeFromMsSimple(split.pace * 1000)}" placeholder="05:00" data-index="${index}">
+            <button type="button" class="btn-remove-split" data-index="${index}">
+                <i class="fas fa-trash"></i>
+            </button>
+        `;
+        
+        elements.splitEditorList.appendChild(splitRow);
+        
+        // Add event listeners
+        const distanceInput = splitRow.querySelector('.split-distance-input');
+        const paceInput = splitRow.querySelector('.split-pace-input');
+        const removeBtn = splitRow.querySelector('.btn-remove-split');
+        
+        distanceInput.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.index);
+            const newDist = parseFloat(e.target.value);
+            if (newDist && newDist >= 100 && idx < customSplits.length) {
+                customSplits[idx].distance = newDist;
+                customSplits.sort((a, b) => a.distance - b.distance);
+                renderCustomSplits();
+            }
+        });
+        
+        paceInput.addEventListener('change', (e) => {
+            const idx = parseInt(e.target.dataset.index);
+            const paceMs = parseTimeToMs(e.target.value);
+            if (paceMs && idx < customSplits.length) {
+                customSplits[idx].pace = paceMs / 1000;
+            }
+        });
+        
+        removeBtn.addEventListener('click', () => {
+            const idx = parseInt(removeBtn.dataset.index);
+            if (idx < customSplits.length) {
+                customSplits.splice(idx, 1);
+                renderCustomSplits();
+            }
+        });
+    });
+}
+
 function handleExport() {
     if (!currentPaceData) {
         showToast(isNorwegian ? 'Beregn først et løp' : 'Calculate a race first');
@@ -1575,7 +1808,9 @@ function handleExport() {
     exportText += `Distance: ${currentDistance}m\n`;
     exportText += `Target Time: ${elements.goalTime.value}\n`;
     exportText += `Strategy: ${currentStrategy}\n`;
-    exportText += `Pace: ${elements.targetPace.value}/km\n\n`;
+    if (elements.targetPace) {
+        exportText += `Pace: ${elements.targetPace.value}/km\n\n`;
+    }
     exportText += `Splits:\n`;
     exportText += `-------\n\n`;
     
@@ -1609,10 +1844,10 @@ function setupServiceWorker() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/pwa/sw.js')
             .then(registration => {
-                console.log('SW registered: ', registration);
+                // Service Worker registered successfully
             })
             .catch(registrationError => {
-                console.log('SW registration failed: ', registrationError);
+                // Service Worker registration failed
             });
     }
 }
