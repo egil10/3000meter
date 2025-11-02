@@ -140,37 +140,26 @@
               <span class="unit-label">m</span>
             </div>
             <div class="preset-buttons-compact">
-              <div class="preset-group">
-                <span class="preset-group-label">Olympic</span>
-                <div class="preset-group-buttons">
-                  <button type="button" class="preset-btn-compact" data-distance="100">100m</button>
-                  <button type="button" class="preset-btn-compact" data-distance="200">200m</button>
-                  <button type="button" class="preset-btn-compact" data-distance="400">400m</button>
-                  <button type="button" class="preset-btn-compact" data-distance="800">800m</button>
-                  <button type="button" class="preset-btn-compact" data-distance="1500">1500m</button>
-                  <button type="button" class="preset-btn-compact active" data-distance="3000">3000m</button>
-                  <button type="button" class="preset-btn-compact" data-distance="5000">5000m</button>
-                  <button type="button" class="preset-btn-compact" data-distance="10000">10000m</button>
-                </div>
-              </div>
-              <div class="preset-group">
-                <span class="preset-group-label">Miles</span>
-                <div class="preset-group-buttons">
-                  <button type="button" class="preset-btn-compact" data-distance="1609">1 Mile</button>
-                  <button type="button" class="preset-btn-compact" data-distance="3218">2 Miles</button>
-                  <button type="button" class="preset-btn-compact" data-distance="4827">3 Miles</button>
-                  <button type="button" class="preset-btn-compact" data-distance="8045">5 Miles</button>
-                  <button type="button" class="preset-btn-compact" data-distance="16090">10 Miles</button>
-                </div>
-              </div>
-              <div class="preset-group">
-                <span class="preset-group-label">Road</span>
-                <div class="preset-group-buttons">
-                  <button type="button" class="preset-btn-compact" data-distance="21097">Half</button>
-                  <button type="button" class="preset-btn-compact" data-distance="42195">Marathon</button>
-                  <button type="button" class="preset-btn-compact" data-distance="100000">Ultra 100k</button>
-                </div>
-              </div>
+              <span class="preset-group-label">Olympic</span>
+              <button type="button" class="preset-btn-compact" data-distance="100">100m</button>
+              <button type="button" class="preset-btn-compact" data-distance="200">200m</button>
+              <button type="button" class="preset-btn-compact" data-distance="400">400m</button>
+              <button type="button" class="preset-btn-compact" data-distance="800">800m</button>
+              <button type="button" class="preset-btn-compact" data-distance="1500">1500m</button>
+              <button type="button" class="preset-btn-compact active" data-distance="3000">3000m</button>
+              <button type="button" class="preset-btn-compact" data-distance="5000">5000m</button>
+              <button type="button" class="preset-btn-compact" data-distance="10000">10000m</button>
+              <span class="preset-group-label">Miles</span>
+              <button type="button" class="preset-btn-compact" data-distance="1609">1 Mile</button>
+              <button type="button" class="preset-btn-compact" data-distance="3218">2 Miles</button>
+              <button type="button" class="preset-btn-compact" data-distance="4827">3 Miles</button>
+              <button type="button" class="preset-btn-compact" data-distance="8045">5 Miles</button>
+              <button type="button" class="preset-btn-compact" data-distance="16090">10 Miles</button>
+              <span class="preset-group-label">Road</span>
+              <button type="button" class="preset-btn-compact" data-distance="21097">Half</button>
+              <button type="button" class="preset-btn-compact" data-distance="42195">Marathon</button>
+              <button type="button" class="preset-btn-compact" data-distance="60000">Ultra 60k</button>
+              <button type="button" class="preset-btn-compact" data-distance="100000">Ultra 100k</button>
             </div>
           </div>
 
@@ -205,40 +194,30 @@
           <!-- Column 3: Strategy -->
           <div class="input-group-new">
             <label>Strategy</label>
-            <div class="strategy-buttons-simple">
-              <button class="strategy-btn-simple active" data-strategy="custom">Custom</button>
-            </div>
-            
-            <!-- Advanced Options -->
-            <div id="advancedStrategyOptions" class="advanced-strategy-options">
-              <div class="strategy-controls">
-                <div class="strategy-control">
-                  <label>Progression Type</label>
-                  <select id="progressionType" class="strategy-select">
-                    <option value="linear">Linear</option>
-                    <option value="exponential">Exponential</option>
-                    <option value="sigmoid">Sigmoid</option>
-                  </select>
-                </div>
-                <div class="strategy-control">
-                  <label>Pace Change per 400m (seconds)</label>
-                  <input type="number" id="paceChange" value="-2" step="0.1" class="strategy-input">
-                </div>
-                <div class="strategy-control">
-                  <label>Start Pace</label>
-                  <input type="text" id="startPace" value="05:00" placeholder="05:00" class="strategy-input">
-                </div>
-                <div class="strategy-control">
-                  <label>End Pace</label>
-                  <input type="text" id="endPace" value="05:00" placeholder="05:00" class="strategy-input">
-                </div>
+            <div class="strategy-controls">
+              <div class="strategy-control">
+                <label>Progression Type</label>
+                <select id="progressionType" class="strategy-select">
+                  <option value="linear">Linear</option>
+                  <option value="exponential">Exponential</option>
+                  <option value="sigmoid">Sigmoid</option>
+                </select>
+              </div>
+              <div class="strategy-control">
+                <label>Pace Change per 400m (seconds)</label>
+                <input type="number" id="paceChange" value="-2" step="0.1" class="strategy-input">
+              </div>
+              <div class="strategy-control">
+                <label>Start Pace</label>
+                <input type="text" id="startPace" value="05:00" placeholder="05:00" class="strategy-input">
+              </div>
+              <div class="strategy-control">
+                <label>End Pace</label>
+                <input type="text" id="endPace" value="05:00" placeholder="05:00" class="strategy-input">
               </div>
             </div>
-          </div>
-
-          <!-- Column 4: Calculate Button -->
-          <div class="calculate-wrapper">
-            <button id="calculateBtn" class="btn-calculate">Calculate</button>
+            
+            <button id="calculateBtn" class="btn-calculate">Run</button>
           </div>
           </div>
         </div>
@@ -386,11 +365,14 @@
                 </div>
               </div>
               <div class="splits-custom">
-                <input type="number" id="customSplitDistance" placeholder="Custom distance (m)" min="50" step="50" class="custom-split-input">
+                <input type="number" id="customSplitDistance" placeholder="Custom distance (m)" min="1" step="1" class="custom-split-input">
                 <button type="button" id="addCustomSplitBtn" class="add-split-btn">
                   <i data-lucide="plus"></i> Add
                 </button>
               </div>
+              <button type="button" id="clearAllSplitsBtn" class="btn-clear-all">
+                <i data-lucide="trash-2"></i> Clear All
+              </button>
             </div>
             
             <!-- Right Side: Split Tables Grid -->

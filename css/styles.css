@@ -354,6 +354,16 @@ body.dark-mode .loading-screen {
     width: 18px;
     height: 18px;
     stroke: currentColor;
+    fill: none;
+}
+
+.theme-icon-light svg,
+.theme-icon-dark svg,
+.theme-icon-system svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
 }
 
 .theme-icon-light,
@@ -602,7 +612,7 @@ body.dark-mode .loading-screen {
 /* New 4-column layout */
 .setup-grid-new {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
     margin-bottom: 1rem;
     align-items: start;
@@ -691,6 +701,17 @@ body.dark-mode .loading-screen {
     box-sizing: border-box;
 }
 
+/* Remove number input spinners */
+.distance-input::-webkit-inner-spin-button,
+.distance-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.distance-input {
+    -moz-appearance: textfield;
+}
+
 .unit-label {
     font-size: 0.8125rem;
     color: var(--text-light);
@@ -698,21 +719,11 @@ body.dark-mode .loading-screen {
 }
 
 .preset-buttons-compact {
-    display: flex;
-    flex-direction: row;
-    gap: 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
     margin-top: 0.5rem;
     width: 100%;
-    overflow: visible;
-    flex-wrap: wrap;
-}
-
-.preset-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-    flex: 1;
-    min-width: 0;
 }
 
 .preset-group-label {
@@ -721,15 +732,9 @@ body.dark-mode .loading-screen {
     color: var(--text-light);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    flex-shrink: 0;
+    grid-column: 1 / -1;
     white-space: nowrap;
-}
-
-.preset-group-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    gap: 0.5rem;
-    width: 100%;
+    margin-bottom: 0.25rem;
 }
 
 .preset-btn-compact {
@@ -821,7 +826,7 @@ body.dark-mode .loading-screen {
 
 .time-suggestions {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.5rem;
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
@@ -936,7 +941,6 @@ body.dark-mode .loading-screen {
 }
 
 .btn-calculate {
-    grid-column: 1 / -1;
     padding: 0.75rem 1.5rem;
     min-height: 44px;
     border: none;
@@ -946,6 +950,8 @@ body.dark-mode .loading-screen {
     font-size: 0.9375rem;
     font-weight: 600;
     cursor: pointer;
+    width: 100%;
+    margin-top: 0.5rem;
     transition: none;
     font-family: var(--font);
     display: flex;
@@ -967,15 +973,9 @@ body.dark-mode .loading-screen {
 }
 
 /* Advanced Strategy Options */
-.advanced-strategy-options {
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--border);
-}
-
 .strategy-controls {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: 1fr;
     gap: 0.5rem;
 }
 
@@ -1536,7 +1536,7 @@ body.dark-mode .download-strategy-btn:hover {
 
 .split-preset-buttons {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
 }
 
@@ -1628,6 +1628,40 @@ body.dark-mode .download-strategy-btn:hover {
 }
 
 .add-split-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+}
+
+.btn-clear-all {
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--text-light);
+    background: transparent;
+    color: var(--text-light);
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.btn-clear-all:hover {
+    opacity: 0.8;
+    border-color: var(--text);
+    color: var(--text);
+}
+
+.btn-clear-all:active {
+    opacity: 0.6;
+}
+
+.btn-clear-all svg {
     width: 14px;
     height: 14px;
     stroke: currentColor;
@@ -2133,12 +2167,12 @@ body.dark-mode .strategy-input:focus {
     }
     
     .preset-buttons-compact {
-        flex-direction: column;
+        grid-template-columns: 1fr;
         gap: 0.5rem;
     }
     
-    .preset-group {
-        width: 100%;
+    .preset-group-label {
+        margin-bottom: 0.25rem;
     }
     
     .distance-input-wrapper {
@@ -2156,7 +2190,7 @@ body.dark-mode .strategy-input:focus {
     
     /* Time suggestions - grid layout */
     .time-suggestions {
-        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        grid-template-columns: repeat(2, 1fr);
         gap: 0.5rem;
     }
     
@@ -2164,11 +2198,6 @@ body.dark-mode .strategy-input:focus {
         padding: 0.5rem 0.75rem;
         font-size: 0.8125rem;
         min-height: 36px;
-    }
-    
-    .preset-group-buttons {
-        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-        gap: 0.5rem;
     }
     
     .preset-btn-compact {
@@ -2350,7 +2379,7 @@ body.dark-mode .strategy-input:focus {
     }
     
     .split-preset-buttons {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 0.5rem;
     }
     
@@ -2478,16 +2507,6 @@ body.dark-mode .strategy-input:focus {
         transform: translateY(0);
     }
     
-    .advanced-strategy-options {
-        margin-top: 0.5rem;
-        padding-top: 0.5rem;
-    }
-    
-    .strategy-controls {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-    }
-    
     .track-type-buttons {
         gap: 0.5rem;
     }
@@ -2517,7 +2536,7 @@ body.dark-mode .strategy-input:focus {
 
 @media (max-width: 480px) {
     .split-preset-buttons {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .main-content {
@@ -2530,10 +2549,6 @@ body.dark-mode .strategy-input:focus {
     
     .header-title {
         font-size: 1.75rem;
-    }
-    
-    .preset-group-buttons {
-        gap: 0.375rem;
     }
     
     .preset-btn-compact {

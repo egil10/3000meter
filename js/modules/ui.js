@@ -51,7 +51,7 @@ function updateAnimationUI() {
 
 function addSplitDistance(distance) {
     distance = parseInt(distance);
-    if (isNaN(distance) || distance < 50) {
+    if (isNaN(distance) || distance < 1) {
         showToast(isNorwegian ? 'Ugyldig distanse' : 'Invalid distance');
         return;
     }
@@ -62,9 +62,6 @@ function addSplitDistance(distance) {
         showToast(isNorwegian ? `Deltid kan ikke være lengre enn løpsdistanse (${raceDistance}m)` : `Split cannot be longer than race distance (${raceDistance}m)`);
         return;
     }
-    
-    // Round to nearest 50m
-    distance = Math.round(distance / 50) * 50;
     
     if (!activeSplitDistances.includes(distance)) {
         activeSplitDistances.push(distance);
@@ -100,6 +97,25 @@ function removeSplitDistance(distance) {
         
         showToast(isNorwegian ? `Deltid ${distance}m fjernet` : `Split ${distance}m removed`);
     }
+}
+
+function clearAllSplits() {
+    if (activeSplitDistances.length === 0) {
+        return;
+    }
+    
+    activeSplitDistances = [];
+    
+    // Update UI
+    updateSplitPresetButtons();
+    if (currentPaceData) {
+        updateCumulativeTimes(currentPaceData);
+    }
+    
+    // Save to localStorage
+    saveSplitDistances();
+    
+    showToast(isNorwegian ? 'Alle deltider fjernet' : 'All splits cleared');
 }
 
 function getTimeSuggestions(distance) {
@@ -157,6 +173,9 @@ function getTimeSuggestions(distance) {
     else if (distance >= 42190 && distance <= 42200) {
         suggestions.push('2:55:00', '3:05:00', '3:15:00', '3:25:00', '3:35:00', '3:45:00', '3:55:00', '4:05:00', '4:15:00', '4:25:00');
     }
+    else if (distance === 60000) {
+        suggestions.push('5:00:00', '5:15:00', '5:30:00', '5:45:00', '6:00:00', '6:15:00', '6:30:00', '6:45:00', '7:00:00', '7:30:00');
+    }
     else if (distance === 100000) {
         suggestions.push('8:00:00', '8:30:00', '9:00:00', '9:30:00', '10:00:00', '10:30:00', '11:00:00', '11:30:00', '12:00:00', '12:30:00');
     }
@@ -194,6 +213,9 @@ function getTimeSuggestions(distance) {
     else if (distance <= 42195) {
         suggestions.push('2:55:00', '3:05:00', '3:15:00', '3:25:00', '3:35:00', '3:45:00', '3:55:00', '4:05:00', '4:15:00', '4:25:00');
     }
+    else if (distance <= 60000) {
+        suggestions.push('5:00:00', '5:15:00', '5:30:00', '5:45:00', '6:00:00', '6:15:00', '6:30:00', '6:45:00', '7:00:00', '7:30:00');
+    }
     else if (distance <= 100000) {
         suggestions.push('8:00:00', '8:30:00', '9:00:00', '9:30:00', '10:00:00', '10:30:00', '11:00:00', '11:30:00', '12:00:00', '12:30:00');
     }
@@ -202,7 +224,7 @@ function getTimeSuggestions(distance) {
         suggestions.push('12:00:00', '13:00:00', '14:00:00', '15:00:00', '16:00:00', '17:00:00', '18:00:00', '19:00:00', '20:00:00', '21:00:00');
     }
     
-    return suggestions.slice(0, 10); // Return max 10 suggestions
+    return suggestions.slice(0, 8); // Return max 8 suggestions for 4x2 grid
 }
 
 function updateTimeSuggestions() {
@@ -965,7 +987,7 @@ function handleDistanceInput() {
             if (Math.abs(btnDist - distance) < 0.1) {
                 document.querySelectorAll('.preset-btn-compact').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-            } else if (!document.querySelector('.preset-btn-compact.active')) {
+            } else {
                 btn.classList.remove('active');
             }
         });
@@ -974,10 +996,10 @@ function handleDistanceInput() {
         updateTimeSuggestions();
         updateSplitPresetButtons();
         
-        // Automatically set Target Time to the 5th suggested value (index 4)
+        // Automatically set Target Time to the 4th suggested value (index 3)
         const timeSuggestions = getTimeSuggestions(distance);
-        if (timeSuggestions.length >= 5 && elements.goalTime) {
-            elements.goalTime.value = timeSuggestions[4]; // 5th value (index 4)
+        if (timeSuggestions.length >= 4 && elements.goalTime) {
+            elements.goalTime.value = timeSuggestions[3]; // 4th value (index 3)
             updatePaceFromTime();
         }
         
@@ -996,9 +1018,6 @@ function handleDistanceInput() {
                 calculatePace();
             }
         }
-        
-        // Note: Pace is already updated above when we set the 5th suggested time
-        // So we don't need to update pace again here
     }
 }
 
@@ -1040,7 +1059,7 @@ function renderCustomSplits() {
         const splitRow = document.createElement('div');
         splitRow.className = 'split-editor-row';
         splitRow.innerHTML = `
-            <input type="number" class="split-distance-input" value="${split.distance}" min="100" step="100" data-index="${index}">
+            <input type="number" class="split-distance-input" value="${split.distance}" min="1" step="1" data-index="${index}">
             <input type="text" class="split-pace-input" value="${formatTimeFromMsSimple(split.pace * 1000)}" placeholder="05:00" data-index="${index}">
             <button type="button" class="btn-remove-split" data-index="${index}">
                 <i data-lucide="trash-2"></i>
@@ -1055,9 +1074,9 @@ function renderCustomSplits() {
         
         distanceInput.addEventListener('change', (e) => {
             const idx = parseInt(e.target.dataset.index);
-            const newDist = parseFloat(e.target.value);
+            const newDist = parseInt(e.target.value);
             const raceDistance = currentDistance || 3000;
-            if (newDist && newDist >= 100 && idx < customSplits.length) {
+            if (newDist && newDist >= 1 && idx < customSplits.length) {
                 // Validate against race distance
                 if (newDist > raceDistance) {
                     showToast(isNorwegian ? `Deltid kan ikke være lengre enn løpsdistanse (${raceDistance}m)` : `Split cannot be longer than race distance (${raceDistance}m)`);

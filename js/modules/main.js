@@ -13,12 +13,16 @@ function setupEventListeners() {
     elements.goalTime.addEventListener('input', (e) => {
         validateTimeInput(e);
         updatePaceFromTime();
+        // Clear time suggestion highlights when user types custom value
+        document.querySelectorAll('.time-suggestion-btn').forEach(b => b.classList.remove('active'));
     });
     
     if (elements.targetPace) {
         elements.targetPace.addEventListener('input', (e) => {
             validateTimeInput(e);
             updateTimeFromPace();
+            // Clear time suggestion highlights when user types custom value
+            document.querySelectorAll('.time-suggestion-btn').forEach(b => b.classList.remove('active'));
         });
     }
     
@@ -40,31 +44,15 @@ function setupEventListeners() {
                 updateTimeSuggestions();
                 updateSplitPresetButtons();
                 
-                // Automatically set Target Time to the 5th suggested value (index 4)
+                // Automatically set Target Time to the 4th suggested value (index 3)
                 const timeSuggestions = getTimeSuggestions(distance);
-                if (timeSuggestions.length >= 5 && elements.goalTime) {
-                    elements.goalTime.value = timeSuggestions[4]; // 5th value (index 4)
+                if (timeSuggestions.length >= 4 && elements.goalTime) {
+                    elements.goalTime.value = timeSuggestions[3]; // 4th value (index 3)
                     updatePaceFromTime();
                 }
                 
                 document.querySelectorAll('.preset-btn-compact').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-            }
-        });
-    });
-    
-    // Strategy option buttons
-    // Strategy button (only Custom now)
-    document.querySelectorAll('.strategy-btn-simple').forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Keep custom selected and active
-            document.querySelectorAll('.strategy-btn-simple').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentStrategy = 'custom';
-            
-            // Advanced options are always visible now
-            if (elements.advancedStrategyOptions) {
-                elements.advancedStrategyOptions.style.display = 'block';
             }
         });
     });
@@ -127,6 +115,18 @@ function setupEventListeners() {
         });
     }
     
+    // Clear all splits button
+    const clearAllSplitsBtn = document.getElementById('clearAllSplitsBtn');
+    if (clearAllSplitsBtn) {
+        clearAllSplitsBtn.addEventListener('click', () => {
+            clearAllSplits();
+            // Reinitialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    }
+    
     // Handle remove split buttons (delegated event listener)
     document.addEventListener('click', (e) => {
         if (e.target.closest('.remove-split-btn')) {
@@ -136,19 +136,6 @@ function setupEventListeners() {
                 removeSplitDistance(distance);
             }
         }
-    });
-    
-    // Strategy buttons
-    elements.strategyButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            elements.strategyButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentStrategy = btn.dataset.strategy;
-            
-            document.querySelectorAll('.strategy-option').forEach(b => {
-                b.classList.toggle('active', b.dataset.strategy === currentStrategy);
-            });
-        });
     });
     
     // Action buttons
@@ -223,17 +210,19 @@ function setupEventListeners() {
                 trackType = type;
                 document.querySelectorAll('.track-type-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                
+                // Reset animation
+                resetAnimation();
+                
                 // Redraw track with new type
                 drawTrack();
                 drawMarkers();
                 addRoundIndicators();
-                // Reset animation and recalculate if data exists
+                
+                // If data exists, do full recalculate like clicking "Calculate"
                 if (currentPaceData) {
-                    resetAnimation();
                     calculatePace();
-                } else {
-                    // Reset animation state
-                    resetAnimation();
+                    updateRaceSummary();
                 }
             }
         });
@@ -280,7 +269,6 @@ document.addEventListener('DOMContentLoaded', function() {
         goalTime: document.getElementById('goalTime'),
         targetPace: document.getElementById('targetPace'),
         raceDistance: document.getElementById('raceDistance'),
-        strategyButtons: document.querySelectorAll('.strategy-btn'),
         calculateBtn: document.getElementById('calculateBtn'),
         themeToggle: document.getElementById('themeToggle'),
         largeTargetTimeDisplay: document.getElementById('largeTargetTimeDisplay'),
@@ -297,7 +285,6 @@ document.addEventListener('DOMContentLoaded', function() {
         cumulativeTimes1000m: document.getElementById('cumulativeTimes1000m'),
         tabButtons: document.querySelectorAll('.tab-btn'),
         toast: document.getElementById('toast'),
-        advancedStrategyOptions: document.getElementById('advancedStrategyOptions'),
         progressionType: document.getElementById('progressionType'),
         paceChange: document.getElementById('paceChange'),
         startPace: document.getElementById('startPace'),
