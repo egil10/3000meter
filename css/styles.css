@@ -498,7 +498,8 @@ body.dark-mode .loading-screen {
 }
 
 .edit-btn {
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0.75rem;
+    min-height: 36px;
     border: 2px solid var(--border);
     background: var(--bg);
     border-radius: var(--radius-sm);
@@ -511,6 +512,7 @@ body.dark-mode .loading-screen {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    box-sizing: border-box;
 }
 
 .edit-btn:hover {
@@ -744,7 +746,7 @@ body.dark-mode .loading-screen {
     background: var(--bg);
     border-radius: var(--radius-sm);
     font-size: 0.8125rem;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text);
     cursor: pointer;
     transition: none;
@@ -839,7 +841,7 @@ body.dark-mode .loading-screen {
     background: var(--bg-alt);
     border-radius: var(--radius-sm);
     font-size: 0.8125rem;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text);
     cursor: pointer;
     transition: none;
