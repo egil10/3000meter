@@ -377,7 +377,9 @@ body.dark-mode .loading-screen {
     height: 100%;
 }
 
-.theme-icon-light {
+.theme-btn.theme-preference-light .theme-icon-light,
+.theme-btn.theme-preference-dark .theme-icon-dark,
+.theme-btn.theme-preference-system .theme-icon-system {
     display: inline-flex;
 }
 
@@ -683,10 +685,6 @@ body.dark-mode .loading-screen {
     box-sizing: border-box;
 }
 
-.distance-input-wrapper:focus-within {
-    border-color: var(--primary);
-    background: var(--bg);
-}
 
 .distance-input {
     flex: 1;
@@ -789,10 +787,6 @@ body.dark-mode .loading-screen {
     min-width: 0;
 }
 
-.time-input-simple:focus {
-    border-color: var(--primary);
-    background: var(--bg);
-}
 
 .pace-input-wrapper {
     display: flex;
@@ -821,10 +815,6 @@ body.dark-mode .loading-screen {
     box-sizing: border-box;
 }
 
-.pace-input-simple:focus {
-    border-color: var(--primary);
-    background: var(--bg);
-}
 
 .time-suggestions {
     display: grid;
@@ -1007,11 +997,6 @@ body.dark-mode .loading-screen {
     outline: none;
 }
 
-.strategy-select:focus,
-.strategy-input:focus {
-    border-color: var(--primary);
-    background: var(--bg);
-}
 
 .track-type-controls {
     display: flex;
@@ -1499,7 +1484,7 @@ body.dark-mode .download-strategy-btn:hover {
 /* New splits layout: controls on left, grid on right */
 .splits-layout {
     display: grid;
-    grid-template-columns: 280px 1fr;
+    grid-template-columns: 240px 1fr;
     gap: 1rem;
     align-items: start;
 }
@@ -1508,7 +1493,7 @@ body.dark-mode .download-strategy-btn:hover {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    padding: 1rem;
+    padding: 0.75rem;
     background: var(--bg-alt);
     border-radius: var(--radius-sm);
     position: sticky;
@@ -1598,11 +1583,21 @@ body.dark-mode .download-strategy-btn:hover {
     font-family: var(--font-mono);
     color: var(--text);
     outline: none;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
-.custom-split-input:focus {
-    border-color: var(--primary);
+/* Remove number input spinners */
+.custom-split-input::-webkit-inner-spin-button,
+.custom-split-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
+
+.custom-split-input {
+    -moz-appearance: textfield;
+}
+
 
 .add-split-btn {
     padding: 0.5rem 1rem;
@@ -2098,18 +2093,7 @@ button:active {
 }
 
 /* Dark Mode */
-body.dark-mode .distance-input-wrapper:focus-within {
-    background: var(--bg-alt);
-}
 
-body.dark-mode .time-input-simple:focus {
-    background: var(--bg-alt);
-}
-
-body.dark-mode .strategy-select:focus,
-body.dark-mode .strategy-input:focus {
-    background: var(--bg-alt);
-}
 
 /* Responsive - Mobile First */
 @media (max-width: 768px) {

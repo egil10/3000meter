@@ -924,9 +924,15 @@ function applyTheme() {
         const iconDark = elements.themeToggle.querySelector('.theme-icon-dark');
         const iconSystem = elements.themeToggle.querySelector('.theme-icon-system');
         
-        if (iconLight) iconLight.style.display = themePreference === 'light' ? 'inline-flex' : 'none';
-        if (iconDark) iconDark.style.display = themePreference === 'dark' ? 'inline-flex' : 'none';
-        if (iconSystem) iconSystem.style.display = themePreference === 'system' ? 'inline-flex' : 'none';
+        // Remove inline styles and let CSS handle it
+        if (iconLight) iconLight.style.display = '';
+        if (iconDark) iconDark.style.display = '';
+        if (iconSystem) iconSystem.style.display = '';
+        
+        // Apply correct display via CSS classes
+        elements.themeToggle.classList.toggle('theme-preference-light', themePreference === 'light');
+        elements.themeToggle.classList.toggle('theme-preference-dark', themePreference === 'dark');
+        elements.themeToggle.classList.toggle('theme-preference-system', themePreference === 'system');
         
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
@@ -943,8 +949,6 @@ function applyTheme() {
     if (typeof updateTrackBackground === 'function') {
         updateTrackBackground();
     }
-    
-    updatePaceChart(currentPaceData);
 }
 
 function setTheme(preference) {
