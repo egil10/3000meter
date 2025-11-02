@@ -227,28 +227,19 @@ function setupEventListeners() {
                 drawTrack();
                 drawMarkers();
                 addRoundIndicators();
-                // Recalculate pace if data exists
+                // Reset animation and recalculate if data exists
                 if (currentPaceData) {
+                    resetAnimation();
                     calculatePace();
                 } else {
-                    // Update runner position if animation is active
-                    if (animationState.currentDistance > 0) {
-                        updateRunnerPosition(animationState.lapProgress, animationState.currentDistance);
-                    }
+                    // Reset animation state
+                    resetAnimation();
                 }
             }
         });
     });
     
-    // Chart type buttons
-    document.querySelectorAll('.chart-type-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const chartType = btn.dataset.chartType;
-            if (chartType) {
-                switchChartType(chartType);
-            }
-        });
-    });
+    // Chart type buttons removed - showing all charts at once
     
     // Animation controls
     if (elements.playPauseBtn) {

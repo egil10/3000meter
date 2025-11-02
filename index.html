@@ -131,9 +131,9 @@
 
         <!-- Input Area (collapsible) -->
         <div id="inputArea" class="input-area">
-          <div class="setup-grid-simple">
-          <!-- Distance -->
-          <div class="input-group-simple">
+          <div class="setup-grid-new">
+          <!-- Column 1: Distance -->
+          <div class="input-group-new">
             <label>Distance</label>
             <div class="distance-input-wrapper">
               <input type="number" id="raceDistance" value="3000" min="100" step="any" class="distance-input">
@@ -174,38 +174,36 @@
             </div>
           </div>
 
-          <!-- Time / Pace Input (Combined) -->
-          <div class="input-group-simple time-pace-combined">
-            <div class="time-pace-row">
-              <div class="time-pace-field">
-                <label>Target Time</label>
-                <input type="text" id="goalTime" value="13:00" placeholder="13:00" maxlength="7" class="time-input-simple">
-                <div class="time-suggestions" id="timeSuggestions"></div>
-                <div class="adjust-buttons">
-                  <button type="button" onclick="adjustTime(-10)">−10s</button>
-                  <button type="button" onclick="adjustTime(-5)">−5s</button>
-                  <button type="button" onclick="adjustTime(5)">+5s</button>
-                  <button type="button" onclick="adjustTime(10)">+10s</button>
-                </div>
+          <!-- Column 2: Time / Pace Input (Stacked) -->
+          <div class="input-group-new time-pace-stacked">
+            <div class="time-pace-field">
+              <label>Target Time</label>
+              <input type="text" id="goalTime" value="13:00" placeholder="13:00" maxlength="7" class="time-input-simple">
+              <div class="time-suggestions" id="timeSuggestions"></div>
+              <div class="adjust-buttons">
+                <button type="button" onclick="adjustTime(-10)">−10s</button>
+                <button type="button" onclick="adjustTime(-5)">−5s</button>
+                <button type="button" onclick="adjustTime(5)">+5s</button>
+                <button type="button" onclick="adjustTime(10)">+10s</button>
               </div>
-              <div class="time-pace-field">
-                <label>Target Pace</label>
-                <div class="pace-input-wrapper">
-                  <input type="text" id="targetPace" value="04:20" placeholder="04:20" maxlength="7" class="pace-input-simple">
-                  <span class="unit-label">/km</span>
-                </div>
-                <div class="adjust-buttons">
-                  <button type="button" onclick="adjustPace(-5)">−5s</button>
-                  <button type="button" onclick="adjustPace(-1)">−1s</button>
-                  <button type="button" onclick="adjustPace(1)">+1s</button>
-                  <button type="button" onclick="adjustPace(5)">+5s</button>
-                </div>
+            </div>
+            <div class="time-pace-field">
+              <label>Target Pace</label>
+              <div class="pace-input-wrapper">
+                <input type="text" id="targetPace" value="04:20" placeholder="04:20" maxlength="7" class="pace-input-simple">
+                <span class="unit-label">/km</span>
+              </div>
+              <div class="adjust-buttons">
+                <button type="button" onclick="adjustPace(-5)">−5s</button>
+                <button type="button" onclick="adjustPace(-1)">−1s</button>
+                <button type="button" onclick="adjustPace(1)">+1s</button>
+                <button type="button" onclick="adjustPace(5)">+5s</button>
               </div>
             </div>
           </div>
 
-          <!-- Strategy -->
-          <div class="input-group-simple">
+          <!-- Column 3: Strategy -->
+          <div class="input-group-new">
             <label>Strategy</label>
             <div class="strategy-buttons-simple">
               <button class="strategy-btn-simple active" data-strategy="custom">Custom</button>
@@ -238,8 +236,10 @@
             </div>
           </div>
 
-          <!-- Calculate Button -->
-          <button id="calculateBtn" class="btn-calculate">Calculate</button>
+          <!-- Column 4: Calculate Button -->
+          <div class="calculate-wrapper">
+            <button id="calculateBtn" class="btn-calculate">Calculate</button>
+          </div>
           </div>
         </div>
       </section>
@@ -376,51 +376,71 @@
         </div>
 
         <div id="splitsTab" class="tab-content active">
-          <!-- Split Management Controls -->
-          <div class="splits-controls">
-            <div class="splits-presets">
-              <label>Add Split:</label>
-              <div class="split-preset-buttons">
-                <!-- Split buttons will be dynamically generated based on distance -->
+          <div class="splits-layout">
+            <!-- Left Side: Controls -->
+            <div class="splits-controls">
+              <div class="splits-presets">
+                <label>Add Split:</label>
+                <div class="split-preset-buttons">
+                  <!-- Split buttons will be dynamically generated based on distance -->
+                </div>
+              </div>
+              <div class="splits-custom">
+                <input type="number" id="customSplitDistance" placeholder="Custom distance (m)" min="50" step="50" class="custom-split-input">
+                <button type="button" id="addCustomSplitBtn" class="add-split-btn">
+                  <i data-lucide="plus"></i> Add
+                </button>
               </div>
             </div>
-            <div class="splits-custom">
-              <input type="number" id="customSplitDistance" placeholder="Custom distance (m)" min="50" step="50" class="custom-split-input">
-              <button type="button" id="addCustomSplitBtn" class="add-split-btn">
-                <i data-lucide="plus"></i> Add
-              </button>
-            </div>
+            
+            <!-- Right Side: Split Tables Grid -->
+            <div id="cumulativeTimesContainer" class="splits-grid"></div>
           </div>
-          
-          <!-- Dynamic Splits Tables -->
-          <div id="cumulativeTimesContainer" class="splits-container"></div>
         </div>
 
         <div id="chartTab" class="tab-content">
-          <!-- Chart Type Selector -->
-          <div class="chart-type-selector">
-            <button class="chart-type-btn active" data-chart-type="pace">
-              <i data-lucide="gauge"></i> Pace
-            </button>
-            <button class="chart-type-btn" data-chart-type="speed">
-              <i data-lucide="zap"></i> Speed
-            </button>
-            <button class="chart-type-btn" data-chart-type="time">
-              <i data-lucide="clock"></i> Time
-            </button>
-            <button class="chart-type-btn" data-chart-type="split-pace">
-              <i data-lucide="activity"></i> Split Pace
-            </button>
-            <button class="chart-type-btn" data-chart-type="acceleration">
-              <i data-lucide="trending-up"></i> Acceleration
-            </button>
-            <button class="chart-type-btn" data-chart-type="effort">
-              <i data-lucide="target"></i> Effort Level
-            </button>
-          </div>
-          
-          <div class="chart-container">
-            <canvas id="paceChart"></canvas>
+          <div class="charts-grid">
+            <div class="chart-wrapper">
+              <h3 class="chart-title">Pace</h3>
+              <div class="chart-container-small">
+                <canvas id="paceChart"></canvas>
+              </div>
+            </div>
+            
+            <div class="chart-wrapper">
+              <h3 class="chart-title">Speed</h3>
+              <div class="chart-container-small">
+                <canvas id="speedChart"></canvas>
+              </div>
+            </div>
+            
+            <div class="chart-wrapper">
+              <h3 class="chart-title">Time</h3>
+              <div class="chart-container-small">
+                <canvas id="timeChart"></canvas>
+              </div>
+            </div>
+            
+            <div class="chart-wrapper">
+              <h3 class="chart-title">Split Pace</h3>
+              <div class="chart-container-small">
+                <canvas id="splitPaceChart"></canvas>
+              </div>
+            </div>
+            
+            <div class="chart-wrapper">
+              <h3 class="chart-title">Acceleration</h3>
+              <div class="chart-container-small">
+                <canvas id="accelerationChart"></canvas>
+              </div>
+            </div>
+            
+            <div class="chart-wrapper">
+              <h3 class="chart-title">Effort Level</h3>
+              <div class="chart-container-small">
+                <canvas id="effortChart"></canvas>
+              </div>
+            </div>
           </div>
         </div>
       </section>

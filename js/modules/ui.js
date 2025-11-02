@@ -442,42 +442,32 @@ function updateSplitRowColors() {
 function updatePaceChart(data) {
     if (!data || !data.paceData || data.paceData.length === 0) return;
     
-    const canvas = document.getElementById('paceChart');
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
     const isDark = document.body.classList.contains('dark-mode');
-    
-    if (paceChart) {
-        paceChart.destroy();
-    }
-    
     const labels = data.paceData.map(d => `${(d.distance / 1000).toFixed(1)}km`);
     
-    let chartConfig = {};
+    // Destroy all existing charts
+    Object.values(charts).forEach(chart => {
+        if (chart) chart.destroy();
+    });
+    charts = {};
     
-    switch(currentChartType) {
-        case 'pace':
-            chartConfig = createPaceChart(data, labels, isDark);
-            break;
-        case 'speed':
-            chartConfig = createSpeedChart(data, labels, isDark);
-            break;
-        case 'time':
-            chartConfig = createTimeChart(data, labels, isDark);
-            break;
-        case 'split-pace':
-            chartConfig = createSplitPaceChart(data, labels, isDark);
-            break;
-        case 'acceleration':
-            chartConfig = createAccelerationChart(data, labels, isDark);
-            break;
-        case 'effort':
-            chartConfig = createEffortChart(data, labels, isDark);
-            break;
-    }
+    // Create all charts
+    const chartConfigs = [
+        { id: 'paceChart', config: createPaceChart(data, labels, isDark) },
+        { id: 'speedChart', config: createSpeedChart(data, labels, isDark) },
+        { id: 'timeChart', config: createTimeChart(data, labels, isDark) },
+        { id: 'splitPaceChart', config: createSplitPaceChart(data, labels, isDark) },
+        { id: 'accelerationChart', config: createAccelerationChart(data, labels, isDark) },
+        { id: 'effortChart', config: createEffortChart(data, labels, isDark) }
+    ];
     
-    paceChart = new Chart(ctx, chartConfig);
+    chartConfigs.forEach(({ id, config }) => {
+        const canvas = document.getElementById(id);
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            charts[id] = new Chart(ctx, config);
+        }
+    });
 }
 
 function createPaceChart(data, labels, isDark) {
@@ -751,28 +741,6 @@ function getBaseChartOptions(isDark, yAxisLabel, yAxisFormatter, tooltipFormatte
             }
         }
     };
-}
-
-function switchChartType(chartType) {
-    currentChartType = chartType;
-    
-    // Update button states
-    document.querySelectorAll('.chart-type-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.chartType === chartType) {
-            btn.classList.add('active');
-        }
-    });
-    
-    // Update chart
-    if (currentPaceData) {
-        updatePaceChart(currentPaceData);
-    }
-    
-    // Reinitialize Lucide icons
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
 }
 
 function switchTab(tabName) {

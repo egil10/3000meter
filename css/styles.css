@@ -566,6 +566,7 @@ body.dark-mode .loading-screen {
     margin-bottom: 0;
 }
 
+/* Old layout - keeping for reference */
 .setup-grid-simple {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -596,6 +597,48 @@ body.dark-mode .loading-screen {
     color: var(--text-light);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+
+/* New 4-column layout */
+.setup-grid-new {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: start;
+}
+
+.input-group-new {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+    overflow: visible;
+}
+
+.input-group-new label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.time-pace-stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.calculate-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.calculate-wrapper .btn-calculate {
+    width: 100%;
+    margin-top: 0;
 }
 
 .input-group-simple {
@@ -795,7 +838,7 @@ body.dark-mode .loading-screen {
     color: var(--text);
     cursor: pointer;
     transition: none;
-    font-family: var(--font-mono);
+    font-family: var(--font);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -943,9 +986,11 @@ body.dark-mode .loading-screen {
 }
 
 .strategy-control label {
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.6875rem;
+    font-weight: 600;
     color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .strategy-select,
@@ -1442,11 +1487,20 @@ body.dark-mode .download-strategy-btn:hover {
     display: block;
 }
 
+/* Old layout - keeping for reference */
 .splits-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1rem;
     margin-top: 1rem;
+}
+
+/* New splits layout: controls on left, grid on right */
+.splits-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 1rem;
+    align-items: start;
 }
 
 .splits-controls {
@@ -1456,7 +1510,14 @@ body.dark-mode .download-strategy-btn:hover {
     padding: 1rem;
     background: var(--bg-alt);
     border-radius: var(--radius-sm);
-    margin-bottom: 1rem;
+    position: sticky;
+    top: 1rem;
+}
+
+.splits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
 }
 
 .splits-presets {
@@ -1807,6 +1868,35 @@ body.dark-mode .cumulative-time-row.in-progress .time {
     stroke: currentColor;
 }
 
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.chart-wrapper {
+    background: var(--bg-alt);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    border: 2px solid var(--border);
+}
+
+.chart-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.75rem 0;
+    text-align: center;
+}
+
+.chart-container-small {
+    height: 250px;
+    position: relative;
+}
+
+/* Old single chart container */
 .chart-container {
     padding: 1rem;
     background: var(--bg-alt);
@@ -2020,6 +2110,11 @@ body.dark-mode .strategy-input:focus {
         gap: 0.75rem;
     }
     
+    .setup-grid-new {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
     .input-group-simple.time-pace-combined {
         grid-column: span 1;
     }
@@ -2027,6 +2122,14 @@ body.dark-mode .strategy-input:focus {
     .time-pace-row {
         grid-template-columns: 1fr;
         gap: 1rem;
+    }
+    
+    .time-pace-stacked {
+        gap: 1rem;
+    }
+    
+    .calculate-wrapper .btn-calculate {
+        width: 100%;
     }
     
     .preset-buttons-compact {
@@ -2236,8 +2339,14 @@ body.dark-mode .strategy-input:focus {
         justify-content: center;
     }
     
+    .splits-layout {
+        grid-template-columns: 1fr;
+    }
+    
     .splits-controls {
         padding: 0.75rem;
+        position: static;
+        top: auto;
     }
     
     .split-preset-buttons {
@@ -2268,6 +2377,11 @@ body.dark-mode .strategy-input:focus {
         font-size: 0.875rem;
         min-height: 44px;
         width: 100%;
+    }
+    
+    .splits-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
     .splits-container {
@@ -2323,45 +2437,22 @@ body.dark-mode .strategy-input:focus {
         font-size: 0.875rem;
     }
     
-    .chart-type-selector {
-        gap: 0.5rem;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
-        scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-        padding-bottom: 0.5rem;
+    .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
-    .chart-type-selector::-webkit-scrollbar {
-        height: var(--scrollbar-width);
-    }
-    
-    .chart-type-selector::-webkit-scrollbar-track {
-        background: var(--scrollbar-track);
-        border-radius: 10px;
-    }
-    
-    .chart-type-selector::-webkit-scrollbar-thumb {
-        background: var(--scrollbar-thumb);
-        border-radius: 10px;
-        border: 1px solid transparent;
-        background-clip: padding-box;
-    }
-    
-    .chart-type-selector::-webkit-scrollbar-thumb:hover {
-        background: var(--scrollbar-thumb-hover);
-    }
-    
-    .chart-type-btn {
-        padding: 0.625rem 1rem;
-        font-size: 0.8125rem;
-        white-space: nowrap;
-        min-height: 44px;
+    .chart-container-small {
+        height: 200px;
     }
     
     .chart-container {
         height: 300px;
         padding: 0.75rem;
+    }
+    
+    .chart-wrapper {
+        padding: 0.5rem;
     }
     
     .footer {
@@ -2422,11 +2513,13 @@ body.dark-mode .strategy-input:focus {
         min-height: 48px;
         width: 100%;
     }
+}
 
 @media (max-width: 480px) {
     .split-preset-buttons {
         grid-template-columns: repeat(3, 1fr);
     }
+    
     .main-content {
         padding: 2rem 0.5rem;
     }

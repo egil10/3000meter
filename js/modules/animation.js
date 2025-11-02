@@ -43,6 +43,11 @@ function resetAnimation() {
     updateRunnerPosition(0, 0);
     updateAnimationUI();
     updateRoundIndicators();
+    // Ensure timing board is hidden after reset
+    const timingBoard = document.getElementById('timingBoard');
+    if (timingBoard) {
+        timingBoard.classList.add('hidden');
+    }
 }
 
 function updateAnimationSpeed(newSpeed) {
