@@ -1601,6 +1601,7 @@ body.dark-mode .download-strategy-btn:hover {
 
 .add-split-btn {
     padding: 0.5rem 1rem;
+    min-height: 36px;
     border: 2px solid var(--primary);
     background: var(--primary);
     color: white;
@@ -1612,6 +1613,7 @@ body.dark-mode .download-strategy-btn:hover {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    box-sizing: border-box;
 }
 
 .add-split-btn:hover {

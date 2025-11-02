@@ -4,14 +4,28 @@ function parseTimeToMs(timeStr) {
     if (!timeStr) return null;
     
     const parts = timeStr.split(':');
-    if (parts.length !== 2) return null;
     
-    const minutes = parseInt(parts[0]);
-    const seconds = parseFloat(parts[1]);
+    // Handle MM:SS format
+    if (parts.length === 2) {
+        const minutes = parseInt(parts[0]);
+        const seconds = parseFloat(parts[1]);
+        
+        if (isNaN(minutes) || isNaN(seconds) || seconds >= 60) return null;
+        
+        return (minutes * 60 + seconds) * 1000;
+    }
+    // Handle H:MM:SS format
+    else if (parts.length === 3) {
+        const hours = parseInt(parts[0]);
+        const minutes = parseInt(parts[1]);
+        const seconds = parseFloat(parts[2]);
+        
+        if (isNaN(hours) || isNaN(minutes) || isNaN(seconds) || minutes >= 60 || seconds >= 60) return null;
+        
+        return ((hours * 3600) + (minutes * 60) + seconds) * 1000;
+    }
     
-    if (isNaN(minutes) || isNaN(seconds) || seconds >= 60) return null;
-    
-    return (minutes * 60 + seconds) * 1000;
+    return null;
 }
 
 function formatTimeFromMs(ms) {
@@ -29,10 +43,16 @@ function formatTimeFromMsSimple(ms) {
     if (!ms || ms < 0) return '00:00';
     
     const totalSeconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
     
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    // If hours exist, format as H:MM:SS, otherwise MM:SS
+    if (hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    } else {
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
 }
 
 function formatTimeSimple(seconds) {
