@@ -1,12 +1,13 @@
 // State Management
 let currentPaceData = null;
 let currentLane = 1;
-let currentStrategy = 'even';
+let currentStrategy = 'custom';
 let isNorwegian = false; // Default to English
 let currentDistance = 3000; // Current race distance in meters
 let paceChart = null; // Chart.js instance
 let currentChartType = 'pace'; // Current chart type: pace, speed, time, split-pace
-let isDarkMode = false; // Light theme is default - don't load dark mode preference
+let themePreference = 'system'; // 'light', 'dark', or 'system'
+let isDarkMode = false; // Computed dark mode state
 let customSplits = []; // Custom split definitions
 let progressionType = 'linear'; // linear, exponential, sigmoid
 let paceChangePer400m = -2; // seconds per 400m for progressive/degressive

@@ -54,51 +54,18 @@ function setupEventListeners() {
     });
     
     // Strategy option buttons
+    // Strategy button (only Custom now)
     document.querySelectorAll('.strategy-btn-simple').forEach(btn => {
         btn.addEventListener('click', () => {
-            const clickedStrategy = btn.dataset.strategy;
-            const wasCustomActive = currentStrategy === 'custom';
-            const wasAdvancedVisible = elements.advancedStrategyOptions && elements.advancedStrategyOptions.style.display === 'block';
-            
-            // If clicking custom and it was already active, toggle the advanced options
-            if (clickedStrategy === 'custom' && wasCustomActive) {
-                // Toggle the advanced options visibility
-                if (elements.advancedStrategyOptions) {
-                    if (wasAdvancedVisible) {
-                        elements.advancedStrategyOptions.style.display = 'none';
-                    } else {
-                        elements.advancedStrategyOptions.style.display = 'block';
-                    }
-                }
-                return; // Keep custom selected, just toggle visibility
-            }
-            
-            // Normal behavior - update active state
+            // Keep custom selected and active
             document.querySelectorAll('.strategy-btn-simple').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            currentStrategy = clickedStrategy;
+            currentStrategy = 'custom';
             
-            if (currentStrategy === 'progressive' || currentStrategy === 'degressive' || currentStrategy === 'custom') {
-                if (elements.advancedStrategyOptions) {
-                    elements.advancedStrategyOptions.style.display = 'block';
-                }
-                
-                if (currentStrategy === 'progressive') {
-                    if (elements.paceChange) elements.paceChange.value = -2;
-                    paceChangePer400m = -2;
-                } else if (currentStrategy === 'degressive') {
-                    if (elements.paceChange) elements.paceChange.value = 2;
-                    paceChangePer400m = 2;
-                }
-            } else {
-                if (elements.advancedStrategyOptions) {
-                    elements.advancedStrategyOptions.style.display = 'none';
-                }
+            // Advanced options are always visible now
+            if (elements.advancedStrategyOptions) {
+                elements.advancedStrategyOptions.style.display = 'block';
             }
-            
-            elements.strategyButtons.forEach(b => {
-                b.classList.toggle('active', b.dataset.strategy === currentStrategy);
-            });
         });
     });
     
@@ -211,8 +178,32 @@ function setupEventListeners() {
     }
     
     if (elements.themeToggle) {
-        elements.themeToggle.addEventListener('click', toggleTheme);
+        elements.themeToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleTheme();
+        });
     }
+    
+    // Theme menu item clicks
+    document.querySelectorAll('.theme-menu-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const theme = item.dataset.theme;
+            if (theme) {
+                setTheme(theme);
+            }
+        });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('themeMenu');
+        const button = elements.themeToggle;
+        if (menu && button && !menu.contains(e.target) && !button.contains(e.target)) {
+            menu.classList.add('hidden');
+            button.setAttribute('aria-expanded', 'false');
+        }
+    });
     
     // Tab buttons
     if (elements.tabButtons) {
@@ -267,74 +258,17 @@ function setupEventListeners() {
         elements.resetBtn.addEventListener('click', resetAnimation);
     }
     
-    // Speed controls
-    if (elements.speedSlider) {
-        elements.speedSlider.addEventListener('input', (e) => {
-            const speed = parseFloat(e.target.value);
+    // Speed preset buttons
+    document.querySelectorAll('.speed-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const speed = parseFloat(btn.dataset.speed);
             updateAnimationSpeed(speed);
-            if (elements.speedInput) {
-                elements.speedInput.value = speed.toFixed(1);
-            }
+            
+            // Update active state
+            document.querySelectorAll('.speed-preset-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
         });
-    }
-    
-    if (elements.speedInput) {
-        elements.speedInput.addEventListener('input', (e) => {
-            let speed = parseFloat(e.target.value);
-            if (isNaN(speed) || speed < 0.1) speed = 0.1;
-            if (speed > 100) speed = 100;
-            updateAnimationSpeed(speed);
-            if (elements.speedSlider) {
-                elements.speedSlider.value = speed;
-            }
-            e.target.value = speed.toFixed(1);
-        });
-        
-        elements.speedInput.addEventListener('blur', (e) => {
-            let speed = parseFloat(e.target.value);
-            if (isNaN(speed) || speed < 0.1) speed = 0.1;
-            if (speed > 100) speed = 100;
-            updateAnimationSpeed(speed);
-            if (elements.speedSlider) {
-                elements.speedSlider.value = speed;
-            }
-            e.target.value = speed.toFixed(1);
-        });
-    }
-    
-    if (elements.speedDownBtn) {
-        elements.speedDownBtn.addEventListener('click', () => {
-            let currentSpeed = animationState.speed;
-            // Round to nearest 0.5 if not already a multiple of 0.5
-            const rounded = Math.round(currentSpeed * 2) / 2;
-            // If current speed is not a multiple of 0.5, round first
-            if (Math.abs(currentSpeed - rounded) > 0.01) {
-                currentSpeed = rounded;
-            }
-            // Then decrement by 0.5
-            const newSpeed = Math.max(0.1, currentSpeed - 0.5);
-            updateAnimationSpeed(newSpeed);
-            if (elements.speedSlider) elements.speedSlider.value = newSpeed;
-            if (elements.speedInput) elements.speedInput.value = newSpeed.toFixed(1);
-        });
-    }
-    
-    if (elements.speedUpBtn) {
-        elements.speedUpBtn.addEventListener('click', () => {
-            let currentSpeed = animationState.speed;
-            // Round to nearest 0.5 if not already a multiple of 0.5
-            const rounded = Math.round(currentSpeed * 2) / 2;
-            // If current speed is not a multiple of 0.5, round first
-            if (Math.abs(currentSpeed - rounded) > 0.01) {
-                currentSpeed = rounded;
-            }
-            // Then increment by 0.5
-            const newSpeed = Math.min(100, currentSpeed + 0.5);
-            updateAnimationSpeed(newSpeed);
-            if (elements.speedSlider) elements.speedSlider.value = newSpeed;
-            if (elements.speedInput) elements.speedInput.value = newSpeed.toFixed(1);
-        });
-    }
+    });
     
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboardShortcuts);
@@ -367,10 +301,6 @@ document.addEventListener('DOMContentLoaded', function() {
         currentDistanceDisplay: document.getElementById('currentDistanceDisplay'),
         currentPaceDisplay: document.getElementById('currentPaceDisplay'),
         progressPercentDisplay: document.getElementById('progressPercentDisplay'),
-        speedSlider: document.getElementById('speedSlider'),
-        speedInput: document.getElementById('speedInput'),
-        speedDownBtn: document.getElementById('speedDownBtn'),
-        speedUpBtn: document.getElementById('speedUpBtn'),
         cumulativeTimes200m: document.getElementById('cumulativeTimes200m'),
         cumulativeTimes400m: document.getElementById('cumulativeTimes400m'),
         cumulativeTimes1000m: document.getElementById('cumulativeTimes1000m'),
@@ -414,12 +344,30 @@ document.addEventListener('DOMContentLoaded', function() {
         updatePaceFromTime();
     }
     
-    // Initialize speed display
-    if (elements.speedInput) {
-        elements.speedInput.value = animationState.speed.toFixed(1);
-    }
-    if (elements.speedSlider) {
-        elements.speedSlider.value = animationState.speed;
+    // Initialize speed preset buttons
+    const speedPresetButtons = document.querySelectorAll('.speed-preset-btn');
+    speedPresetButtons.forEach(btn => {
+        const speed = parseFloat(btn.dataset.speed);
+        if (Math.abs(speed - animationState.speed) < 0.1) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // If no button matches current speed, set closest one to active
+    if (!document.querySelector('.speed-preset-btn.active')) {
+        const speeds = Array.from(speedPresetButtons).map(btn => parseFloat(btn.dataset.speed));
+        const closestSpeed = speeds.reduce((prev, curr) => 
+            Math.abs(curr - animationState.speed) < Math.abs(prev - animationState.speed) ? curr : prev
+        );
+        const closestBtn = Array.from(speedPresetButtons).find(btn => 
+            parseFloat(btn.dataset.speed) === closestSpeed
+        );
+        if (closestBtn) {
+            closestBtn.classList.add('active');
+            updateAnimationSpeed(closestSpeed);
+        }
     }
     
     // Initialize Lucide icons after everything is loaded

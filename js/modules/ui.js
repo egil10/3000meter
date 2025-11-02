@@ -230,24 +230,33 @@ function updateTimeSuggestions() {
 }
 
 function getSplitSuggestions(raceDistance) {
-    // Always return exactly 10 standard split options
+    // Comprehensive list of split options from smallest to largest
     // These are common split distances used in track and road running
     const allSuggestions = [
+        50,    // 50m - Very short split
+        100,   // 100m - Sprint distance
+        150,   // 150m - Short split
         200,   // 200m - Common track split
         250,   // 250m - Quarter track
+        300,   // 300m - Short split
         400,   // 400m - One lap (outdoor track)
         500,   // 500m - Half kilometer
+        600,   // 600m - Common split
         800,   // 800m - Two laps
         1000,  // 1km - Kilometer marker
+        1200,  // 1200m - Intermediate split
         1500,  // 1500m - Common track distance
         2000,  // 2km - Two kilometers
+        2500,  // 2.5km - Intermediate split
+        3000,  // 3km - Three kilometers
         5000,  // 5km - Five kilometers
         10000  // 10km - Ten kilometers
     ];
     
-    // Always return all 10 suggestions regardless of race distance
-    // The UI will handle disabling buttons that exceed race distance
-    return allSuggestions;
+    // Filter to only include splits that are valid for this race distance
+    // Return up to 10 suggestions
+    const validSuggestions = allSuggestions.filter(dist => dist <= raceDistance);
+    return validSuggestions.slice(0, 10);
 }
 
 function updateSplitPresetButtons() {
@@ -257,11 +266,11 @@ function updateSplitPresetButtons() {
     // Clear existing buttons
     presetContainer.innerHTML = '';
     
-    // Get suggestions (always 10)
-    const suggestions = getSplitSuggestions(currentDistance || 3000);
+    // Get suggestions (filtered to only valid splits, up to 10)
     const raceDistance = currentDistance || 3000;
+    const suggestions = getSplitSuggestions(raceDistance);
     
-    // Create buttons for each suggestion
+    // Create buttons only for valid suggestions (they're already filtered)
     suggestions.forEach(dist => {
         const btn = document.createElement('button');
         btn.type = 'button';
@@ -280,16 +289,8 @@ function updateSplitPresetButtons() {
             btn.classList.add('active');
         }
         
-        // Disable if split exceeds race distance
-        if (dist > raceDistance) {
-            btn.disabled = true;
-            btn.classList.add('disabled');
-            btn.title = `Split cannot be longer than race distance (${raceDistance}m)`;
-        }
-        
         // Add click handler
         btn.addEventListener('click', () => {
-            if (dist > raceDistance) return; // Prevent adding if disabled
             if (activeSplitDistances.includes(dist)) {
                 removeSplitDistance(dist);
             } else {
@@ -869,37 +870,85 @@ function validateTimeInput(e) {
     e.target.value = value;
 }
 
-function toggleTheme() {
-    isDarkMode = !isDarkMode;
-    document.body.classList.toggle('dark-mode', isDarkMode);
-    elements.themeToggle.innerHTML = isDarkMode 
-        ? '<i data-lucide="sun"></i>' 
-        : '<i data-lucide="moon"></i>';
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
+function getSystemTheme() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function applyTheme() {
+    let shouldBeDark = false;
+    
+    if (themePreference === 'system') {
+        shouldBeDark = getSystemTheme() === 'dark';
+    } else {
+        shouldBeDark = themePreference === 'dark';
     }
+    
+    isDarkMode = shouldBeDark;
+    document.body.classList.toggle('dark-mode', isDarkMode);
+    
+    // Update theme button icon
+    if (elements.themeToggle) {
+        const iconLight = elements.themeToggle.querySelector('.theme-icon-light');
+        const iconDark = elements.themeToggle.querySelector('.theme-icon-dark');
+        const iconSystem = elements.themeToggle.querySelector('.theme-icon-system');
+        
+        if (iconLight) iconLight.style.display = themePreference === 'light' ? 'inline-flex' : 'none';
+        if (iconDark) iconDark.style.display = themePreference === 'dark' ? 'inline-flex' : 'none';
+        if (iconSystem) iconSystem.style.display = themePreference === 'system' ? 'inline-flex' : 'none';
+        
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+    
+    // Update menu item active states
+    const menuItems = document.querySelectorAll('.theme-menu-item');
+    menuItems.forEach(item => {
+        item.classList.toggle('active', item.dataset.theme === themePreference);
+    });
+    
     // Update track background for theme change
     if (typeof updateTrackBackground === 'function') {
         updateTrackBackground();
     }
-    saveToLocalStorage();
+    
     updatePaceChart(currentPaceData);
+}
+
+function setTheme(preference) {
+    themePreference = preference;
+    applyTheme();
+    saveToLocalStorage();
+    
+    // Close menu
+    const menu = document.getElementById('themeMenu');
+    if (menu) {
+        menu.classList.add('hidden');
+        elements.themeToggle.setAttribute('aria-expanded', 'false');
+    }
+}
+
+function toggleTheme() {
+    // Toggle dropdown menu
+    const menu = document.getElementById('themeMenu');
+    if (menu) {
+        const isHidden = menu.classList.contains('hidden');
+        menu.classList.toggle('hidden', !isHidden);
+        elements.themeToggle.setAttribute('aria-expanded', !isHidden);
+    }
 }
 
 function loadThemePreference() {
     loadFromLocalStorage();
-    if (isDarkMode) {
-        document.body.classList.add('dark-mode');
-        if (elements.themeToggle) {
-            elements.themeToggle.innerHTML = '<i data-lucide="sun"></i>';
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
+    applyTheme();
+    
+    // Listen for system theme changes if using system preference
+    if (window.matchMedia && themePreference === 'system') {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (themePreference === 'system') {
+                applyTheme();
             }
-        }
-    }
-    // Update track background when loading theme preference
-    if (typeof updateTrackBackground === 'function') {
-        updateTrackBackground();
+        });
     }
 }
 

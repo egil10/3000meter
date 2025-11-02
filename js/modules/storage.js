@@ -7,7 +7,7 @@ function saveToLocalStorage() {
         strategy: currentStrategy,
         isNorwegian: isNorwegian,
         distance: currentDistance,
-        isDarkMode: isDarkMode
+        themePreference: themePreference
     };
     localStorage.setItem('3000mRunner', JSON.stringify(data));
 }
@@ -22,8 +22,7 @@ function loadFromLocalStorage() {
             if (data.strategy) currentStrategy = data.strategy;
             if (data.isNorwegian !== undefined) isNorwegian = data.isNorwegian;
             if (data.distance) currentDistance = data.distance;
-            // Don't load dark mode preference - always start with light theme
-            // if (data.isDarkMode !== undefined) isDarkMode = data.isDarkMode;
+            if (data.themePreference) themePreference = data.themePreference;
         } catch (e) {
             console.error('Error loading from localStorage:', e);
         }
