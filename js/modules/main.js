@@ -42,12 +42,13 @@ function setupEventListeners() {
                 
                 // Update time suggestions for the new distance
                 updateTimeSuggestions();
+                updatePaceSuggestions();
                 updateSplitPresetButtons();
                 
-                // Automatically set Target Time to the 4th suggested value (index 3)
+                // Automatically set Target Time to the 3rd suggested value (index 2)
                 const timeSuggestions = getTimeSuggestions(distance);
-                if (timeSuggestions.length >= 4 && elements.goalTime) {
-                    elements.goalTime.value = timeSuggestions[3]; // 4th value (index 3)
+                if (timeSuggestions.length >= 3 && elements.goalTime) {
+                    elements.goalTime.value = timeSuggestions[2]; // 3rd value (index 2)
                     updatePaceFromTime();
                 }
                 
@@ -56,31 +57,6 @@ function setupEventListeners() {
             }
         });
     });
-    
-    // Advanced strategy controls
-    if (elements.progressionType) {
-        elements.progressionType.addEventListener('change', () => {
-            progressionType = elements.progressionType.value;
-        });
-    }
-    
-    if (elements.paceChange) {
-        elements.paceChange.addEventListener('input', () => {
-            paceChangePer400m = parseFloat(elements.paceChange.value) || 0;
-        });
-    }
-    
-    if (elements.startPace) {
-        elements.startPace.addEventListener('input', () => {
-            updatePaceFromTime();
-        });
-    }
-    
-    if (elements.endPace) {
-        elements.endPace.addEventListener('input', () => {
-            updatePaceFromTime();
-        });
-    }
     
     // Custom split editor
     if (elements.addSplitBtn) {
@@ -192,16 +168,6 @@ function setupEventListeners() {
         }
     });
     
-    // Tab buttons
-    if (elements.tabButtons) {
-        elements.tabButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tab = btn.dataset.tab;
-                switchTab(tab);
-            });
-        });
-    }
-    
     // Track type buttons
     document.querySelectorAll('.track-type-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -235,7 +201,14 @@ function setupEventListeners() {
         elements.playPauseBtn.addEventListener('click', toggleAnimation);
     }
     if (elements.resetBtn) {
-        elements.resetBtn.addEventListener('click', resetAnimation);
+        elements.resetBtn.addEventListener('click', () => {
+            resetAnimation();
+            // If data exists, do full recalculate like clicking "Calculate"
+            if (currentPaceData) {
+                calculatePace();
+                updateRaceSummary();
+            }
+        });
     }
     
     // Speed preset buttons
@@ -283,12 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
         cumulativeTimes200m: document.getElementById('cumulativeTimes200m'),
         cumulativeTimes400m: document.getElementById('cumulativeTimes400m'),
         cumulativeTimes1000m: document.getElementById('cumulativeTimes1000m'),
-        tabButtons: document.querySelectorAll('.tab-btn'),
         toast: document.getElementById('toast'),
-        progressionType: document.getElementById('progressionType'),
-        paceChange: document.getElementById('paceChange'),
-        startPace: document.getElementById('startPace'),
-        endPace: document.getElementById('endPace'),
         splitEditorList: document.getElementById('splitEditorList'),
         addSplitBtn: document.getElementById('addSplitBtn'),
         downloadStrategyBtn: document.getElementById('downloadStrategyBtn')
@@ -315,6 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize time suggestions and split buttons
     updateTimeSuggestions();
+    updatePaceSuggestions();
     updateSplitPresetButtons();
     
     // Initialize pace field from time

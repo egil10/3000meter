@@ -224,7 +224,25 @@ function getTimeSuggestions(distance) {
         suggestions.push('12:00:00', '13:00:00', '14:00:00', '15:00:00', '16:00:00', '17:00:00', '18:00:00', '19:00:00', '20:00:00', '21:00:00');
     }
     
-    return suggestions.slice(0, 8); // Return max 8 suggestions for 4x2 grid
+    return suggestions.slice(0, 4); // Return max 4 suggestions
+}
+
+function getPaceSuggestions(distance) {
+    const suggestions = [];
+    
+    // Calculate pace per kilometer based on target times
+    const timeSuggestions = getTimeSuggestions(distance);
+    timeSuggestions.forEach(time => {
+        const timeMs = parseTimeToMs(time);
+        if (timeMs > 0) {
+            const distanceKm = distance / 1000;
+            const paceMs = timeMs / distanceKm;
+            const paceFormatted = formatTimeFromMsSimple(paceMs);
+            suggestions.push(paceFormatted);
+        }
+    });
+    
+    return suggestions.slice(0, 4); // Return max 4 suggestions
 }
 
 function updateTimeSuggestions() {
@@ -243,6 +261,30 @@ function updateTimeSuggestions() {
         btn.addEventListener('click', () => {
             elements.goalTime.value = time;
             updatePaceFromTime();
+            // Highlight active button
+            suggestionsContainer.querySelectorAll('.time-suggestion-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+        suggestionsContainer.appendChild(btn);
+    });
+}
+
+function updatePaceSuggestions() {
+    const suggestionsContainer = document.getElementById('paceSuggestions');
+    if (!suggestionsContainer) return;
+    
+    const distance = currentDistance || 3000;
+    const suggestions = getPaceSuggestions(distance);
+    
+    suggestionsContainer.innerHTML = '';
+    suggestions.forEach(pace => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'time-suggestion-btn';
+        btn.textContent = pace;
+        btn.addEventListener('click', () => {
+            elements.targetPace.value = pace;
+            updateTimeFromPace();
             // Highlight active button
             suggestionsContainer.querySelectorAll('.time-suggestion-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -994,12 +1036,13 @@ function handleDistanceInput() {
         
         // Update time suggestions and split buttons when distance changes
         updateTimeSuggestions();
+        updatePaceSuggestions();
         updateSplitPresetButtons();
         
-        // Automatically set Target Time to the 4th suggested value (index 3)
+        // Automatically set Target Time to the 3rd suggested value (index 2)
         const timeSuggestions = getTimeSuggestions(distance);
-        if (timeSuggestions.length >= 4 && elements.goalTime) {
-            elements.goalTime.value = timeSuggestions[3]; // 4th value (index 3)
+        if (timeSuggestions.length >= 3 && elements.goalTime) {
+            elements.goalTime.value = timeSuggestions[2]; // 3rd value (index 2)
             updatePaceFromTime();
         }
         

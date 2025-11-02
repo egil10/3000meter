@@ -609,13 +609,13 @@ body.dark-mode .loading-screen {
     letter-spacing: 0.05em;
 }
 
-/* New 4-column layout */
+/* New 2-column layout */
 .setup-grid-new {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr 1fr;
     gap: 1rem;
     margin-bottom: 1rem;
-    align-items: start;
+    align-items: stretch;
 }
 
 .input-group-new {
@@ -951,7 +951,6 @@ body.dark-mode .loading-screen {
     font-weight: 600;
     cursor: pointer;
     width: 100%;
-    margin-top: 0.5rem;
     transition: none;
     font-family: var(--font);
     display: flex;
@@ -1583,13 +1582,12 @@ body.dark-mode .download-strategy-btn:hover {
 }
 
 .splits-custom {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
-    align-items: center;
 }
 
 .custom-split-input {
-    flex: 1;
     padding: 0.5rem 0.75rem;
     border: 2px solid var(--border);
     background: var(--bg);
@@ -2397,7 +2395,7 @@ body.dark-mode .strategy-input:focus {
     }
     
     .splits-custom {
-        flex-direction: column;
+        grid-template-columns: 1fr;
         gap: 0.75rem;
     }
     

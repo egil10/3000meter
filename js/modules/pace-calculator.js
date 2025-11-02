@@ -47,7 +47,6 @@ function calculatePace() {
     updateResults(data);
     updateTrackVisualization(data);
     updateAnimationState(data);
-    updatePaceChart(data);
     
     // Ensure track is redrawn with correct type
     drawTrack();
